@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e1420'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='36' font-weight='bold' text-anchor='middle' fill='%23ffc76b'%3E%E6%96%87%3C/text%3E%3Cpath d='M14 52h36' stroke='%236ee7f0' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>作文题材向导 · 初二</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+ --bg:#0e1420;--bg2:#131b2b;--card:#ffffff0d;--card2:#ffffff14;--line:#ffffff1f;--line2:#ffffff33;
+ --fg:#eef2fb;--mut:#9aa6c0;--dim:#77839f;
+ --gold:#ffc76b;--gold2:#ff9f45;--cyan:#6ee7f0;--violet:#a78bfa;
+ --ok:#5ddc9a;--warn:#ffb020;--bad:#ff6b81;
+ --r1:10px;--r2:14px;--r3:20px;
+ --sh1:0 2px 10px #0006;--sh2:0 10px 30px #0008;
+ --ease:cubic-bezier(.2,.9,.3,1);
+ --sab:env(safe-area-inset-bottom,0px);
+ --vh:100vh;
+}
+@supports (height:100dvh){:root{--vh:100dvh}}
+html,body{margin:0;padding:0;min-height:100%;overflow-x:clip}
+body{
+ background:
+  radial-gradient(1000px 560px at 50% -10%,#2b2418 0%,transparent 60%),
+  radial-gradient(760px 460px at 105% 12%,#12313a 0%,transparent 58%),
+  radial-gradient(620px 520px at -10% 78%,#241c3a 0%,transparent 62%),
+  var(--bg);
+ background-attachment:fixed;color:var(--fg);
+ font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,sans-serif;
+ font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+ padding-bottom:calc(28px + var(--sab));
+}
+button{font-family:inherit;font-size:inherit;color:inherit;border:0;background:none;cursor:pointer}
+h1,h2,h3{margin:0;font-weight:800;letter-spacing:.01em}
+.hide{display:none!important}
+
+/* ── 顶栏 ───────────────────────────── */
+.top{position:sticky;top:0;z-index:40;background:linear-gradient(180deg,#0e1420f2,#0e1420d9 70%,#0e142000);backdrop-filter:blur(10px);padding:10px 14px 8px}
+.toprow{display:flex;align-items:center;gap:10px}
+.brand{font-size:17px;font-weight:800;letter-spacing:.02em}
+.brand em{font-style:normal;color:var(--gold)}
+.spacer{flex:1}
+.tbtn{padding:7px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--mut);transition:.18s var(--ease);text-decoration:none;display:inline-flex;align-items:center}
+.tbtn:hover{color:var(--fg);border-color:var(--line2);background:var(--card2)}
+.tbtn.on{color:#0e1420;background:var(--gold);border-color:var(--gold);font-weight:700}
+/* 步骤条 */
+.steps{display:flex;align-items:center;gap:5px;margin-top:9px}
+.sdot{flex:1;display:flex;flex-direction:column;gap:4px;align-items:stretch;cursor:pointer;padding:2px 0}
+.sbar{height:4px;border-radius:99px;background:#ffffff1a;overflow:hidden}
+.sbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:99px;transition:width .35s var(--ease)}
+.sdot.cur .sbar{background:#ffffff2e}
+.slab{font-size:10.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;transition:.2s}
+.sdot.done .slab{color:var(--mut)}
+.sdot.cur .slab{color:var(--gold);font-weight:700}
+.sdot.cur .sbar i{width:100%}
+
+/* ── 主区 ───────────────────────────── */
+main{max-width:720px;margin:0 auto;padding:14px}
+.qhead{margin:2px 2px 14px}
+.qhead .k{font-size:12px;color:var(--cyan);letter-spacing:.14em;font-weight:700}
+.qhead h2{font-size:23px;margin:5px 0 6px;line-height:1.35}
+.qhead p{margin:0;color:var(--mut);font-size:13.5px;line-height:1.6}
+
+/* 选项网格 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
+.opt{position:relative;text-align:left;padding:13px 13px 11px;border-radius:var(--r2);background:var(--card);border:1px solid var(--line);transition:.18s var(--ease);overflow:hidden}
+.opt:hover{border-color:var(--line2);background:var(--card2);transform:translateY(-2px)}
+.opt:active{transform:scale(.975)}
+.opt.pick{border-color:var(--gold);background:#ffc76b1c;box-shadow:0 0 0 1px var(--gold) inset,var(--sh1)}
+.opt .emo{font-size:20px;line-height:1;display:block;margin-bottom:6px}
+.opt .nm{font-size:15.5px;font-weight:700;display:block;line-height:1.35}
+.opt .ds{font-size:12px;color:var(--mut);display:block;margin-top:4px;line-height:1.5}
+.opt .ct{position:absolute;top:9px;right:9px;font-size:10.5px;color:var(--dim);background:#ffffff12;border-radius:999px;padding:2px 7px}
+.opt.pick .ct{color:var(--gold);background:#ffc76b26}
+
+/* 面包屑（已选路径） */
+.trail{display:flex;flex-wrap:wrap;gap:6px;margin:0 2px 12px}
+.chip{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--mut)}
+.chip b{color:var(--fg);font-weight:600}
+.chip.x{cursor:pointer}
+.chip.x:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── 题目卡 ─────────────────────────── */
+.cnt{margin:0 2px 12px;font-size:13px;color:var(--mut)}
+.cnt b{color:var(--gold);font-size:15px}
+.card{border-radius:var(--r3);background:linear-gradient(180deg,#ffffff12,#ffffff08);border:1px solid var(--line);box-shadow:var(--sh1);margin-bottom:12px;overflow:hidden;transition:.2s var(--ease)}
+.card:hover{border-color:var(--line2)}
+.card .topline{display:flex;gap:10px;align-items:flex-start;padding:15px 15px 12px}
+.card .tt{flex:1;font-size:19px;font-weight:800;line-height:1.4}
+.card .gbadge{flex:none;font-size:10.5px;padding:3px 9px;border-radius:999px;background:#ffffff12;color:var(--mut);border:1px solid var(--line);margin-top:3px}
+.sect{padding:0 15px 14px}
+.sect h4{margin:0 0 6px;font-size:11.5px;color:var(--cyan);letter-spacing:.1em;display:flex;align-items:center;gap:6px}
+.sect h4::before{content:'';width:3px;height:12px;border-radius:2px;background:var(--gold)}
+.sect p{margin:0;font-size:14px;color:#d7deee;line-height:1.72}
+.idea{background:#ffc76b0f;border:1px solid #ffc76b2e;border-radius:var(--r1);padding:10px 12px;font-size:14.5px;color:#ffe6bd;line-height:1.7}
+.mat{list-style:none;margin:0;padding:0}
+.mat li{position:relative;padding:7px 8px 7px 30px;border-radius:9px;transition:.15s;font-size:13.8px;line-height:1.6;cursor:pointer;color:#c9d2e6}
+.mat li:hover{background:#ffffff0a}
+.mat li::before{content:'';position:absolute;left:8px;top:12px;width:12px;height:12px;border-radius:4px;border:1.5px solid var(--line2);transition:.15s}
+.mat li.on{background:#5ddc9a16;color:#e6fff2}
+.mat li.on::before{background:var(--ok);border-color:var(--ok);box-shadow:0 0 0 3px #5ddc9a2e}
+.how{list-style:none;margin:0;padding:0;counter-reset:s}
+.how li{position:relative;padding:6px 0 6px 30px;font-size:13.8px;color:#c9d2e6;line-height:1.65;counter-increment:s}
+.how li::before{content:counter(s);position:absolute;left:0;top:8px;width:20px;height:20px;border-radius:50%;background:#6ee7f01f;color:var(--cyan);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.trap{background:#ff6b8110;border:1px solid #ff6b8130;border-radius:var(--r1);padding:10px 12px;font-size:13.3px;color:#ffd0d7;line-height:1.65}
+.trap b{color:var(--bad)}
+.acts{display:flex;gap:8px;padding:0 15px 15px;flex-wrap:wrap}
+.abtn{flex:1;min-width:120px;padding:11px 12px;border-radius:var(--r1);background:var(--card2);border:1px solid var(--line);font-size:14px;font-weight:600;color:var(--fg);transition:.18s var(--ease)}
+.abtn:hover{border-color:var(--gold);color:var(--gold)}
+.abtn.pri{background:linear-gradient(180deg,var(--gold),var(--gold2));color:#1a1204;border-color:transparent;font-weight:800}
+.abtn.pri:hover{filter:brightness(1.06);color:#1a1204}
+.abtn.sm{flex:none;min-width:0;padding:9px 13px;font-size:13px;color:var(--mut)}
+.abtn.sm:hover{color:var(--gold)}
+
+/* 素材槽位 */
+.slots{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.slot{font-size:13px;padding:6px 12px;border-radius:999px;background:#a78bfa1c;border:1px solid #a78bfa45;color:#ddd0ff;transition:.15s}
+.slot:hover{background:#a78bfa33}
+.slot small{color:var(--dim);margin-left:5px;font-size:11px}
+
+/* 配额条 */
+.qa{display:flex;gap:6px;margin:0 0 10px}
+.qa div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:9px;padding:7px 6px;text-align:center}
+.qa b{display:block;font-size:16px;color:var(--gold);line-height:1.2}
+.qa span{font-size:10.5px;color:var(--dim)}
+
+/* ── 计时器 ─────────────────────────── */
+.timer{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--r2);padding:10px 12px;margin-bottom:12px}
+.timer .t{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.02em;min-width:104px}
+.timer.hot .t{color:var(--bad)}
+.timer .info{flex:1;font-size:11.5px;color:var(--mut);line-height:1.45}
+.tbtn2{padding:8px 13px;border-radius:9px;background:var(--card2);border:1px solid var(--line);font-size:13px;font-weight:600}
+.tbtn2:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── 底部导航 ───────────────────────── */
+.nav{position:sticky;bottom:0;z-index:30;margin:16px -14px calc(-28px - var(--sab));padding:12px 14px calc(14px + var(--sab));background:linear-gradient(0deg,#0e1420 62%,#0e142000);display:flex;gap:9px;align-items:center;max-width:720px}
+.nav .navhint{flex:1;font-size:11.5px;color:var(--dim);line-height:1.4;min-width:0}
+
+/* ── 抽屉（题材库/导入） ─────────────── */
+/* 从右侧滑入的侧栏，无全屏遮罩：点「题材库」不该把整个主区变暗盖住。 */
+.drawer{position:fixed;z-index:55;top:0;right:0;bottom:0;width:min(380px,92vw);display:flex;flex-direction:column;background:var(--bg2);border-left:1px solid var(--line2);box-shadow:-14px 0 40px #000a;transform:translateX(101%);visibility:hidden;pointer-events:none;transition:transform .28s var(--ease),visibility 0s linear .28s}
+.drawer.on{transform:none;visibility:visible;pointer-events:auto;transition:transform .28s var(--ease),visibility 0s}
+/* 抽屉打开时把主区挤窄，而不是盖住。用 body 的 padding-right 而不是给 main 加 margin：
+   .top 是 position:sticky top:0，给 main 加 margin 不会改变它的包含块宽度，
+   顶栏会横跨到抽屉底下被压住；padding 挂在 body 上则所有层都一起让位。 */
+@media(min-width:900px){body.lb-open{padding-right:380px}}
+@media(max-width:899px){.drawer{width:100vw;border-left:0}}
+.sh-h{display:flex;align-items:center;gap:10px;padding:15px 16px 11px;border-bottom:1px solid var(--line);flex:none}
+.sh-h h3{font-size:17px;flex:1}
+.sh-b{overflow-y:auto;padding:14px 16px calc(20px + var(--sab));-webkit-overflow-scrolling:touch;flex:1}
+.xbtn{width:30px;height:30px;border-radius:9px;background:var(--card);border:1px solid var(--line);color:var(--mut);font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}
+.xbtn:hover{color:var(--bad);border-color:var(--bad)}
+.tabs{display:flex;gap:7px;margin-bottom:13px}
+.mini{border-radius:11px;background:var(--card);border:1px solid var(--line);padding:11px 12px;margin-bottom:9px;transition:.18s}
+.mini:hover{border-color:var(--line2);background:var(--card2)}
+.mini .mt{font-size:14.5px;font-weight:700;line-height:1.4}
+.mini .ms{font-size:11.5px;color:var(--dim);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
+.mini .del{margin-left:auto;color:var(--dim);font-size:16px;padding:0 2px}
+.mini .del:hover{color:var(--bad)}
+.empty{text-align:center;color:var(--dim);font-size:13.5px;padding:30px 10px;line-height:1.8}
+textarea.ta{width:100%;min-height:150px;background:#0006;border:1px solid var(--line);border-radius:12px;color:var(--fg);padding:11px;font-size:13px;line-height:1.6;resize:vertical;font-family:"SFMono-Regular",Consolas,monospace}
+.note{font-size:12px;color:var(--dim);line-height:1.7;margin:9px 0 0}
+.kv{display:flex;gap:10px;font-size:12.5px;color:var(--mut);padding:4px 0}
+.kv b{color:var(--cyan);font-weight:600;min-width:52px}
+
+.toast{position:fixed;left:50%;bottom:calc(26px + var(--sab));transform:translate(-50%,14px);z-index:80;background:#0b1120f2;border:1px solid var(--gold);color:var(--gold);padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:.24s var(--ease);box-shadow:var(--sh2);max-width:88vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.fade{animation:fade .34s var(--ease) both}
+@keyframes fade{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* 顶栏有 4 个控件，窄屏要收缩，否则「题材库」被挤出屏幕。
+   做法是缩间距 + 字号，不是隐藏控件 —— 隐藏了她根本不知道还有这个功能。 */
+@media(max-width:430px){
+ .top{padding:9px 11px 7px}
+ .brand{font-size:15.5px}
+ .brand span{display:none}          /* 「初二·600字」这类副标题先让位 */
+ .tbtn{padding:6px 9px;font-size:12px}
+}
+@media(max-width:350px){.tbtn{padding:6px 7px;font-size:11px}}
+@media(max-width:360px){.grid{grid-template-columns:1fr 1fr}.opt .nm{font-size:14.5px}}
+</style>
+</head>
+<body>
+
+<header class="top">
+ <div class="toprow">
+  <div class="brand">作文题材<em>向导</em> <span style="font-size:12px;color:var(--dim);font-weight:600">初二 · 600字</span></div>
+  <div class="spacer"></div>
+  <button class="tbtn" id="btnLib">题材库</button>
+  <button class="tbtn" id="btnReset">重来</button>
+  <a class="tbtn" id="btnVocab" href="https://letuluvme-hub.github.io/vocab-expedition-wy8/" target="_blank" rel="noopener" title="另一个工具：外研版八上英语单词">英语词汇 →</a>
+ </div>
+ <div class="steps" id="steps"></div>
+</header>
+
+<main id="view"></main>
+
+<div class="nav" id="nav">
+ <button class="abtn sm" id="btnBack">上一步</button>
+ <div class="navhint" id="navhint"></div>
+</div>
+
+<div class="drawer" id="sheet" role="complementary" aria-label="题材库">
+ <div class="sh-h">
+  <h3 id="shTitle">我的题材库</h3>
+  <button class="xbtn" id="shClose" aria-label="关闭">✕</button>
+ </div>
+ <div class="sh-b" id="shBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ══════════════ 1. 维度表（固定的选项组合） ══════════════ */
+var G={
+ rec:   {nm:'记叙文',   emo:'📖', ds:'写人写事，上海中考主战场'},
+ scene: {nm:'写景状物', emo:'🌿', ds:'状物言志，借景抒情托物言志'},
+ imagine:{nm:'想象作文', emo:'🚀', ds:'科幻、童话、穿越，改编设定'},
+ argue: {nm:'议论说理', emo:'⚖️', ds:'观点清楚，论据实在'},
+ apply: {nm:'应用文',   emo:'✉️', ds:'书信、演讲稿、读后感、倡议书'}
+};
+var D={
+ family :{nm:'家庭亲情',emo:'🏠',ds:'父母长辈，最容易写假的部分'},
+ teacher :{nm:'师长同窗',emo:'🍎',ds:'老师、同学、班主任'},
+ friend  :{nm:'同学友谊',emo:'🤝',ds:'同桌、社团、一起扛过的事'},
+ grow   :{nm:'成长烦恼',emo:'🌱',ds:'自我、叛逆、尴尬、心事'},
+ setback:{nm:'挫折励志',emo:'⛰️', ds:'失败、第一次不、总算做到了'},
+ nature :{nm:'人与自然',emo:'🌊', ds:'季节、生物、天气、校园一草一木'},
+ society:{nm:'社会见闻',emo:'🏙️',ds:'凡人善举、城市变化、小人物的固执'},
+ culture :{nm:'文化传统',emo:'🏮', ds:'老手艺、地方习俗、节日里的旧规矩'},
+ hometown:{nm:'家乡风物',emo:'🚇',ds:'弄堂、小店、一条街、一座桥'},
+ future :{nm:'科技幻想',emo:'🔮', ds:'AI、太空、时间、克隆、记忆'}
+};
+var C={
+ object :{nm:'一件旧物', emo:'🧸',ds:'从东西切入，最容易出细节'},
+ moment :{nm:'一个瞬间', emo:'⚡',ds:'定格在几秒里，靠白描取胜'},
+ promise:{nm:'一个约定', emo:'🤞',ds:'前后呼应，天然有结构'},
+ first  :{nm:'一个第一次',emo:'🌟',ds:'安全牌，但要写出"难"在哪'},
+ mis    :{nm:'一次误解', emo:'🌧️',ds:'误会→揭穿→和解，有波折'},
+ contest:{nm:'一场比赛', emo:'🏃',ds:'有起点有终点，好收束'},
+ journey:{nm:'一段出行', emo:'🚶',ds:'路上的人比目的地好看'},
+ secret :{nm:'一个小秘密',emo:'🔒',ds:'藏→被发现→选择坦白'},
+ word   :{nm:'一句话',   emo:'💬',ds:'一句话牵出一个人/一段往事'},
+ crowd  :{nm:'一群人',   emo:'👥',ds:'众生相，考验观察力'},
+ change :{nm:'一种变化', emo:'🔄',ds:'前后对照，结构最清楚'}
+};
+var E={
+ warm  :{nm:'温暖感动',emo:'🕯️',ds:'写"我"的迟钝与被爱'},
+ guilt :{nm:'愧疚到释然',emo:'🌊',ds:'转折要有实际情节支撑'},
+ admire:{nm:'敬佩',    emo:'🗿', ds:'用一个细节代替形容词'},
+ down  :{nm:'失落振作',emo:'🌤', ds:'先沉下去，再自己站起来'},
+ plain :{nm:'平凡里的光',emo:'💡',ds:'不写"伟大"，写"我"被改变'},
+ insight:{nm:'成长领悟',emo:'🧭',ds:'结尾要给出一个具体动作'},
+ curio :{nm:'好奇探索',emo:'🔍',ds:'悬念推进，答案要出人意料又合理'},
+ protect:{nm:'守护',    emo:'🛡️',ds:'保护一件事/一个人免于被毁'}
+};
+var STEPS=[{k:'g',T:G,t:'第 1 步 · 定体裁'},{k:'d',T:D,t:'第 2 步 · 定领域'},{k:'c',T:C,t:'第 3 步 · 定切口'},{k:'e',T:E,t:'第 4 步 · 定情感'}];
+
+/* 字数配额：开头 / 主体 / 结尾，按体裁给 */
+var QUOTA={
+ rec:[90,400,110], scene:[110,380,110], imagine:[110,370,120],
+ argue:[120,340,140], apply:[110,390,100]
+};
+var QUOTA_LAB=['开头','主体','结尾'];
+
+/* ══════════════ 2. 固定题目组合库 ══════════════ */
+var BANK=[];
+BANK.push({id:'K001',t:'《{外婆}的老式饭票》',g:'rec',d:'family',c:'object',e:'warm',idea:'一张褪了色的饭票证明有人替我把日子预支了——真正让人记住的不是钱，是那张票背后她从没问过我钱花在哪儿的信任。',mat:['铁皮饭盒里饭票按日期排好，最后一张是三年前的暑假','她把当天的零钱塞进我铅笔盒的夹层，从不当面递给我','我拿一张去买盐，回来她只问了一句咸淡够不够','有一张票的一角被汤汁浸过，摸上去发软发黏'],how:['开头：从铁盒盖被打开的那一声写起，先按顺序报出日期，不解释用途','主体：写她塞钱进铅笔盒夹层的动作，再写我拿钱去买盐的那一趟','深化：写我翻出三年前那张旧票才明白，她的不追问是把选择留给了我','结尾：回到铁盒本身，票早用完了，盒子还在床头柜第二层'],trap:'最容易写成外婆节俭的品德作文，通篇罗列她省下的东西，没有我那一次心虚，读者只闻到苦情，闻不到被信任的暖',who:['外婆','奶奶','姥姥']});
+BANK.push({id:'K002',t:'《{外婆}那副只剩右边的老花镜》',g:'rec',d:'family',c:'object',e:'guilt',idea:'我嫌那副单边老花镜丢人，直到发现她戴着它挤在校门口等我——她的白发和我的羞耻，其实是同一件事的两面。',mat:['镜架上缠着一圈透明胶带，镜片只剩右边那片','她站在校门口那排家长后面，一直没有往前挤','我故意从马路另一边绕开，混进同学那一堆人里','右边镜片边缘有一道细裂，对着光才看得清楚'],how:['开头：先写镜架上那圈透明胶带，把难堪藏在细节里不说破','主体：写校门口举着牌子的那排家长，我绕路走，她没有追上来','深化：写我在同学堆里看见她抬头找我的那个动作，只写三秒','结尾：回到镜子，右边那片现在没人擦，积了一层灰'],trap:'容易写成我懂事了我爱外婆的和解文，中间那次故意绕开一笔带过，愧疚就是假的，读者感觉不到疼',who:['外婆','奶奶','姑妈']});
+BANK.push({id:'K003',t:'《储藏室那只空奶粉罐》',g:'rec',d:'family',c:'object',e:'curio',idea:'罐子敲上去是空的，里面却装着我整个童年的声音——好奇的题目不是装了什么，是谁把它留到了现在还没有扔。',mat:['白铁罐上红字掉了一半，凑近只认得出一个牌字','铁罐的盖子拧不动，得垫一条旧毛巾才拧得开','里面的干桂花一碰就碎成粉，底下压着一张对折的纸','纸上是幼儿园的接送卡，右下角被虫咬掉一角'],how:['开头：从储藏室那股霉味和拧罐盖的费劲写起，先不作解释','主体：写罐里的干桂花、接送卡，还有那些记不清的日期和名字','深化：写我把它抱回房间摆在书桌上，一整晚翻来覆去睡不着','结尾：写我给罐子重新找了个位置，让它和我的东西待在一起'],trap:'容易写成怀旧散文，把罐子当道具罗列三样旧物就收尾，没有我为什么非要留它的执念，读者不会被打动',who:['奶奶','外婆','小姨']});
+BANK.push({id:'K004',t:'《晚饭后那十分钟的厨房》',g:'rec',d:'family',c:'moment',e:'plain',idea:'一家人各占厨房一角，没人说话，锅还没刷——我要写的就是这种被浪费掉的十分钟，它其实是一天里最像家的十分钟。',mat:['火还没关，锅底那层汤汁烧成了一圈焦黄的边','爸爸在水槽边剥蒜，妈妈在灶台边把碗摞起来','我搬了把椅子坐在门口剥虾，背对着灶台那边','虾壳最后堆成一座小山，被外婆一把扫进手心'],how:['开头：开头只写声音，水声、碗碰碗、虾壳的脆响，人都先不出声','主体：主体写三个人各守一角的位置和手上的活，谁都没有抬头','深化：深化写我起身去关火那一下，三个人同时动了一下又收回去','结尾：结尾停在第二天早上，锅已经刷得干净，没人提起昨晚'],trap:'容易写成温馨的家庭晚餐流水账，从买菜写到洗碗，没有一个停顿让人意识到原来我们都不说话也在一起',who:['妈妈','爸爸','外婆']});
+BANK.push({id:'K005',t:'《{爸爸}的伞往我这边斜的三步》',g:'rec',d:'family',c:'moment',e:'protect',idea:'伞面整个歪向我这边，他自己的左肩湿了一片——保护不是慷慨，是一个人悄悄把重量挪过去，还装作没发生。',mat:['校门口积水漫上路沿石，水面上飘着半张数学卷','他把伞柄整个推到我这一边，我的右肩一点没湿','他自己的左袖口一直在滴水，他说是走路溅的','到家他把伞立在门口，伞面朝下，水积成一小圈'],how:['开头：写雨、积水和那把只张开一半的伞，人先不进画','主体：写那三步路里伞柄被推的方向，一次比一次往我这边','深化：写他随口那句是走路溅的，和我当时居然没拆穿的犹豫','结尾：回到那摊门口没人擦的水，和我第二天补上去的那条毛巾'],trap:'容易写成父爱如山的抒情，雨、伞、肩膀全用上，却没有那三步的距离变化，读者感受不到那个挪的动作',who:['爸爸','爷爷','外公']});
+BANK.push({id:'K006',t:'《{奶奶}把我卷子的折痕抚平了三次》',g:'rec',d:'family',c:'moment',e:'insight',idea:'一次不及格把我按在原地，可她抚平卷子的那双手让我明白，家里不是靠分数站住的，是靠有人愿意一次次把我按平。',mat:['数学五十九分，红笔的批注挤占了半个页脚','她把卷子对折一次、再对折一次，然后开始抚平','她说压平的地方还能接着写，我就没再说话','我妈下班回来瞥了一眼分数，只问了句饿不饿'],how:['开头：开头从卷子上那半个页脚的红笔写起，先不报分数','主体：主体写她对折、抚平、再对折的连续动作，配上我的沉默','深化：深化写我妈那句饿不饿，和我忽然懂了两代人不同的算法','结尾：结尾写那道压平的折痕还在，我后来一直没敢再撕开'],trap:'容易写成被妈妈骂醒的励志文，靠一次哭和一次道歉完成转变，中间那张卷子的折痕完全没用上',who:['奶奶','外婆','妈妈']});
+BANK.push({id:'K007',t:'《我说过每个礼拜都回来看{外婆}》',g:'rec',d:'family',c:'promise',e:'warm',idea:'下个礼拜这四个字我说了两年，真正兑现的只有几次——但每一次兑现，我都看见她提前把冰箱里的菜分好了格。',mat:['每次我走之前她都要问一句，下个礼拜哪天来','冰箱里用保鲜盒分好三格，盒盖上贴星期几','我拖到第三个星期才去，进门她只说饭在锅里','楼道灯坏了一盏，她每晚举着手电等我上楼'],how:['开头：开头用那句下个礼拜起手，把我两个礼拜没兑现先摆出来','主体：主体写冰箱里的三格保鲜盒，和她举着手电等在楼下的晚上','深化：深化写我上楼后那句下个礼拜还来，说完我自己都笑了','结尾：结尾写第三个星期她还是多问了一句哪天来，我这次答了日期'],trap:'容易写成自我感动的守诺文，一句承诺加十句解释，读者看不到她为这句承诺付出的具体动作',who:['外婆','奶奶','姥姥']});
+BANK.push({id:'K008',t:'《答应过不让她进医院陪床》',g:'rec',d:'family',c:'promise',e:'down',idea:'我答应不让她陪我熬，可那晚她还是坐在走廊椅子上，把保温杯焐了整夜——承诺在她那里从来只是安慰人的空话。',mat:['我在电话里说，等这次月考结束就回去看她','她说好，然后当天晚上九点就到了住院部楼下','保温杯外面套着旧毛衣，杯身烫得她还不撒手','我第二天交完卷，才看见她发来的那六个字'],how:['开头：开头从她那声好写起，一个字不多，读者先替我不舒服','主体：主体写我做完最后一道题，和手指停在笔杆上没动的十分钟','深化：深化写保温杯套着旧毛衣这个细节，和我看见那六个字时的反应','结尾：结尾写我进电梯连按楼层的手，和她抬头说的第一句话'],trap:'容易写成子女孝顺的催泪文，把母亲的等待全写成伟大牺牲，反而让那句没兑现的承诺失去了重量',who:['妈妈','外婆','阿姨']});
+BANK.push({id:'K009',t:'《第一次偷偷煮的方便面》',g:'rec',d:'family',c:'first',e:'curio',idea:'十二岁生日那天厨房冒出一股不该出现的味道，我守着锅不敢出去——第一次不被管着的滋味，烫嘴又心虚。',mat:['水开了两次我都没关，用筷子在里头一圈圈搅','调料包撕口撕歪了，抖进去的粉末全飘在台面上','我端着锅蹲在门后，听客厅的电视声没敢动','碗沿烫出一个白印，我用舌头舔了才知道疼'],how:['开头：先写那股味道顺着门缝爬到客厅，先不交代谁在煮','主体：把煮面的动作串起来，水开、撕包、调火、蹲下等电视','深化：写那碗面其实很难吃，我吃两口就推开，只顾着听门外动静','结尾：结尾写碗底泡烂的那层面条，和我当晚洗得特别干净的锅'],trap:'容易写成危险的童年冒险加大人训斥收尾，把第一次自己动手的郑重其事当成笑话，味道和心虚都丢了',who:['妈妈','爸爸','奶奶']});
+BANK.push({id:'K010',t:'《{妈妈}第一次骑上我的自行车》',g:'rec',d:'family',c:'first',e:'admire',idea:'十几岁的后座我嫌挤、嫌她手凉、嫌她一路不扶栏——很多年后我才明白，那辆二八车后座是她十三岁以后的整个青春。',mat:['后座的铃铛一按就响，她一按铃我耳朵就发烫','她的手心一直贴在我后腰上，凉得我一直往前躲','我回头喊她扶着横杠，她笑着说早就学过了','链子掉了一节，她单脚踩踏板一路把我蹬回家'],how:['开头：从后座铃铛响的那一下写起，先不交代坐车的是谁','主体：连写三个具体的嫌弃点，句子要短，语气要硬一点','深化：写她一直不扶横杠这个细节，和那句早就学过了','结尾：结尾写很多年后我擦车，发现后座的皮子磨得只剩两条'],trap:'容易写成我终于懂得感恩的空转结尾，把嫌弃全部美化成撒娇，读者看不到当年那个真觉得丢人的小孩',who:['妈妈','外婆','小姨']});
+BANK.push({id:'K011',t:'《我剪了{奶奶}晾的被子》',g:'rec',d:'family',c:'mis',e:'guilt',idea:'一刀下去只是想帮她快点干，结果剪坏的是她缝了二十年的旧被——误会和不小心之间，隔着我不敢抬头的一整个下午。',mat:['那天太阳很好，我踩上小凳把被子从绳上提下来','剪刀钝了，第一下卡住，第二下就豁开一道口子','被角那儿有个我六岁时缝的歪歪扭扭的小补丁','她回来摸了一下那道口子，没说话就去拿针线'],how:['开头：开头写阳光、绳子和小凳的高度，把危险轻轻放进去','主体：主体写两剪刀下去的过程和布撕开的声音，暂时不写心情','深化：深化写她摸那道口子的手指，和她转身去拿针线的背影','结尾：结尾写被角上那块补丁还在，针脚比我六岁缝的整齐太多'],trap:'容易写成我闯祸后道歉的通用模板，哭一场、认错一句就结束，被子为什么重要反而没有交代',who:['奶奶','外婆','妈妈']});
+BANK.push({id:'K012',t:'《剥蒜比赛，我输给{外婆}三回》',g:'rec',d:'family',c:'contest',e:'insight',idea:'每年除夕剥蒜比赛我都没赢过，直到有一年她剥到一半手抖了还坚持剥完——那天我才明白，输赢从来不是重点，站着剥完才是。',mat:['蒜皮干得一捏就碎，碎屑卡在指甲缝里洗不掉','我每隔一分钟报一次数，报到最后声音越来越小','她右手食指的关节肿着，捏蒜的时候明显慢下来','我把赢得的红包塞回她手里，这次她没有推回来'],how:['开头：开头从剥蒜那种干脆的咔嚓声切入，先写比赛怎么开始','主体：主体写报数和输赢，节奏要快，三回输压成两段写','深化：深化写她右手关节肿着还往下剥的那一段，速度突然慢下来','结尾：结尾写红包被我塞回她手里，和她这次没有再推回来'],trap:'容易写成赢比赛的热闹场面，年味和笑闹写满了，却没让读者看见她手上那个肿起来的关节',who:['外婆','奶奶','姑妈']});
+BANK.push({id:'K013',t:'《阳台上的跳绳比赛》',g:'rec',d:'family',c:'contest',e:'plain',idea:'阳台不够长，我只能跳一半，输得理直气壮——这场比赛没教会我什么，倒让我记了很多年那个傍晚楼下的路灯。',mat:['阳台不到一米二宽，我得一只脚贴着墙才能起跳','绳子打到晾衣架上，塑料夹子哗啦掉下一个','她一分钟只跳二十三下，比我少了整整十下','楼下有人喊晾衣服，我们就收了绳子假装没在跳'],how:['开头：写阳台的宽度和那个一米二的数字，人先不出场','主体：主体写比赛规则和一串输赢，句子短，带点孩子气的争','深化：深化写楼下那一嗓子，和我们手忙脚乱收绳子的狼狈','结尾：结尾写多年后路过那个阳台，还是没搞清她为什么只跳二十三下'],trap:'容易写成陪爷爷比赛的温情戏，只写输赢和笑声，阳台太小这个限制一删，就没人懂这场比赛为什么好玩',who:['爷爷','奶奶','外公']});
+BANK.push({id:'K014',t:'《{妈妈}抽屉里那本没写完的账本》',g:'rec',d:'family',c:'secret',e:'warm',idea:'账本上没有金额，只有一行行我吃过的穿过的日期——她把它锁了三年，不是怕人看，是怕我看见自己欠了多少。',mat:['硬皮账本，外壳是我小学用剩的田字格本子','第一页写着我上幼儿园那年九月，字按得很用力','每一行只写东西和日期，从头到尾没有一个价格','最后一行停在去年冬天，后面的字迹忽然变浅了'],how:['开头：开头从抽屉锁扣那声轻响写起，账本先只露出一个角','主体：主体只念两三行原文，写清日期和东西，一个字不解释','深化：深化写我跑去问她为什么没有价格，她说钱的事不用记','结尾：结尾写最后一行变浅的字迹，和我一直没敢往下翻的那一页'],trap:'容易写成母爱的账本式抒情，把账本当成催泪道具，读者会问账本到底写了什么，细节一虚就塌',who:['妈妈','奶奶','外婆']});
+BANK.push({id:'K015',t:'《学{外婆}说话的那个晚上》',g:'rec',d:'family',c:'word',e:'insight',idea:'我嫌外婆的方言土，故意学得很像地学了一次——那顿饭桌上没人笑我，也没人接话，只有她多夹了一筷子菜。',mat:['我学外婆的口气说饭啊好吃伐，腔调拿得十足','桌上没人笑，爷爷的筷子停在半空里没落下来','外婆只说了句阿拉侬别讲了吃多点菜，很平常','她把那盘红烧肉转过来，桌角擦过了我的碗'],how:['开头：开头从那句学来的方言切入，先写我洋洋得意的那一秒','主体：主体写饭桌上的静止，没人笑，筷子停住，各人做各的事','深化：深化写外婆那句别讲了，和那盘被转到我面前的红烧肉','结尾：结尾写我现在还会说那几句，只是不再学她的语气'],trap:'容易写成我终于接纳了方言的观点文，只谈态度不写饭桌上那几秒的静，读者感觉不到那句话把人扎疼了',who:['外婆','奶奶','小姨']});
+BANK.push({id:'K016',t:'《我把老师的名字写错了》',g:'rec',d:'teacher',c:'mis',e:'guilt',idea:'板报上我把她的性别写错，那个字被当众念出来——那一刻我真正怕的不是丢脸，是我让人难堪了。',mat:['板报右下角那一栏是我誊的，抄到最后手都酸了','她的姓和那个她字，拆开来偏旁只差两笔','早读前她把错字圈出来，一个字都没有解释','那天下课她把板报挪到后墙，只说那里光线好'],how:['开头：写那行字我前后看了两遍，都没看出问题在哪','主体：主体写誊字、装订、贴上去的全过程，越平常越难堪','深化：深化写早读前那个被圈出来的字，和她一字不解释的沉默','结尾：结尾写板报被挪到后墙那天，她只说了一句那里光线好'],trap:'容易写成我真粗心的认错文，错字一笔带过，重点全在事后痛哭，读者感觉不到难堪是当众发生的',who:['语文老师','班主任','英语老师']});
+BANK.push({id:'K017',t:'《讲台抽屉里的那张纸条》',g:'rec',d:'teacher',c:'secret',e:'curio',idea:'讲台抽屉一直锁着，钥匙在她自己手上——我用了整整一学期猜那张纸条，最后猜到的答案让我重新认识了老师。',mat:['抽屉挂锁很旧，锁身上划着一道道细密的痕','她一节课只开一次抽屉，拿粉笔或者抽一张卷子','我趁课间拉过那个抽屉，锁着，还绕了两圈铁链','期末她开会，抽屉开着，里面只有一张压平的糖纸'],how:['开头：开头从那把挂锁的划痕写起，先让读者跟着我一起好奇','主体：主体写我一节课数她开抽屉几次，数到后来变成十七次','深化：深化写空着的办公桌和那张压平的糖纸，答案轻得不像答案','结尾：结尾写放学前我把它照原样放回去，锁还是原来那把锁'],trap:'容易编造老师的秘密来制造悬念，比如藏了满分卷或处分名单，一编就假，落点全靠猎奇撑不住',who:['班主任','语文老师','数学老师']});
+BANK.push({id:'K018',t:'《她念作文念到一半停了》',g:'rec',d:'teacher',c:'word',e:'admire',idea:'她的声音在全班最吵的时候忽然停住——不是忘词，是她读到了那句我没敢念出来的句子，那三秒我记到现在。',mat:['我写的第二段是外婆的针线，被我自己涂掉过三次','她念到那一行，停顿比别处长，后面明显得多','教室一下安静，窗外篮球还在一下一下地响','前排有人回头看我，我就低头盯着桌缝那道印'],how:['开头：开头直接从她那声停顿切入，先不解释她为什么停','主体：主体写教室从吵到静的过程，用球声和空调声做过渡','深化：深化写我盯着桌缝那道划痕，和涂了三次的第二段文字','结尾：结尾写那本作文我留着，纸已经发黄，翻到那页会响'],trap:'容易写成老师很懂我的感动文，中间只剩停顿和安静，没有我当时不敢抬头的那点窘迫',who:['语文老师','班主任','写作课老师']});
+BANK.push({id:'K019',t:'《那篇作文里的四个字被改了》',g:'rec',d:'teacher',c:'word',e:'insight',idea:'她把我写的抱怨换成了有点撑不住，就这四个字让我第一次发现，作文里的实话和矫情之间隔着一把很细的尺。',mat:['原句是我妈出差那周，我在家自己烧饭，没说害怕','她在旁边写了个撑字，最后那一笔特别用力','我当时觉得她把我写小了，憋了一节课没说话','第二天早读我重写了开头那句，全篇只动了两行'],how:['开头：开头从那个被替换的字切入，先只把前后两句放出来','主体：主体写我当时的不服气，憋着不说，被点名时声音很小','深化：深化写第二天早读我改掉的那两行，文章是越改越短的','结尾：结尾写那篇只得了中等分，作文本我却一直留着'],trap:'容易写成老师教写作文的技巧总结，把红笔那一个字当金句反复夸，看不出一个初二学生当时的别扭',who:['语文老师','班主任','作文课老师']});
+BANK.push({id:'K020',t:'《全班等我站起来那十秒》',g:'rec',d:'teacher',c:'crowd',e:'protect',idea:'全班四十几个人的目光压在我身上，我低头就赢了——可我站起来了，因为有人替我先站过第一次。',mat:['早读我念到一半卡住，后面有人小声接了一句','班主任没让我坐下，只点了下头让我接着往下念','声音一开始小得只有前两排听得见，后排开始笑','我念完最后一句合上书，手心的汗把书角浸软了'],how:['开头：开头从卡住的那一秒写起，用全教室都在等来压人','主体：主体写我的声音从小到大的过程，拿后排的笑声当标尺','深化：深化写班主任那个轻轻的点头，和她始终没让我坐下','结尾：结尾写合上书时手心的汗，和后来后排忽然安静下来的半秒'],trap:'容易写成我战胜了自卑的励志独白，忽略全班目光的具体重量，读者只看到结果看不到那十秒有多长',who:['班主任','语文老师','年级组长']});
+BANK.push({id:'K021',t:'《毕业照上她被我抓皱了衣角》',g:'rec',d:'teacher',c:'crowd',e:'warm',idea:'排队站位时没人敢碰她，我最后排在她后面，衣角被我抓出一道折痕——后来那张照片里，只有我看得见那道痕。',mat:['按身高排队站位置，她被排在了最右边那一列','摄影师喊往前靠一靠，只有前排的人先弯了腰','我排在她后面，手背一直贴着她垂下来的衣角','快门按下的瞬间，我听见前面布料被抓紧的响声'],how:['开头：开头写队伍怎么排，怎么排都把她挤到最边上','主体：主体写摄影师喊了三遍、前排弯了腰、后面没人敢动','深化：深化写我手背碰到她衣角那一下，和她往后靠的那半步','结尾：结尾写照片洗出来，那道衣角的折痕只有我一个人看见'],trap:'容易写成我喜欢这个老师的抒情，只写她站在边上很孤单，缺少排队和拍照这些硬邦邦的场面',who:['班主任','语文老师','实习老师']});
+BANK.push({id:'K022',t:'《从课代表到值日生》',g:'rec',d:'teacher',c:'change',e:'down',idea:'我把课代表当成了身份，一个月后老师换了人，我连句话都没说就走了——原来位置掉下来的时候，比想象中安静。',mat:['收本子那阵我一个人抱两班的作业，胳膊压出印','班会上她只说了下周起有人暂代，没有多解释','我把点名册放回讲台，粉笔灰沾满了指缝','那周的值日我扫得特别慢，一直扫到没人催我'],how:['开头：开头从一次抱两班本子的重量切入，先写累不写委屈','主体：主体写班会上那句话只有十几个字，后面全是照常的课间','深化：深化写点名册放回讲台那一下，和沾在指缝里的粉笔灰','结尾：结尾写那周扫得特别慢的地板，和我没跟任何人说的那句话'],trap:'容易写成我懂得了淡泊的说教，把换人写成打击又写成顿悟，读者看不到那天我一个人在扫地的样子',who:['班主任','语文老师','年级老师']});
+BANK.push({id:'K023',t:'《她把提问换成了记录》',g:'rec',d:'teacher',c:'change',e:'plain',idea:'她不再追着人举手，改成每天在本子上记三句话——三个月的记录摊开，我们班每个人都被写进去了。',mat:['从前她讲完一句就停下来等，等到没人举手才自己接','后来她低头在本子上写，写完抬头扫一圈教室','本子封面写着我们每个人的名字，旁边标着日期','我那一页上反复出现同一句今天没举手，后面画着圈'],how:['开头：开头先写那句没等到人举手的停顿，写出教室里的干','主体：主体写本子的用法，她记我们偷看，谁也不说破','深化：深化写我那一页和同学那一页摆在一起，看见的是别的东西','结尾：结尾写三个月后本子发下来，我那页被夹进了一张纸条'],trap:'容易写成班主任方法的经验总结，满篇夸这套办法好，学生那一页上反复写的没举手没人看见',who:['班主任','语文老师','英语老师']});
+BANK.push({id:'K024',t:'《从学校到火车站的四站路》',g:'rec',d:'teacher',c:'journey',e:'insight',idea:'我陪她去火车站送舅舅，四站路她一句话没说——到家我才知道，她一路都在数还剩几天能再见到人。',mat:['她拎着装满衣服的编织袋，走两层就歇一下','地铁上她把编织袋抱在怀里，下巴死死压住袋口','我们出站走反了方向，多走了六百米她没说','上车前她从袋子最底下抽出一件毛衣塞进我书包'],how:['开头：开头从那只编织袋的重量写起，先说袋子不急着说人','主体：主体写地铁里抱袋子的动作，加上走反路的那六百米','深化：深化写上车前她抽出毛衣塞进书包，和我从没问过她为什么','结尾：结尾写那件毛衣我一次没穿，叠在柜子最底层到现在'],trap:'容易写成送别催泪文，四站路全用上眼泪和拥抱，全篇最有力的其实是她一路没说话',who:['妈妈','外婆','小姨']});
+BANK.push({id:'K025',t:'《{班主任}爬六楼之前先站了十分钟》',g:'rec',d:'teacher',c:'journey',e:'admire',idea:'她按门铃之前先在楼下站了十分钟，把要说的话在嘴里过一遍——我后来才懂，那十分钟比爬楼更累。',mat:['她来那天没穿家长会上穿的那件深色外套','她在楼下站了十分钟，把要说的话小声念了两遍','上楼前她把鞋在台阶上蹭两下，蹭掉路上的泥','一进门她先说打扰了，再把那袋橘子放在鞋柜上'],how:['开头：开头从楼下仰头看六楼的那个背影写起，先不写楼','主体：主体写她在楼下准备、上楼蹭鞋、进门道扰这一整套流程','深化：深化写她把要说的话念了两遍，和我隔着门听到的那两句','结尾：结尾写那袋橘子在鞋柜上放到第二天，我一个也没有动'],trap:'容易写成老师的奉献精神总结，把家访写成感人事迹，学生在门后的感受完全缺席，文章就假了',who:['班主任','英语老师','数学老师']});
+BANK.push({id:'K026',t:'《第一次在办公室吃盒饭》',g:'rec',d:'teacher',c:'first',e:'warm',idea:'期中考试那几天我们在办公室一起吃盒饭，五个人蹲在门口——那是我第一次觉得老师们也是普通人。',mat:['盒饭在校门口那家小店买的，两荤一素，米饭烫手','数学老师把红烧肉一块块拨进我们几个的盒子里','窗台上摊着改了一半的卷子，粉笔灰积了薄薄一层','她边吃边翻卷子，把有问题的先挑出来放一边'],how:['开头：开头从办公室门口那排蹲着的人写起，先写盒子不写人','主体：主体写盒饭的样子和抢菜的动作，写得像一场抢饭比赛','深化：深化写她边吃边翻卷子，把有问题的先挑出来那一幕','结尾：结尾写我回教室后把卷子摊开，第一次真的想把它做对'],trap:'容易写成老师对我们真好的感恩文，只写菜好不好吃和老师多辛苦，办公室的细节一略过就只剩感动',who:['数学老师','班主任','语文老师']});
+BANK.push({id:'K027',t:'《半块没舍得用的橡皮》',g:'rec',d:'friend',c:'object',e:'warm',idea:'让我记住的不是那块橡皮有多贵，是同桌把它推回来时，指甲在橡皮上留下一道印，我才知道她已经想好怎么不给我。',mat:['橡皮切成两半，一半刻着我的名字，一半刻着日期','她把橡皮按在我摊开的书页上，手缩回去时指甲划过桌面','我说别切了，我这块给你，反正我已经用完了','两半橡皮后来一直躺在笔袋夹层里，一个学期都没有化开'],how:['开头：写同桌把橡皮推回来那一下，我先算的是少了两毛钱，不是她为什么切','主体：写刻名字那天的下课，窗开着，风把橡皮末的粉末吹到我校服袖子上','深化：写她后来把两块橡皮都分给了别人，我这两块一块化了一角，一块还完整','结尾：写现在翻笔袋还能摸到那半块，说不清是舍不得还是没机会还'],trap:'容易写成她是个很好的人的抒情，中间插大段解释她人好，读者只看到结论；要留住那两毛钱、指甲印和袖口上的粉末。',who:['同桌','后排那个总分第一的男生','班长']});
+BANK.push({id:'K028',t:'《值日那天我先走了》',g:'rec',d:'friend',c:'moment',e:'guilt',idea:'我一直以为值日只是锁门，后来才明白先走的那个人，要用整个课间去躲一个不敢面对的人。',mat:['值日表上我的名字写在最后一格，笔画被橡皮擦淡了','黑板槽里还剩半盒粉笔，粉笔灰在我袖子上蹭出白印','她说“我等了你十分钟”，声音不大，门已经关了一半','我在楼梯转角站了四分钟，鞋带系好了又松开一次'],how:['开头：直接写门把手压下去、门在身后弹回一条缝的那一下','主体：写她从教室里追出来递作业本，说她以为我忘了，纸角被捏皱','深化：写那天晚上我补写作业比平时晚两页，因为一直在重读那句我等了你十分钟','结尾：写第二天早读我来得最早，把值日表擦干净，重新写了一遍我的名字'],trap:'容易写成我很内疚然后补一段自责的排比，把一次具体爽约放大成性格分析；守住门缝、四分钟和她递本子的手就够了。',who:['同桌','值日小组长','门卫']});
+BANK.push({id:'K029',t:'《“再等十分钟”这句话》',g:'rec',d:'friend',c:'promise',e:'plain',idea:'约定最容易碎的地方不是失约本身，是两个人都拿我以为你不会走解释那十分钟，最后谁也说不清那天到底谁先动身。',mat:['她在课桌上用铅笔写再等十分钟，写完把笔递给我','我嘴上一直说我马上就来，手上的球还没放下','操场上的雾把灯照成一团黄，第三节课的铃在雾里响','第二天我先到，桌上留了张纸条，字比昨天淡'],how:['开头：写那张纸条上的字第二天淡得只剩笔画的印，连再等三个字都要猜','主体：写前一晚雾很大，我打完球看见她坐在楼梯口，手插在口袋里','深化：写我们俩都没提那十分钟，只用雾太大和铃响了互相解释了一遍','结尾：写那张纸条我没扔，压在书的第一百零三页，纸边已经卷了'],trap:'容易写成约定很美好的抒情，把别扭全推给天气和铃声；真正要写的是两个人都以为自己会先开口，结果谁都没有。',who:['同桌','一起打球的男生','班主任']});
+BANK.push({id:'K030',t:'《“随便”这两个字》',g:'rec',d:'friend',c:'word',e:'insight',idea:'我用了两年才听懂同桌说随便的意思——她不是没想法，是把想法收起来，怕被人说事多。',mat:['她把食堂三个窗口都指了一遍，指到最后又改口说随便','我点了一碗她上次说难吃的面，她低头吃了三分钟','后来她要换座位，只说了一句你坐哪儿都行，说完就低头','她递给我一张纸条，上面画了个箭头，箭头旁边写着这边'],how:['开头：从随便这两个字被我说烂开始写，我曾用它把选择全推给别人','主体：写一次午饭我点错她爱吃的那碗，她吃完了才小声说下次随便点','深化：写我发现她所有的随便后面都跟着一句没说出口的你决定就好','结尾：写现在换座位我一定先问她，她答得很快，但声音会低半度'],trap:'容易写成一堆关于沟通的大道理，或者干脆把随便当成她的性格标签；要用三件具体的事证明她在收着说，不是替她下结论。',who:['同桌','任课老师','饭搭子']});
+BANK.push({id:'K031',t:'《{同桌}抽屉里那封没寄出的信》',g:'rec',d:'friend',c:'secret',e:'protect',idea:'我第一次替人守秘密时才明白，秘密的重量不在内容，而在知道它的人必须假装不知道的那几天有多难熬。',mat:['抽屉深处压着一封没贴邮票的信，地址只写了学校','信封的角被反复捏软，摸上去有几道指印的凹痕','她发现我看见了，把抽屉推回去时只说了句别管','第二天她请我替她值日，理由是要赶着交一张照片'],how:['开头：写我擦黑板时看见她抽屉没关严，露出一角没贴邮票的信','主体：写她发现后把抽屉推回去，那个别管说得比平常任何一句话都轻','深化：写那几天她照常向我借橡皮、照常熬夜抄作业，只有我知道那个抽屉的位置','结尾：写信最后被带走了，抽屉空了，我再没提过这件事'],trap:'容易为了悬念在结尾把秘密揭开，或干脆让父母当场发现把戏演完；结尾的重量应该只落在我没问这三个字上。',who:['同桌','她的室友','班主任']});
+BANK.push({id:'K032',t:'《换座位那天，教室安静了三秒》',g:'rec',d:'friend',c:'crowd',e:'curio',idea:'换座位真正换掉的不是桌子，是一群人看你的眼神；那三秒的安静比任何议论都更早告诉你，你在别人眼里排第几。',mat:['老师念调整名单，一半人开始收拾书包，拉链声连成一片','同桌抱着新书本站到我桌前，帮我把水杯一起端过去','教室安静了三秒，第四秒后排有人吹了声口哨','黑板上还留着我擦不干净的公式，粉笔印在袖子上'],how:['开头：写老师念名单时教室里拉链声响成一片，我数了一下，一共响了七次','主体：写同桌把两本书抱过来，帮我端水杯，谁也没提我为什么突然要换','深化：写那三秒安静里我看清每个人抬头又低下的顺序，第一排没有一个人看我','结尾：写新位置的抽屉卡得有点紧，我第一件事是把课表贴在抽屉上，贴得很正'],trap:'容易写成我换了座位交到新朋友的流水账，把环境影响全留给心理描写；那三秒的安静和七个拉链声才是全文要留下的东西。',who:['同桌','后排吹口哨的男生','班主任']});
+BANK.push({id:'K033',t:'《{同桌}把马尾剪短的那天》',g:'rec',d:'friend',c:'change',e:'admire',idea:'她剪短头发不是为了让谁注意，是被说了一次之后决定不再等别人的评价；真正的变化是她说话时敢抬头了。',mat:['剪刀在洗手间镜前咔嚓两下，头发落在水龙头里堵成一团','第二天她戴一顶灰色鸭舌帽，进教室先把帽檐往上推了一次','体育课她第一次在跑道外圈跑完，最后十米甩开我两步','她说这样跑不挡别人看的时候，眼睛一直盯着跑道'],how:['开头：写洗手间里那两声咔嚓，和落进洗手池里的一团头发，是谁剪的都没说','主体：写她第二天戴着帽子进教室，帽檐压得很低，一整节课都没摘下来','深化：写体育课她跑完最后十米超过我，那两步不是赢，是她终于不按别人的看法跑步','结尾：写她的马尾重新长长了，扎得比以前高，她说扎高一点跑起来不会塌'],trap:'容易写成她变自信了的成长总结，或者把她剪头发的原因编成一段情感故事；要留在咔嚓声、帽檐和那两步上。',who:['同桌','体育老师','同组的女生']});
+BANK.push({id:'K034',t:'《{同桌}的笔记本，我三天没敢承认是我弄丢的》',g:'rec',d:'friend',c:'mis',e:'down',idea:'弄丢和承认之间隔着三天，那三天里我把愧疚当成道德，还以为不说出口就不算我自己的错。',mat:['笔记本封皮的搭扣断了，里面夹着半张食堂饭卡','第三天她问我借笔记，我把水杯挪过去挡住空桌面','最后一页被撕掉一角，撕口是斜的，像用剪刀裁的','我说我明天带一本新的给你，手心的汗把本子边都浸软了'],how:['开头：写笔记本不见那天我第一个反应是翻自己书包，翻到第三遍才想起来','主体：写那三天我怎么绕开她的座位、怎么拿讲题当借口、怎么把水杯推过去挡','深化：写第四天我承认时，先说的不是对不起，是我买了个新的，这句更让我难受','结尾：写那本新笔记本她没要，说她自己抄了一份，还夹了一张纸条在里面'],trap:'容易把内疚写成大段道歉和哭，再靠我们和好了收尾；真正折磨人的是那三天里的躲和挡，要写动作不要写心情。',who:['同桌','收作业的课代表','新来的借读生']});
+BANK.push({id:'K035',t:'《第一次有人替我占了座》',g:'rec',d:'friend',c:'first',e:'warm',idea:'我记住的不是被照顾的舒服，是有人在你迟到前就把书和桌角擦干净，还替你跟老师说了假话。',mat:['早上七点四十我跑进教室，桌上摊着我的语文书和一张纸条','桌角被人用纸巾擦过，那道湿印到第一节课还没干','纸条上写我先跟老师说你肚子疼，她的字很重，把纸都压破了','那节早读我坐下时闻到桌沿有一点柠檬味洗手液的味道'],how:['开头：写我踩着预备铃冲进教室，全班只有我一个人站着，可没有一个人笑','主体：写桌上摊开的语文书、没干的湿印和那句我先跟老师说你肚子疼','深化：写我第一节课不敢看她，只在书页边上写了一行很小的谢，一直没敢递过去','结尾：写那张纸条后来夹在书里，湿印早干了，柠檬味也没了，纸还是留着'],trap:'容易用我很感动收尾，或者顺手补一段同学之间要互相帮助的说教；靠湿印、纸条上的字和那股味道就够了。',who:['同桌','早读领读的班长','收作业的课代表']});
+BANK.push({id:'K036',t:'《镜子里那颗痘》',g:'rec',d:'grow',c:'change',e:'plain',idea:'初二那年我开始用手指遮脸，遮的不是痘，是每天早上在镜子前和自己的身体谈判的那三十秒。',mat:['早上洗脸时我用刘海压住额角，压了三次才压平','抽屉里换过三样祛痘的药，最有用的那瓶压在最底下','课间有人笑说你今天怎么老低着头，我低头说是困','体检表上身高比初一长了九厘米，痘长了半张脸'],how:['开头：写镜子前我反复用手指按住额角，按下、松开、再按下，第三次才敢抬眼','主体：写抽屉里那几瓶换过的药、压在最底下的一瓶，还有刘海一点点变长的过程','深化：写一次体检我身高长高九厘米，痘长了半张脸，我把体检表折起来塞进夹层','结尾：写现在照镜子我还会停三秒，但三秒是在看头发有没有翘，不是看脸'],trap:'容易写成对外貌的自我贬低再加一段我终于接纳自己的说教，读起来像心灵鸡汤；要用具体动作写那种躲，不要自己给结论。',who:['同桌女生','妈妈','校医']});
+BANK.push({id:'K037',t:'《被念范文那天，我不敢回头》',g:'rec',d:'grow',c:'word',e:'down',idea:'被老师当范文念出来的那一刻我不在骄傲里，我在算后面几十个平时写得比我好的同学，此刻的脸往哪儿放。',mat:['老师把我的作文投影在黑板上，一路念到第三个自然段','后排有人小声说这不是抄的吧，那句话声音没压住','我站起来说了一句谢谢老师，声音抖得自己都听出来了','下课后我经过同桌桌子，那篇作文还摊开在那一页'],how:['开头：写投影亮起来的瞬间，教室安静了三秒，我从讲台走回自己座位','主体：写那声没压住的这不是抄的吧，和我在全班面前抖着说谢谢','深化：写我心里算的不是老师夸了什么，而是后排那几张慢慢低下去的脸','结尾：写我把那篇作文从本子上撕下来夹进错题本，撕口朝着里面'],trap:'容易写成我很自豪谢谢老师的正面收尾，或者转成嫉妒同学的负面情绪；要写出被夸奖时替别人尴尬的那种难受。',who:['语文老师','同桌','后排那个说话的女生']});
+BANK.push({id:'K038',t:'《妈妈抽屉里那部旧手机》',g:'rec',d:'grow',c:'object',e:'curio',idea:'我偷看妈妈那部旧手机不是为了查什么，是想知道她十七岁时的通讯录里，存着几个已经不用的人的名字。',mat:['抽屉最里层压着一部屏幕发黄的旧手机，边框都掉了漆','开机要输六位数密码，我输错一次就被锁一分钟','相册里有几张在纺织厂门口的照片，背景是当年的招牌','通讯录里有个备注叫小林，现在家里没有这个名字'],how:['开头：写我找充电线时翻到那部旧手机，屏幕按下去亮了一下，弹出密码框','主体：写我用生日试了两次、锁屏两次，还有妈妈十七岁站在厂门口的样子','深化：写通讯录里小林两个字让我停手，我把手机放回去，把抽屉推回原来的位置','结尾：写第二天充电线找到了，那部手机还在抽屉里，位置比原来偏了半寸'],trap:'容易把重点写成语重心事，或者替父母编一段年轻时的好故事；这篇的骨头在那两次输错的密码和半寸位移上。',who:['妈妈','外婆','邻居家的姐姐']});
+BANK.push({id:'K039',t:'《第一次在饭桌上把碗推开》',g:'rec',d:'grow',c:'first',e:'guilt',idea:'我把碗推开那次真正想要的是一句我不想吃，可我说了三分钟理由，把一件小事说成了对我自己的审判。',mat:['我把碗往前推了两厘米，筷子横在碗沿上没有放','妈妈问我是不是又嫌咸，我把那盘番茄炒蛋的咸数了两遍','爸爸始终没抬头，只把电视的声音调小了一格','那天剩下的饭我倒掉一半，碗底还剩三块没动的蛋'],how:['开头：写我把碗往前推的那两厘米，和横在碗沿上始终没放下的筷子','主体：写我用三分钟列举理由，从咸讲到今天的跑步，又从跑步讲到胃不舒服','深化：写爸爸把电视声音调小的那一格，比任何一句责骂都让我在椅子上坐不住','结尾：写碗底那三块蛋我始终没吃，饭后我自己洗的碗，洗得很慢很慢'],trap:'容易写成和父母冷战的套路，或者用长篇独白解释自己为什么烦；要写碗、筷子和那一格电视声。',who:['妈妈','爸爸','外婆']});
+BANK.push({id:'K040',t:'《演讲比赛我念到一半忘了词》',g:'rec',d:'grow',c:'contest',e:'down',idea:'忘词不是最难的，最难的是站在台上发现台下开始笑，而你还必须站着一句一句把这一页念完。',mat:['抽签抽到第七个，我把稿子折了三折塞在裤兜里','上台前腿抖得差点撞到讲台边，稿纸边角起了毛','念到第二段我停在我的母亲四个字上，停了两秒','台下有人举起手捂嘴，两个评委都低着头记分'],how:['开头：写我停在我的母亲那四个字上，抬头看见第三排有人举手捂住了嘴','主体：写裤兜里被捏皱的三折稿纸，和我硬把那一段念完的几十秒','深化：写后半段我不再照稿，临时说了一句稿子上没有的话，说完自己愣在原地','结尾：写第二个上台的女生讲得比我好得多，我坐在下面把那张稿纸一点点抚平'],trap:'容易写成我懂了坚持的意义，或者用紧张两个字把忘词解释完；真正能写的只有那两秒、那几行纸和捂嘴的手。',who:['同台的选手','评委老师','台下起哄的男生']});
+BANK.push({id:'K041',t:'《手机在枕头底下震了一下》',g:'rec',d:'grow',c:'secret',e:'curio',idea:'藏在枕头底下的不是手机，是我还不敢让父母知道的那件事，而那一声震动让我第一次听见了自己的怕。',mat:['晚上十一点我背对着门躺着，右手压着枕头的边角','震动来的时候我把手机翻成屏幕朝下，塞进校服口袋','第二天课间我在厕所隔间删掉了一句没发出去的话','校服口袋一周没洗，里面的手机摸起来比我更凉'],how:['开头：写晚上十一点那一下震动，我的右手先按住了枕头底下的边角','主体：写我把手机翻成屏幕朝下塞进校服口袋，一直放到第二天中午','深化：写厕所隔间里我删掉那句没发出去的话，删的时候手一直在抖','结尾：写周末我把手机交给外婆，说帮我收两天，外婆没问，塞进了围裙口袋'],trap:'容易把秘密写成一串悬疑猜测，或者让父母当场发现把戏演完；守住那条没发出去的消息，别让它变成事故。',who:['外婆','同班女生','班主任']});
+BANK.push({id:'K042',t:'《从小区到学校的那七分钟》',g:'rec',d:'grow',c:'journey',e:'insight',idea:'每天两趟七分钟的路，我用一整个学期才把它走成属于自己的时间——那是我唯一不用看别人脸色的一段时间。',mat:['每天出小区要刷卡，铁门在身后慢半秒才合上','第二个红绿灯我总提前两秒起步，屏幕上的秒数长得离谱','公交站牌上那班327路我只坐过一次，那天在下雨','到校门口我先在门卫室玻璃上照一下，再把校服拉链拉到顶'],how:['开头：写铁门在身后慢半秒合上的声音，和我从不回头的那半步','主体：写红绿灯前提前两秒起步、327路站牌、门卫室玻璃上的一照，三个动作','深化：写一整个学期我把这七分钟走成一间没人的房间，谁也进不来','结尾：写最后一天我提前十分钟出门，第一次发现这条路其实可以绕开'],trap:'容易写成上学路上那种流水账，或者结尾硬转成感悟；真正属于我的只有那两个绿灯、一次没坐的公交和一照就走的玻璃。',who:['同桌','门卫','公交站牌下等人的老伯']});
+BANK.push({id:'K043',t:'《体检报告压在书包最底下》',g:'rec',d:'grow',c:'moment',e:'plain',idea:'一张纸最沉的时候不是它写着什么，是你知道父母会看、老师会看，而你不确定自己该不该先看。',mat:['报告单被我折成四折塞进书包夹层，塑料膜边缘扎手','视力那一栏我先看了，看完又把左眼那行看了一遍','同桌问我脸色怎么差，我说昨晚没睡好，昨晚我睡了九小时','最底下压着数学卷子和饭卡，我连饭卡都没敢抽出来'],how:['开头：写报告单从文件夹里掉出来那一刻，我第一个反应是看四周有没有人','主体：写视力那一栏的左右眼数字，和我把左眼那行又看一遍的动作','深化：写我想的是该怎么跟妈妈开口，脑子里演练了三句话，没一句像人话','结尾：写报告单还压在书包夹层最底下，上面盖着数学卷子和一张饭卡'],trap:'容易把体检写成健康知识或一串数字说明，或者让它变成一场矫情的崩溃；要留在折痕、扎手的塑料膜和没出口的台词。',who:['同桌','妈妈','校医']});
+BANK.push({id:'K044',t:'《合唱比赛我们班得了第三》',g:'rec',d:'setback',c:'contest',e:'down',idea:'排练三个月只拿第三的滋味不是难过，是第一次发现努力可以被完整地看见，然后完整地排在你前面。',mat:['音乐课上我们把四句副歌唱到能背，音准仪一照还是红','比赛那天礼堂空调太冷，我的嘴皮干到唱不出气声','领奖时第三名的奖状纸比一等奖的浅一个色号','班主任在台下举着手机录像，赛后把手机收回包里'],how:['开头：写礼堂的空调和我唱到第三句就发不出气声的那一刻','主体：写排练的三个月，从音乐课到走廊、到体育课的边角，四句副歌唱到能背','深化：写领奖台上那一个色号的差别，和台下把手机收回包里的班主任','结尾：写那张奖状在我桌上立了一个学期，浅色的那一面始终朝着我'],trap:'容易写成重在参与的班级团结，或者结尾转成我们下次再来的口号；那一个色号的差别和唱不出的高音才是当天的实况。',who:['音乐老师','班主任','领唱的女生']});
+BANK.push({id:'K045',t:'《我弄丢的同桌报名表》',g:'rec',d:'setback',c:'mis',e:'guilt',idea:'我把别人的机会弄丢之后才明白，愧疚最没用的时候，是我把对不起说了三遍，却始终没说我能怎么补。',mat:['报名表被她夹在数学书第三页，边上别着一个回形针','我拿走了数学书，回形针掉进书包夹层，我没听见','截止前一小时我去补，办公室老师不在，桌上摊着报名册','我最后交上的是一张空表，编号跳过了她那一行'],how:['开头：写报名册上的编号跳过了她那一行，我第一个动作是把空表对折两次','主体：写回形针掉进夹层那一下我听见的金属声，还有我没弯腰去捡','深化：写我在办公室门口等了一小时，手里攥着那张空表和自己那张','结尾：写后来她自己报了另一个项目，回来时把报名册摊在我面前让我看'],trap:'容易写成一串道歉和自责，或者让班主任出面替我摆平；真正的转折是我只顾说对不起，没想过她还能不能报名。',who:['同桌','教务处老师','负责报名的体育委员']});
+BANK.push({id:'K046',t:'《走廊上那张月考排名》',g:'rec',d:'setback',c:'word',e:'insight',idea:'贴在走廊上的排名纸改变的不是分数，是最后一个名字旁边没有任何人放慢脚步，那一行只有他自己走过。',mat:['排名纸用透明胶贴住四个角，右下角的胶带换过颜色','我从头看到尾，两次经过，两次都停在同一个位置','旁边有同学念出前几名，声音大到整条走廊都听见','最后一行紧挨着那个刚从外地转来的男生，他的名字有三个字'],how:['开头：写排名纸换胶带的声音，右下角那段新胶带在灯下发白','主体：写我两次经过、两次停下、两次数了从第几行数到第几行','深化：写整条走廊只念得出前三名，没有人念最后一行，也没人经过那里放慢脚步','结尾：写那学期我把数学卷子订成了一个本子，封面上写着下次两个字'],trap:'容易把排名写成就努力了但还是不行，或者顺手拉踩别的同学；重点是走廊上只念前三名这件事的荒谬和安静。',who:['转学的男生','数学老师','负责贴纸子的班委']});
+BANK.push({id:'K047',t:'《演讲稿的第七稿》',g:'rec',d:'setback',c:'object',e:'down',idea:'七稿之后我终于念顺了，可稿子变顺的同时，我把稿子里那些真话都划掉了——我改的不是文笔，是我自己。',mat:['第七稿纸上每一段都划过重写，最后一页只剩一个标题','红笔在我很害怕那四个字上打了个叉，叉得比字还重','前六稿我全留着，卷成一个纸筒塞在书包最里层','念顺那天我从没写过的那版里抄了两句，念的时候声音反而抖了'],how:['开头：写第七稿上被红笔打叉的四个字，那个叉比字本身还用力','主体：写前六稿卷成一个筒塞在书包里，每一稿边上都标着还差什么','深化：写我把稿子改顺的那天，第一次发现自己删掉的都是真话','结尾：写那个纸筒现在还在书柜顶上，卷着，旁边摆着这次比赛发的塑料奖牌'],trap:'容易写成坚持就有回报的励志，或者把七稿的修改列成流水账；真正扎手的是那个叉和被划掉的真话。',who:['语文老师','同台的选手','帮我打印稿子的同学']});
+BANK.push({id:'K048',t:'《考前五分钟，笔没水了》',g:'rec',d:'setback',c:'moment',e:'insight',idea:'铃响前五分钟一支笔不出水，把人从复习状态里整个掀翻，那五分钟比整张卷子更早决定了分数。',mat:['我的笔在第二题写到一半时不出水，笔尖划纸有声音没墨','同桌看了一眼我的卷子，站起来把笔借给我，说别说话','监考老师从讲台那头走下来，鞋跟声一路走到后排','最后两栏我是趴着写完的，左手死死压着右手腕'],how:['开头：写笔尖在纸上划出的声音有一下没一下，而铃还有五分钟','主体：写同桌站起来借笔的那两分钟，我们一个字没说，她递笔时手心是湿的','深化：写监考老师走过后排那一刻，我把卷子往里挪了两厘米，怕她看出我是空的','结尾：写那张卷子我留到今天，压在台灯底座下面，最后两栏的字歪得厉害'],trap:'容易把考试写成坚持有多重要，或者用幸好有同桌帮忙匆匆和解；真正要写的是那两分钟的沉默和没说出口的谢。',who:['同桌','监考老师','后排借橡皮的人']});
+BANK.push({id:'K049',t:'《第一次上台，只拿了一张鼓励奖》',g:'rec',d:'setback',c:'first',e:'down',idea:'第一张奖状上只有积极参与四个字，我把它贴在书桌正对面的墙上，因为它比奖状更像一句真话。',mat:['奖状上没有排名，只印着积极参与绘画比赛八个字','台下几十个家长里没有一个人举手机，只有我一个人举了','我画的是我们教室，自己的座位在画里比实际大很多','奖品是学校超市卖的那种笔记本，封面还贴着价签'],how:['开头：写奖品是一个超市买的笔记本，封面上的价签都没撕干净','主体：写台下没有一个人举手机，只有我举了，屏幕里只拍到半个礼堂','深化：写那张画里我把自己的座位画得比实际大很多，画的时候没想过为什么','结尾：写那张鼓励奖现在贴在书桌正对面，字被胶带压得有点歪'],trap:'容易写成虽然没得奖但收获了成长的套路，或者把没得奖全归给运气；超市的笔记本和没人拍照这两个细节要留住。',who:['美术老师','同桌女生','颁奖的学姐']});
+BANK.push({id:'K050',t:'《我答应过我妈，考进前二十》',g:'rec',d:'setback',c:'promise',e:'plain',idea:'承诺最伤人的形式不是违背，是把它挂在墙上当证据，每天都要对着它算一次我还差多少分。',mat:['我把目标写在台历背面，用红笔，写完把台历转回去','月考卷发下来那天，我先看的是自己离第十九名差多少分','我妈没问成绩，只在吃饭时把台历又转正了一次','我数学从那周开始只做错题本，草稿纸上划得很深'],how:['开头：写台历背面那行红字，写完我把它转回去，让它面对墙','主体：写发卷子先看名次不看分数的那几秒，和我算差多少分的习惯','深化：写妈妈把台历转正的那一下，比问我一句考得怎么样更难回答','结尾：写台历翻过两页，那行红字被压在下面的三月和四月里，字还在'],trap:'容易写成和妈妈赌气，或者写成我终于考进去的反转；中间那段反复算分差的过程才是这篇最真实的部分。',who:['妈妈','数学老师','同组的男生']});
+BANK.push({id:'K051',t:'《全班都听见我被叫起来》',g:'rec',d:'setback',c:'crowd',e:'protect',idea:'当众出丑最难熬的不是丢脸，是你站起来的那几秒里，全班的目光会替你把这件事记很久很久。',mat:['老师念到我名字说，你来给同学讲一下这道题','我走到黑板前，捏得太紧，粉笔断成两截掉了一截','第一步我把减号写成了加号，底下有人倒吸了一口气','我走回座位时听见第三排有人小声说，她不是课代表'],how:['开头：写老师念我名字之后的那一下安静，比后面的笑声更难熬','主体：写黑板上那个写反的符号、断掉的半截粉笔，还有底下那声吸气','深化：写我走回座位时听见第三排那句话，脚步乱了半拍，但我没有停下来','结尾：写那道题我当天晚上重做了一遍，答案对了，只是过程里少写了一个条件'],trap:'容易写成我从此发奋的励志结尾，或者把同学的窃窃私语写成恶意攻击；写清那一下安静和半截粉笔就够了。',who:['数学老师','第三排的男生','课代表']});
+BANK.push({id:'K052',t:'《我提前二十分钟到校》',g:'rec',d:'setback',c:'change',e:'admire',idea:'我提前二十分钟到校不是为了早读，是因为我不想在教室里被从头看到尾——那二十分钟里没人给我打分。',mat:['早上七点十分到校，整间教室只有开窗的声音','我把昨天的错题本从书包侧袋拿出来，先做两页','七点二十五早读铃响之前，走廊上开始有脚步声','我用这二十分钟背下三段课文，是这学期第一次背下来'],how:['开头：写七点十分空教室里只有开窗声，班主任在走廊上站着没进来','主体：写那二十分钟里我做的三件事，侧袋里的错题本、两页计算、七点二十五前的走廊声','深化：写我不是变得用功了，是不想每天被那么多目光从头看到尾','结尾：写这学期我提前到了四十一天，数字我数过，写在本子的最后一页'],trap:'容易写成早起的励志，或者硬夸那个清晨的空气很好；留在空教室的窗声、侧袋里的错题本和我数出来的四十一天。',who:['班主任','同桌','最早到校的值日生']});
+BANK.push({id:'K053',t:'《阳台上那盆不开的迎春》',g:'rec',d:'nature',c:'object',e:'curio',idea:'一盆花迟迟不开的时候，我才发现我等的不是花苞，是给自己留一件能慢慢等、不急着向谁交代的事。',mat:['这盆迎春是去年十月在楼下花市买的，养到现在只抽出四五片叶子','我为它搬过三次位置，从窗台挪到书桌，又从书桌挪到电视柜背后','浇水用的是接雨水的小塑料瓶，瓶身上印的字被磨得只剩一半','朝南那侧的叶子比朝北的厚，缺掉的那个三角一直没能补回来'],how:['开头：写我第无数次把花盆转了个方向，像在课上偷偷给谁换座位','主体：写我对着没有花苞的枝条数日子，数到第七天开始怀疑自己的照料','深化：写我把它挪到阳台最亮的角落，才敢承认我不是想养好花','结尾：迎春到现在没开，可我每天早上出门前还是先看它一眼'],trap:'容易写成耐心就会开花的鸡汤，要靠数日子和搬花盆这些笨动作撑住，别急着抒情，也别替花开安排好结局',who:['我','外婆','楼下花市的老板娘']});
+BANK.push({id:'K054',t:'《梅雨夜里阳台那只水缸》',g:'rec',d:'nature',c:'moment',e:'insight',idea:'一场梅雨下了七天，我才发现阳台那只接雨的水缸，替整栋楼的人把日子接住了，谁也不必承认自己懒得撑伞。',mat:['水缸搁在晒台最里侧，缸沿裂了一道缝，用旧轮胎箍着','凌晨三点雨声最密，缸里的水线每小时往上爬一截','外婆半夜起来把报纸折成方块压在上面，怕夜里满出来','楼下杂货店老板的伞坏了三天，只能天天看着这只缸','天晴那日缸里浮着一只被雨打下来的小飞虫，我用调羹舀了出去'],how:['开头：写凌晨三点被雨声吵醒，爬起来看水缸，水线快到缸口了','主体：写外婆起来折报纸压缸沿，说满出来会漫到晾衣绳上','深化：写雨停那日我趴在缸边，看水里把楼下的伞全收了，一顶不剩','结尾：写缸里那点雨水后来浇了阳台的吊兰，绿得不太真实'],trap:'容易写成雨天很闷的旧套路，雨得当主角用，每段都得有一件能称量能摸到的东西，比如缸沿那道裂缝',who:['我','外婆','楼下杂货店老板']});
+BANK.push({id:'K055',t:'《第一次在天井里数星星》',g:'rec',d:'nature',c:'first',e:'warm',idea:'第一次在天台数星星我才明白，大人说的看星星多半不是浪漫，是他们没空陪我又不愿意把我一个人留在黑里。',mat:['天井只有一米宽，是楼上几家共用的一小块天，抬头能看见四角','外婆搬来两张竹凳，说凉快凉快，其实是让我等他们回来','我数出来的星星前后差了六颗，因为飞机飞得太高太亮','楼下有人在棋，喊到嗓子哑，遥控器的声音跟着一起远去','凌晨一点我趴在竹凳上睡过去，醒来肩上多了一件薄外套'],how:['开头：写竹凳腿在水泥地上刮出声音，我一个人在等大人上楼','主体：写外婆也上来陪我并排躺着数，数到一半她先睡着了','深化：写我抬头找刚才那几颗星，位置全变了，星星一直在走','结尾：写第二天我在课本角上记下日期，那天是期中前一天'],trap:'别写成亲子温情套路草草收场，重点放在等大人的那段空白时间，结尾不要靠抒情，要落到一件小事上',who:['我','外婆','楼下棋的邻居']});
+BANK.push({id:'K056',t:'《小区门口那棵被围起来的樟树》',g:'rec',d:'nature',c:'change',e:'down',idea:'绿布围上以后樟树就不动了，可落叶还是照旧从布底下掉出来，有些改变你拦不住，只能天天从围栏这边看它一眼。',mat:['绿布从半米高的枝干裹上去，把整棵树围成了一间绿房子','工人拉了两根尼龙绳，靠上去的时候树皮裂开一道白口','树下石桌还在，老人们上午照样搬凳子来，只是坐得远了些','落叶从布缝里漏下来，铺成薄薄一层黄，扫成一堆又散开','三个月后布还没拆，我在围栏这边第一次看清那道白口'],how:['开头：写上学路上看见绿布，以为是谁顺手搭起来的一个棚子','主体：写工人拉绳、裹布、压石块，我数树身上出现的白色裂口','深化：写树下石桌的老人们搬远了坐，落叶从布缝漏下来没人扫','结尾：写三个月后绿布仍未拆下，我第一次停下来摸了摸那道裂口'],trap:'容易滑向人与自然的空洞议论，要钉在绿布、尼龙绳和落叶这些看得见的东西上，也不要给树安排好转折',who:['我','绑绿布的工人','石桌边的老人']});
+BANK.push({id:'K057',t:'《去东滩看鸟的那半天》',g:'rec',d:'nature',c:'journey',e:'admire',idea:'芦苇年年被风压倒，潮水年年把脚印抹平，鸟却总能回到同一片滩涂，是因为它们记的是路，不是名字。',mat:['我们五点半从地铁站转车，到滩涂边上天刚刚亮起来','导览员说这些鸟从西边飞来，往返要飞几千公里','风把芦苇压成一片浪，走路得侧着身子才不被折断','滩涂上的脚印一圈圈叠着，看不出哪一圈是今年踩的','回程公交上我把手举到车窗边，风把袖口吹得鼓起来，没人说话'],how:['开头：写凌晨五点半的末班车，车厢里只剩我和抱保温桶的阿姨','主体：写鸟群贴着滩面飞过，脚印一层压一层，风把芦苇压成浪','深化：写导览员说它们记的是路不是名字，我在原地愣了很久','结尾：写回程公交上车窗边，我把手举起来，学那只鸟起飞的样子'],trap:'容易写成参观游记加一堆感叹，鸟的名字不要列太多，专写一只，结尾学鸟起飞容易轻飘，笔要收住',who:['我','导览员','同车看鸟的中学生']});
+BANK.push({id:'K058',t:'《七点的菜场像一台准时启动的机器》',g:'rec',d:'society',c:'crowd',e:'warm',idea:'菜场七点准时响起来，没有人指挥也没有人排队，可每个人都站在自己该站的位置上，让这座城市的早晨顺利转下去。',mat:['七点整，生鲜摊的卷帘门哗啦一声拉上去半人高','卖鱼的女人一盆水泼在地上，滑得让人绕着走','两个阿姨为一把小青菜说了三轮价钱，最后各让五毛','豆浆桶盖一掀，白气糊住半张脸，热气把味道推过来','我站在过道中间被人流推着走，肩膀挨着陌生人的胳膊'],how:['开头：写卷帘门拉上去的那一声哗啦，接着是水泼在水泥地上','主体：写鱼摊、菜摊、豆浆摊的蒸汽和吆喝挤在同一条过道','深化：写两个阿姨为一把青菜来回讲价，各让五毛，各自都满意','结尾：写我被人流推到出口，回头看见整条过道还在不停地动'],trap:'容易写成热闹词语的堆砌，热闹要用声音和动作兑现，摊位写两三个就够，镜头不要换来换去',who:['我','卖鱼的摊主','讲价的两个阿姨']});
+BANK.push({id:'K059',t:'《我对快递员说的那句放门口就行》',g:'rec',d:'society',c:'word',e:'guilt',idea:'我说放门口就行的那四个字，替我省了三十秒楼梯，却让另一个人淋着雨爬了六层，这个账我到现在也算不清。',mat:['那天雨大，他外套肩头湿了一大片，还在低头翻手机找门牌','我说放门口就行，他停了两秒，还是把箱子抱进了电梯','我关上门才听见他在楼道里喘气，声音慢慢地往楼上去了','物流记录显示他在楼下那场雨里等过整整九分钟','第二天我买了一瓶热豆浆放在门口，自己却没敢下楼'],how:['开头：写他湿着肩头站在门外翻手机，我只说了放门口就行','主体：写他把箱子抱进电梯转身走开，楼道里的脚步声一层层往上','深化：写我关上门才想起他还要爬六楼，开门时人已经不见了','结尾：写第二天门口多了一瓶豆浆，我只敢收进来，没敢追出去'],trap:'容易用对不起三个字赎罪，收尾别让快递员再出现一次，他的年龄和后续一律不补，愧疚由关上门那一秒承担',who:['我','送快递的师傅']});
+BANK.push({id:'K060',t:'《弄堂口那个不是她的裁缝》',g:'rec',d:'society',c:'mis',e:'plain',idea:'我把她当成同一个人整整两年，其实铺子早换了人，只是她下剪刀前多问一句的手势没变，我一直在跟一个不存在的人较劲。',mat:['新来的师傅手上没有老茧，虎口倒有一道浅浅的印子','她每次剪领口前都会多问一句，要不要留一点松量','我三次都答随便，她就真随便，只肯剪一刀了事','第三次我去，她把记错的领口尺寸从抽屉里翻出来给我看','我这才明白，前两年我一直在跟一个不存在的人较劲'],how:['开头：写我推门进铺子，理所当然地报了上一次的领口尺寸','主体：写新师傅手上没有老茧，却总会多问一句领口要不要留松量','深化：写我三次都答随便，第三次她把记错的尺寸翻出来给我看','结尾：写我走出铺子，回头把那句要留松量的话想了很久很久'],trap:'容易写成认错人的小尴尬流水账，重点是我这两年一直自作主张，老裁缝不要回来道别，缺失本身就是结论',who:['我','裁缝铺的新师傅']});
+BANK.push({id:'K061',t:'《雨里那句我在站台等你》',g:'rec',d:'society',c:'promise',e:'insight',idea:'我妈说在站台等我，我当了十二年的真，直到暴雨那天我举着手跑过去，看见她隔着马路抹着脸上的水冲我挥手。',mat:['她上班早，六点半出门，我们六点四十才起床','她说过很多次让我别跑，地上的水和青苔都滑','那天末班车挤不进来，她改成骑电动车到站等我','暴雨里电动车骑不进站台，她被挡在马路对面挥手','我举着手站在雨里，看她一边抹脸一边喊我快上车'],how:['开头：写我举着手从家一路跑向站台，雨衣早被风吹到身后','主体：写她在马路对面挥手，电动车前灯在水里晃成两团白','深化：写我忽然明白那句等你，是她一天里唯一能兑现下来的事','结尾：写上车后摸到座椅是湿的，谁也没说自己其实一直在跑'],trap:'容易煽情成母女落泪，克制在动作里，她被困在马路对面的时间不要写长，重点是那几秒对视，别写成救人场面',who:['我','妈妈']});
+BANK.push({id:'K062',t:'《便利店收银台下面的那本账》',g:'rec',d:'society',c:'secret',e:'curio',idea:'收银台下面那本手写账不算钱，算的是谁欠了谁一碗饭、几包盐，抹不开的账反而被记得最牢。',mat:['账本用挂历纸包了皮，纸的边角被翻得起了毛','字是圆珠笔写的，改过的地方拿修正带盖住了','有一页写着三号楼老王的煤球钱，写了三年没划掉','老板娘说这些十有八九是记给自己看的，没人查','最下面一行写着今年水电比去年贵，一分不差'],how:['开头：写我等找零时低头，看见收银台下垫着柜脚的一本挂历本','主体：写本子上没有金额只有名字，谁欠了煤球、谁欠了两包盐','深化：写老板娘说这十有八九是记给自己看的，谁也不会来要','结尾：写最下面那行水电数字，我忽然觉得她的账本比我厚'],trap:'容易写成老板娘的私事故事，账本上不要出现真名和金额，也别去解释她为什么一直不撕，把判断留给读者',who:['我','便利店老板娘']});
+BANK.push({id:'K063',t:'《菜场改成快递点的那三个月》',g:'rec',d:'society',c:'change',e:'plain',idea:'菜场搬走以后棚子先堆纸箱，后来成了二十几个人的收发处，货换了声音换了，可挤在同一条过道里的还是熟面孔。',mat:['搬走前一天，最后一筐青菜只卖了两块钱就推走了','卷帘门上贴的租金通知纸还没撕干净，边角翘着','新棚子第一周堆的纸箱有半人高，拆箱声从早响到晚','取件的人和卖剩饭的阿姨打招呼，两拨人挤在同一条过道','第六十一天纸箱不见了，地上用黄线排出十几格取件区'],how:['开头：写搬走前一天，摊主把剩的一筐青菜按两块钱处理掉','主体：写头一周纸箱堆到半人高，拆箱的声音从早一直响到晚','深化：写取件的人和卖剩饭的打招呼，两拨人在过道里挤着','结尾：写第六十一天纸箱不见了，地上用黄线划出十几格'],trap:'容易写成城市变迁的空泛感慨，按日子数几笔就够，数字要具体到第六十一天，别让感慨盖过纸箱和黄线',who:['我','原来的菜摊主','来取件的人']});
+BANK.push({id:'K064',t:'《弹棉花的老手艺进了一次小区》',g:'rec',d:'culture',c:'object',e:'curio',idea:'老师傅一推弓，棉花就起一层雾，老手艺不肯退休，是因为那根弓弦上已经压了三十一年。',mat:['他在弄堂口的空地上铺开一张旧棉网，边角用砖压住','弓背有半人高，一推一收，棉絮就起一层白雾','弹好的棉花称过再加网，一斤棉花只做半斤被子','围观的人一句话不说，全在跟着数他推弓的节奏','收工时他把弓挂回墙上，说这把弓跟了他三十一年'],how:['开头：写公告栏贴出一张手写红纸，说有老师傅上门弹棉花','主体：写弓背推拉的节奏，围观的人跟着数拍子，谁也不说话','深化：写一斤棉花做半斤被子，价钱贴在旁边，没有人说贵','结尾：写他把弓挂回墙上，说这弓跟了他三十一年，说得很平常'],trap:'容易写成赞传统技艺的空话，工艺要具体到称重和网数，老师傅话少手稳，不要让他说感慨式的台词',who:['我','弹棉花的老师傅','围观的小区居民']});
+BANK.push({id:'K065',t:'《第一次上沪剧台，我把词全忘了》',g:'rec',d:'culture',c:'first',e:'guilt',idea:'第一次上台把词全忘了那次，我才明白台下的掌声有多吵，也才明白老师只有一句再来，说得越轻越像在骂人。',mat:['我七岁进的少儿戏曲班，第一次上台演一个端盘子的书童','服装太大，袖口一直扫到我的手指尖，走路晃着走','轮到我的那句开场白，我看着台下忽然全忘光了','前排的老师比我更急，肩膀一耸一耸地在给我提气','下台以后没人安慰我，老师只说了两个字：再来'],how:['开头：写后台有人往我脸上扑粉，袖口长到盖住半个手背','主体：写轮到我开口，看着台下几百双眼睛，词卡在喉咙里','深化：写老师在前排肩膀发抖，我在那几秒里只听见自己心跳','结尾：写下台后老师只说了两个字再来，转身去扶下一个上台的人'],trap:'容易写成被老师感动哭了的煽情，羞愧要靠词卡住的那几秒撑住，台下观众越虚越好，数字和表情都别落实',who:['我','教我的戏曲老师','同台的小演员']});
+BANK.push({id:'K066',t:'《贴在弄堂门上的那张春联》',g:'rec',d:'culture',c:'word',e:'insight',idea:'春联年年是他写，也年年被他贴歪两厘米，他说这不算歪，因为那两厘米里装着一家人站在门口的几分钟。',mat:['红纸是他单位发的边角料，裁得不太齐，靠着一把旧剪刀','墨是蓝墨水兑的，写出来的字发灰，一点也不亮','写上联时他总是先比一比，再往左边挪上两毫米','下联换成我写，毛笔握得太靠下，纸背鼓起一块','贴在门楣上，他退后两步看了很久，说今年不算歪'],how:['开头：写除夕上午他把红纸铺在方凳上，先裁边角再慢慢磨墨','主体：写他写上联时反复比画，下联换成我，字明显歪了','深化：写贴的时候他坚持往左挪两毫米，说去年也是这样','结尾：写他退后两步眯眼评价今年不算歪，然后去洗手煮汤圆'],trap:'容易写成父爱总结，结论藏在不算歪三个字里就够，父亲的话要短，全篇他最好不超过五句台词',who:['我','爸爸']});
+BANK.push({id:'K067',t:'《阳台兰花赛：外公那只旧水泥盆赢了花》',g:'rec',d:'culture',c:'contest',e:'plain',idea:'外公拿一只裂了口的旧盆参赛，花却照样开在他那儿，评奖的算法他不说，也许根本没有算法。',mat:['比赛是外公定的，规则三条：看盆，看开花，还看谁浇水多','他把最好的那盆兰花换进旧水泥盆，说是旧盆更透气','我那盆有花苞没开花，被裁判判成还在准备阶段','公证是我妈，她说的话把在场的人全得罪了一遍','结果出来外公没生气，把旧盆搬回窗台，继续浇他的花'],how:['开头：写外公在纸上写三条规则，第三条后面又添了浇水最多','主体：写他把最好的那盆兰花换进旧水泥盆，说这样更透气','深化：写我妈当公证，把我有花苞没开花判成还在准备，全场笑','结尾：写结果出来他没生气，搬回旧盆继续浇，像什么都没发生'],trap:'容易写成家庭温馨小品，全篇要留一点不服输的较劲，评奖不必公平，作者也别说破，让外公的行为自己说明',who:['我','外公','妈妈']});
+BANK.push({id:'K068',t:'《弄堂里那个不说话的手艺人》',g:'rec',d:'culture',c:'secret',e:'curio',idea:'修伞的老头一年说不了几句话，弄堂里的人却都记得自己在他那里补过什么，欠着一把伞的人最记得他。',mat:['他的摊子在理发店和杂货店中间，从开春到入冬没挪过','工具箱里有三百来把伞骨，靠一根旧皮筋整整齐齐绑着','有人送来修好的伞，他总要塞回两块钱，一分也不多收','雨季一过，箱底还剩十几把没人来取的伞，都盖着布','其中一把上写着名字，是三楼那户不好意思来拿的'],how:['开头：写梅雨天我抱着伞冲进摊子，伞骨散得像一把伞花','主体：写他不问价钱，先把断的骨一根根夹直，再换上新骨','深化：写他修完把两块钱按回我手心，说撑一撑还能用很久','结尾：写雨停后箱底还剩十几把没人取的伞，其中一把上写着名字'],trap:'容易把老头写成世外高人，不要，他的特别只能来自话少和手艺实在，结尾那把没人取的伞不要再追问',who:['我','修伞的老头']});
+BANK.push({id:'K069',t:'《弄堂里吃晚饭的声音》',g:'rec',d:'culture',c:'moment',e:'warm',idea:'弄堂里吃晚饭的声音一浪一浪传上来，谁家先开火谁家先闻香，比闹钟还准，比门铃还快。',mat:['六点前后，四五扇窗同时冒出油烟机启动的嗡声','葱油和红烧肉的香味顺天井往下沉，压在潮湿的石板上','五楼的窗里传出一句拖着长腔的沪剧唱段，走了三层楼','楼道里有人喊一声吃饭，声音顺着天井绕了一圈才散','外婆总在最后喊我，说再不吃就凉了，声音不大但都听得见'],how:['开头：写傍晚六点，弄堂里各家灶台先后响起来，声音一层层往上走','主体：写油烟机的嗡声、飘下来的香味和五楼传出的那段沪剧','深化：写楼道里那声吃饭的喊话顺着天井绕了一圈才慢慢散去','结尾：写外婆最后才喊我，说再不吃就凉了，声音不大但都听得见'],trap:'容易把市井写成热闹形容词，热闹要用声音分层兑现，喊话那一声要落在具体的人身上，别让它变成背景音',who:['我','外婆','楼上练琴的邻居']});
+BANK.push({id:'K070',t:'《从上海回乡下，一路上房越来越矮》',g:'rec',d:'hometown',c:'journey',e:'warm',idea:'回外婆家的两个半小时里楼越来越矮，我说话的音量也跟着矮下去一截，回乡不是换个地方。',mat:['地铁换公交再换三轮车，窗外的楼一层一层矮下去','乡下路口有棵香樟，比城里小区门口那棵粗一圈','我进门喊了一声外婆，她先是愣住，然后才笑起来','那顿饭桌上没人给我夹菜，我自己添了三次饭','睡前我听见河水的方向，和城里的夜晚完全不一样'],how:['开头：写出站前还在跟同学语音，到第三站就把手机塞回口袋','主体：写窗外从高架楼群换成水田，香樟的影子先出现在路口','深化：写外婆愣了半天才笑起来，说明我在她眼里已经变了样','结尾：写睡前听见河水的方向，和城里的夜晚完全不一样'],trap:'容易写成成长路上的抒情回顾，交通细节要落实在换乘次数和楼高上，路上对话不超过三句，重点让景说话',who:['我','外婆']});
+BANK.push({id:'K071',t:'《门口那块被磨出脚掌的青砖》',g:'rec',d:'hometown',c:'object',e:'admire',idea:'外婆家门口那块青砖比别处低半寸，谁的脚都从它上面过去，久了它就磨成了门槛的样子。',mat:['砖面中间凹下去，凹下去的正好是一枚脚掌的位置','下雨天积水停在它上面不流走，人人都绕着它过','外婆说这砖以前是门槛，谁也没有把它抬高过','井盖换过一次新铁的，那块青砖一直没人动过','我踩上去试了试，凹下去的地方比我的脚还小半号'],how:['开头：写雨后门口有一块砖积着水，我一脚踩下去，水漫过鞋边','主体：写凹下去的地方正好放得下一枚脚掌，比我的脚还小半号','深化：写外婆说这砖以前是门槛，也一直没人把它抬高过','结尾：写井盖换了新的铁，青砖没人动，它继续替所有人低头'],trap:'容易滑向忆旧抒情的套话，全篇只盯一块砖，外婆的话不超过两句，其余靠动作，比如绕着走、踩上去试',who:['我','外婆']});
+BANK.push({id:'K072',t:'《答应外婆把那台缝纫机修好》',g:'rec',d:'hometown',c:'promise',e:'guilt',idea:'答应外婆把缝纫机修好，我拖着没做，最后她连一句都没再说，那份亏欠比机器坏着更难受。',mat:['缝纫机是外公留下的老东西，牌子上的漆掉了大半','她只想让走针的皮带不滑，别的地方坏了都能忍','我在网上找了半天配件，价钱和脾气都不小，货一直没到','拖到第三个星期，她说机器放着也没事，别费劲','后来只修好一半，踏板还是软的，她再没提过一次'],how:['开头：写外婆指着旧缝纫机说皮带一滑就断，答应我抽空修一修','主体：写我在手机上比价、找配件、下了单，一样样都拖着没动','深化：写第三个星期她说机器放着也没事，说得像在替我解围','结尾：写后来只修好一半，踏板还是软的，她再没提过那台机器'],trap:'愧疚要落在拖延的具体过程上，不要用哭代替，外婆不能病危也不能去世，机器没修好本身就是结尾的重量',who:['我','外婆']});
+BANK.push({id:'K073',t:'《搬家前在天井吃的最后一顿饭》',g:'rec',d:'hometown',c:'moment',e:'down',idea:'搬家前那顿饭吃得比往常还快，桌子摆在天井中央没人抬回屋里，有些告别只是顺手的一瞥。',mat:['桌子是从屋里搬到天井的，桌腿下面垫着两块砖','菜还是四样，其中一碗是中午剩下的，又热了一遍','邻居端着碗过来，站着一句话也没说就开吃了','我起身收碗时，看见晾衣绳上还挂着我小学的校服','那块砖一直没垫回去，那顿饭以后天井再没摆过第二张桌'],how:['开头：写那天中午没人说搬家的事，桌子照旧从屋里搬到天井','主体：写邻居端着碗过来站着吃，吃完把碗搁在窗台上就走','深化：写我收碗时抬头，看见校服还挂在晾衣绳上，袖子已经短了','结尾：写桌脚下面那块砖一直没垫回去，天井再没摆过第二张桌'],trap:'容易靠哭和不舍撑全文，这是下策，结尾要落在一件没人收拾的实物上，比如那块砖，校服不要点破成象征',who:['我','端碗过来的邻居','家里人']});
+BANK.push({id:'K074',t:'《搬走那天，木箱替我被整条弄堂认了出来》',g:'rec',d:'hometown',c:'crowd',e:'protect',idea:'一只没人要的木箱让整条弄堂在搬家那天认出了我，人真正的痕迹不是房子户口，是别人替你收了一夜雨。',mat:['木箱是外公留下的，箱角包着铁皮，锁扣早就锈死了','出发那天东西太多，我把它先搬到楼道口放着','半夜下起雨，邻居把它搬回自家屋檐底下去了','第二天箱底湿了一片，他自己垫了报纸，一句话没说','最后旧货师傅收走了箱子，里面那把旧伞没人要，我留下了'],how:['开头：写木箱锈死在楼道口，我站在那儿想扔又实在搬不动','主体：写半夜雨起来，我在楼下听见有人把它挪到屋檐底下','深化：写天亮后我去道谢，他说反正下雨，顺手的事罢了','结尾：写箱子被旧货师傅收走，那把旧伞没人要，我把它留下了'],trap:'容易写成整条弄堂集体帮忙的热闹场面，邻居一家写一家就好，邻居不要道破温情，说完顺手就走，箱子只是引子',who:['我','收箱子的邻居','旧货师傅']});
+BANK.push({id:'K075',t:'《围布拆下来那年，樟树歪了》',g:'scene',d:'nature',c:'change',e:'protect',idea:'绿布拆下来的那年樟树歪了，朝空出来的那边拼命长枝，它没长回原样，只是把缺口那侧的天空整个让给了风。',mat:['绿布从半米高的枝干裹上去，把整棵树围成一间房','拆布那天堆在墙角，是邻居们一个下午搬完的','树冠朝马路那侧偏了一米，枝条全伸向空出来的地方','树干上那道旧裂口没愈合，摸上去比别处粗糙','根旁的土被新铺的草坪压住，雨下进去就出不来'],how:['开头：写堆在墙角的那堆绿布被邻居一个下午搬完，树像刚松了绑','主体：写树冠朝马路那侧偏了一米，枝条全伸向空出来的地方','深化：写树干那道旧裂口并没有合上，我伸手摸了一下，比别处粗糙','结尾：写它把缺口那侧的天空整个让给了风，谁也补不回去'],trap:'写景容易写成树木介绍的说明文，形容词要省，把镜头交给形状和位移，结尾不要说人该怎样，让树承担不圆满',who:['我','帮忙搬绿布的邻居']});
+BANK.push({id:'K076',t:'《梅雨落在瓦片上的第七天》',g:'scene',d:'nature',c:'moment',e:'insight',idea:'梅雨落到第七天，屋檐在同一处滴出同一个节拍，我听出那声音像外婆数针线，一下一下地等天晴。',mat:['瓦檐最低的那块瓦边上长了一层绿苔，水从那里渗出来','天井里放着一个接水的搪瓷盆，清早满一层，面上浮着灰','晾不干的衣服收进屋里，几天后带着一股霉味','外婆把针线笸箩挪到灶边，说怕潮气把线吃了','第八天雨停了，盆里的水声还在响，要过很久才停'],how:['开头：写雨从第三天起就没停过，屋檐每天在同一处滴同一个声音','主体：写搪瓷盆接水、衣服进屋、笸箩挪到灶边，每样都有去处','深化：写水滴的间隔很像数针线，一下一下，不快也一点都不乱','结尾：写第八天雨停了，盆里的水还在响，声音拖得很长很长'],trap:'写梅雨不能只写一个湿字，湿要有去处，比如盆、衣服、笸箩，形容词连用不超过两处，中段靠声音推进',who:['我','外婆']});
+BANK.push({id:'K077',t:'《菜场七点的第一波人》',g:'scene',d:'society',c:'crowd',e:'warm',idea:'菜场七点整人声忽然抬高一格，剁肉声、水声和吆喝一起挤进同一条过道，谁也没有喊开过。',mat:['摊主把冰倒进鱼盆，冰响一声，人声跟着低下半拍','过道上挎布袋的阿姨互相让路，让完才说一句借过','卖葱摊前堆着一座小山，买的人先挑再问，从不问贵不贵','地上湿了一大片，谁也不看脚下，只盯着对面的价签','快收摊时过道上只剩水渍，那一小块还留着没干的鱼鳞'],how:['开头：写七点整卷帘门拉开，第一筐菜落地，人声跟着抬起来','主体：写剁肉、冰块、让路各占一段声音，三种挤在同一条过道上','深化：写挑菜的人从不问贵不贵，只问几斤几两、要不要香葱','结尾：写收摊前地上只剩水渍，那一小块还留着没干的鱼鳞'],trap:'写人群最容易堆砌热闹词，热闹要靠声音分层兑现，每种声音只出现一次，别重复写吆喝，更不要写人人的脸',who:['我','卖鱼的摊主','买菜的阿姨']});
+BANK.push({id:'K078',t:'《桥下那条每天走一遍的河》',g:'scene',d:'society',c:'journey',e:'plain',idea:'上学走同一条路，桥下的水一截一截往东去，它不关心我考几分，却比我更清楚时间往哪儿走。',mat:['桥洞顶很低，涨水的时候水汽能顶到石阶的第三级','栏杆外侧的淤泥里插着别人丢的烟头，一年比一年多','桥柱上贴着防水广告，边角被人撕过，剩下半个号码','骑车经过时水面把车影拆成几段，过了桥又慢慢拼回去','河东岸有人在桥洞下钓鱼，桶里只有两条，指甲发黑'],how:['开头：写每天午饭后我骑车过桥，低头看一眼水，再抬头继续走','主体：写涨水时的水汽、桥柱上撕剩的广告、栏杆外的烟头','深化：写水一截一截往东去，和我每天上学的方向正好相反','结尾：写桥洞里我的影子被光切成几段，骑过去以后慢慢拼回来'],trap:'写景容易写成单调的观察日记，选定桥洞这一个机位不换地方，河不承担情绪也不许被比成眼泪，句子短些更稳',who:['我','河岸边钓鱼的陌生人']});
+BANK.push({id:'K079',t:'《外婆针线笸箩里的几种声音》',g:'scene',d:'culture',c:'object',e:'curio',idea:'笸箩里每样东西响得都不一样，穿针最细，剪刀咬下去那一声最短，小时候我以为外婆在给日子打拍子。',mat:['笸箩是竹篾编的，底下一圈垫布磨得起了毛边','顶针留了两只，一只是银的，套大拇指上正合适','线轴按颜色排开，灰的压在最底下，那是补衣服的','剪刀咬线布的声音很短，短的像在桌上敲了一下','笸箩边沿有一道裂缝，是常年被剪刀磨出来的'],how:['开头：写外婆把笸箩端到窗下的灯边，竹底碰到凳腿响了一声','主体：写穿针、引线、咬剪刀三种声音的差别，一个细一个短','深化：写顶针只剩两只，缺的那只是不是丢了，谁也说不清','结尾：写外婆不在以后，那声短促的咬线声我在别处再没听过'],trap:'写物最容易写成罗列，物件超过四样就散，先定三种声音再挑对应的东西，别按大小挨个介绍，结尾也不煽情',who:['外婆','我']});
+BANK.push({id:'K080',t:'《傍晚弄堂里的声音换了班》',g:'scene',d:'culture',c:'moment',e:'admire',idea:'傍晚六点弄堂里的声音换了班，抽水机一停，锅铲声、自行车铃和拖着尾巴的电视声接手，谁也没说一声。',mat:['弄堂口的抽水机从五点转到六点，停下时地面还有余震','三楼的窗口飘下菜香，葱油味压在湿石板上散不掉','车铃从巷口进来，那一声长的，是收摊回来的推车人','各家电视的声音串在一起，最远那台放的是沪剧','楼道里有人喊一声吃饭，声音顺着天井传了三层'],how:['开头：写抽水机停下的那一秒，弄堂忽然空出一个声音的位子','主体：写锅铲声接上，车铃由远而近，电视声从窗口一层层飘下来','深化：写有人在楼道里喊吃饭，声音顺着天井传了三层才散开','结尾：写最远那台电视里的沪剧唱到一句长腔，整条弄堂都听见了'],trap:'写声音容易变成拟声词清单，每种声源只给一次具体写法，不要总结什么市井温情，用最远那台电视收尾就够了',who:['收摊回来的推车人','弄堂住户']});
+BANK.push({id:'K081',t:'《屋顶那只空了的水箱》',g:'scene',d:'hometown',c:'object',e:'down',idea:'水箱空了还压在屋顶上，锈水顺着印子一圈圈往下走，像有人一次次上去量，又一次次没量够。',mat:['水箱是两层楼高的铁皮筒，顶上盖着一块裂开的板','侧面的出水口结着白色的垢，指甲刮下来是硬的','锈水沿着墙面走了十几道，最下面那道最粗最深','楼下的晾衣绳正对着它，午后会落下一小片锈印','新加的避雷带从水箱边上斜拉下去，在墙上绕了一圈'],how:['开头：写我搬了梯子上去看，水箱盖子一推就转，锈得直掉渣','主体：写侧面的出水口、白色的垢，还有伸手够不着的铁皮','深化：写锈水沿着墙走了十几道印子，最下面那道最粗最深','结尾：写楼下晾衣绳正对着它，我收衣服时避开了那片锈印'],trap:'容易写成废墟抒情的套路，锈是主要材料，形容词要省，我的情绪只能通过收衣服避开锈印这种小动作带出',who:['我','楼下收衣服的邻居']});
+BANK.push({id:'K082',t:'《台风天的窗》',g:'scene',d:'hometown',c:'moment',e:'protect',idea:'台风天窗外什么也看不清，玻璃上的雨横着走，外婆拖来椅背顶住门的那一下，比任何一句安抚都踏实。',mat:['风把阳台的衣架吹得撞在栏杆上，一声接着一声','雨水在玻璃上分成两股，一股往上爬，一股往下淌','整条弄堂没人出门，只有门缝下的报纸被吹得哗哗响','停电以后楼道全黑，邻居把手机手电互相照着下楼','风小下去的时候，最先响起来的是晾衣架滴水的声音'],how:['开头：写早上风开始撞窗，声音像有人站在门外一直不停地拍','主体：写雨横着走、衣架撞栏杆、门缝下的报纸被吹得哗哗响','深化：写停电楼道全黑，外婆把手机的手电往邻居门口一照','结尾：写风小下去的时候，弄堂里先响起来的是晾衣架滴水声'],trap:'台风不能写成灾难受害，场景要留在家里看得见的地方，情绪藏在椅背和照手电这类动作里，结尾别点破家的主题',who:['我','外婆','隔壁邻居']});
+BANK.push({id:'K083',t:'《我让AI替我写完了那篇作文》',g:'imagine',d:'future',c:'word',e:'guilt',idea:'那篇作文被老师当范文念了一半，念到第三段全班安静，而我摸口袋找笔时才发现：这一句不是我想写的，是它替我想的。',mat:['老师在早读课上念了我的作文，念到第三段全班安静，那一段我不记得自己写过','提示词改了九遍，每一遍都在把自己调得越来越不像初二学生','草稿纸上只剩两行字：我其实想写奶奶摔倒那天下午的事','同学问我用什么软件，我说这个我自己想了两晚上'],how:['设定：交代那篇拿满分却没署名的作文，以及手机里那个还没关掉的对话框','推进：从被夸的得意写到夜里翻草稿纸，两种时间交叉着往前推','意外：想删掉重写才发现真正想写的那件事，我从头到尾没敢下笔','落点：结尾把被删掉的那句话重新写一遍，说明我怕的其实不是作弊'],trap:'容易写成一篇忏悔录，堆满我好后悔我好羞愧，反而假；九遍提示词和那两行草稿要写实，悔意只能从缝隙里漏出来。',who:['我','语文老师','同桌']});
+BANK.push({id:'K084',t:'《{奶奶}的手机在夜里迷了路》',g:'imagine',d:'future',c:'object',e:'curio',idea:'凌晨两点，四十七岁的奶奶第一次自己走出家门，手机举在胸前当手电筒，她要去一家二十年前才存在的诊所，那条路只有手机记得。',mat:['手机电量还有百分之六十七，定位却一直停在我们家楼下的草丛里','它报出的那个诊所名字我从来没听过，妈妈说那是奶奶年轻时上班的地方','我跟了四站地铁，最后停在一早就关了门的照相馆门口，它就不肯再走','相册最后一张是十年前拍的，奶奶在里面比现在胖一点，笑得很松'],how:['设定：夜里两点，一部自己站起来走路的老手机，和一间没有开灯的旧房子','推进：跟着它坐地铁、报地址，路线一层层倒回二十年前的那个冬天','意外：它要找的照相馆早就没了，它却站在门口不肯回去，也不肯往家走','落点：结尾天亮时奶奶问我怎么没睡，我说它带我散了趟步'],trap:'容易写成温情催泪，一路感叹科技冷家人暖；要把路线、地址、电量这些冷信息写足，情感只从缝隙里漏出来。',who:['奶奶','我','妈妈']});
+BANK.push({id:'K085',t:'《外婆十九岁的故事被考古队挖了出来》',g:'imagine',d:'culture',c:'secret',e:'curio',idea:'摄制组来拍外婆的口述史，她背台词背得一个字不差，可大姨说她在纺织厂做的事和这段台词完全不是一回事，镜头一直对着她。',mat:['导演问她当年在车间做什么，她说自己管食堂，大姨当场说是挡车工','她背得出当年广播体操的口令，连中间停顿的那一秒都一模一样','录像里她三次看向我妈，三次都改了口，每次改完导演都说再来一条','档案袋里只有一张糊掉的合影，编号后面有人用铅笔改过一个字'],how:['设定：摄制组坐在外婆的老屋里，桌上摊着一份打印好的口述稿，稿纸边缘卷起','推进：她照着稿子背，一背就顺，顺得让人后背发凉，顺得不像是在回忆','意外：每有人补充一个细节，她的版本就悄悄变一次，像水面上晃动的倒影','落点：结尾大姨说别改了，她才停下，说出真正记得的那一个版本'],trap:'容易顺手写成记忆不可靠的哲理议论；必须用三个互相矛盾的口述把矛盾摆出来，议论一句都不要提前给。',who:['外婆','大姨','导演']});
+BANK.push({id:'K086',t:'《学校消失的那一天》',g:'imagine',d:'future',c:'journey',e:'plain',idea:'早上八点整，教学楼还在，操场还在，铃还在响，可就是没有课表也没有人，我第一次发现学校其实是由一张张课表撑起来的。',mat:['门卫老伯在校门口支了折叠桌，说今天不上课随便坐，风大别站门洞里','第一节课铃响了十几遍，操场还是空的，只有一只球沿着中线滚过去滚过来','我们把窗帘拉开一半，灰尘在斜着进来的光柱里慢慢往下沉，谁也没说话','中午有人回家吃了饭又回来，说逃课好像会被记名字，所以我们还是来了'],how:['设定：给一个今天停课的早晨，人照常到校，制度先缺席，人还没反应过来','推进：按一节课、一顿午饭、一次自习把一天排过去，排得像一张真课表','意外：最先撑不住的反而是那摞没人批的作业本，不是所谓自由本身','落点：结尾铃终于再响，我们各自回到座位，那天比平时任何一节课都安静'],trap:'容易写成狂欢式的自由日，什么都新鲜什么都能玩；要写无聊、尴尬和干等的心慌，细节才像真的待了一天。',who:['我','门卫老伯','班长']});
+BANK.push({id:'K087',t:'《记忆可以寄快递的那天》',g:'imagine',d:'future',c:'object',e:'warm',idea:'邮局多出一个窗口，招牌上只写记忆两个字，我把最想忘掉的一个下午打包寄走，收件人写给还没经历那一天的自己。',mat:['寄件单上要填情绪的重量，我写一斤二两，柜台的人说这种情况通常是三两','封口用的是旧胶带，撕开时声音和撕信封一模一样，我手抖了一下','包裹里摸不出任何东西，只能闻到一点樟脑和铁栏杆的潮味','取件时间是明年的今天，我签了字，笔尖在纸上停了半秒才落下去'],how:['设定：邮局新开的一个窗口，招牌上只有记忆两个字，不解释，也不需要解释','推进：填单、称重、封口，一步步把那个下午交出去，像交作业一样不甘心','意外：柜台的人说记忆只能寄给本人，我只好把收件人改成明年的自己','落点：结尾把取件回执塞进抽屉第二个格子，等它自己到期，不许自己去取'],trap:'容易把设定堆成科幻名词，什么意识上传、量子备份；设定一句话说完，规则越少越像真的，规则越多越假。',who:['我','柜台的人','妈妈']});
+BANK.push({id:'K088',t:'《旧书包里装着整个夏天》',g:'imagine',d:'hometown',c:'object',e:'warm',idea:'整理书柜时翻到一只缝过三次的书包，里面塞着一枚蝉壳、两张泳票和半张没寄出的明信片，那是我把一整个夏天背回来时留下的行李。',mat:['书包底还粘着一枚蝉壳，翅膀薄得能看见里面的筋，一碰就碎成两半','泳票被剪成两半，一半是上午场，另一半被我当书签夹在课表中间','明信片背面写了两行就停住，收件人写的是隔壁班后来转学走的女生','背带内侧用白线缝过三道，最外一道针脚歪着，是奶奶缝的'],how:['设定：从书柜最底层翻出一只落满灰的旧书包，先写它塌下去变形的样子','推进：一样一样往外掏，每件东西带出三段不同的下午和三句没说完的话','意外：明信片的收件人已经不在这个城市，我连她现在住哪儿都不知道','落点：结尾把今年的东西重新装进去，装得鼓起来，背带仍旧很软很软'],trap:'容易变成怀旧散文，把物件当陪衬；每件东西都要带一个动作或一句没说完的话，让物件自己说话。',who:['我','表姐','奶奶']});
+BANK.push({id:'K089',t:'《全城的灯同时熄了三分钟》',g:'imagine',d:'future',c:'crowd',e:'insight',idea:'晚上八点整，这条街的路灯、橱窗和楼道一起黑了整整三分钟；那三分钟里所有人做的是同一件事，就是站在原地，抬头。',mat:['第一秒是惊讶，第二秒是喊，第三秒整条街一起安静下来，连狗都不叫了','便利店老板打着手电出来，开口问的第一句是：停电了吗，好像谁都没想到','一个骑车的人停在路中间，车灯照着前面一排一模一样的后脑勺，谁也没动','三分钟后灯一起亮起来，有人从楼道里喊了一声妈，声音比灯来得还快'],how:['设定：给出精确的三分钟，让整条街在这三分钟里停住，其他一切照常进行','推进：按秒拆开人群的动作，惊讶、安静、找人，各做各的又做成一件事','意外：这三分钟里没有发生一件坏事，大家只是站着，像在等谁先动一下','落点：结尾灯亮时人群散开的样子，比灯暗的时候更像平常的一个晚上'],trap:'容易往灾难、阴谋、末世上带，或者堆一整段抒情；只写这三分钟里人们手上和脚上的动作，一句总结都不加。',who:['我','便利店老板','骑车的人']});
+BANK.push({id:'K090',t:'《我给十年前的自己发了一条消息》',g:'imagine',d:'future',c:'journey',e:'guilt',idea:'手机最底下多出一个没见过的入口，能给任意年份的自己发一条不超过三十字的消息，我把唯一一次机会用在了叫她别怕，结果她照做了。',mat:['入口藏在设置最深处，图标是一个哑掉的喇叭，下面写着仅可使用一次','我删了十七遍才凑够那三十个字，打字框右下角的秒数一直在往下跳','十年前的她正蹲在校门口哭，因为作文本被人踩了一脚，鞋上全是泥','她收到的那条消息她没删，去年还发在朋友圈，配文是一个省略号，什么也没写'],how:['设定：先给入口，只说它能做什么，绝不解释原理，原理一解释就假了','推进：我反复删改那三十个字，把当年的难堪一点点压缩，最后只剩两个字','意外：她的回信只有知道了三个字，比任何感谢都难受，说明她真的照做了','落点：结尾我关掉入口，发现次数还剩一次，而我一次也不敢再发出去'],trap:'容易写成催泪独白，把当年的委屈重复三遍；那三十个字的内容要原样写出来，让限制本身承担情感。',who:['我','十年前的我','妈妈']});
+BANK.push({id:'K091',t:'《班里来了一个未来的转学生》',g:'imagine',d:'future',c:'first',e:'curio',idea:'新同学说他从二〇三八年转过来，会预言谁在哪一天哭；第一天他连说错三件事，却把第四件说得又准又轻。',mat:['他自我介绍只报名字，报年份时说错了自己出生的年份，全班笑了整整一分钟','他指着我同桌，说她今天下午会收到一封外校的邮件，同桌当场愣住','数学课上他提前交卷，最后一题旁边写的是：这题的答案有两个，两个都对','放学他站在校门口不肯走，说他在等一个人，那个人他认识，只是还没来'],how:['设定：新同学第一天站上讲台，只报名字不报年级，也不说自己是怎么来的','推进：连着三件预言把他的准确率一点点改写，最后一次改到让人心里发慌','意外：最后一件预言不是关于别人，是关于我自己要不要转学这件事','落点：结尾他说等的人到了，来的是我，两个人在门口对视，文章就收在这里'],trap:'容易把他写成万能神棍或者万能笑话；必须让他的错和对一样具体，最后一件只准中一件，中了也不解释。',who:['我','未来的转学生','同桌']});
+BANK.push({id:'K092',t:'《阳台上的月季在半夜开了》',g:'imagine',d:'nature',c:'moment',e:'curio',idea:'凌晨一点五十，全家被一股香味叫醒，那盆被所有人判定今年不会再开的月季开了一朵，香味一直飘到了五楼。',mat:['香味先到，人后到，我是被走廊里那股甜味憋醒的，还以为谁打翻了花露水','那盆月季朝着墙，根的那半边花盆裂了一道缝，缝里渗出水来','妈妈用手电照着花苞，说开得太早了，还不到花期，这盆今年不该开','楼下五楼的窗子也开了，有人探出头说我也闻到了，隔着五层楼对上了话'],how:['设定：从半夜飘进来的香味切入，先给鼻子再给眼睛，解释一律留到后面再说','推进：全家依次起床、拿手电、量位置，把一场花开变成一次家庭排查','意外：真正让大人心里发毛的不是花，是花期不对这件事本身不对劲','落点：结尾那朵花两天就谢了，比正常的快得多，妈妈把花瓣夹进了字典里'],trap:'容易顺手写成花仙子的灵异故事；守住气味、时间和花盆裂缝这些物理细节，超自然的解释一次都不给。',who:['我','妈妈','楼下的邻居']});
+BANK.push({id:'K093',t:'《蚂蚁搬家那天下雨了》',g:'imagine',d:'nature',c:'crowd',e:'plain',idea:'一列蚂蚁从阳台缝里搬了三个小时，往上爬的那一半什么也没带，父亲蹲在旁边看完整场，说它们是在往高处躲雨。',mat:['队伍最前面那只的触角一直在抖，抖得像在前面探路，探一下走两步','它们搬的是米粒、烟灰和一只死掉的飞蛾，没有一样是拿来用的东西','雨点砸下来时队伍没有散，反倒加快了速度，谁也没有往回走过一步','阳台原本有一道细缝，缝口被它们来回磨得发亮，指甲一刮就出声'],how:['设定：给定一场突然落下的雨和一列完全不慌的蚂蚁，两件事同时开始','推进：写队伍的速度、方向和搬运的东西，用重复的句式写出重复中的变化','意外：父亲只蹲了三分钟就说出了原因，可我没记住他用的那个字','落点：结尾雨停了，队伍往回走，空的那半条路走在最前面，队伍没有乱'],trap:'容易写成科普说明文，或者把蚂蚁拟人成一队小人；只写我蹲着看的那三个小时，全篇说话不超过两句。',who:['我','父亲','邻居小孩']});
+BANK.push({id:'K094',t:'《台风过后操场长出一片小树林》',g:'imagine',d:'nature',c:'change',e:'insight',idea:'台风把操场边的两棵大树连根掀翻，队列再也排不成；班主任带着我们沿着倒下的树干插了一排苗，第二年春天它们长成了另一种东西。',mat:['树根翻出来是一个土坑，能站进去半个我，坑底全是折断的须根，白得像线头','我们把断枝埋进土里，上面压着从食堂顺来的两只塑料筐，筐比苗大得多','三个月后操场确实绿了一层，体育课照旧，只是白线被新土盖住看不清了','教务处的禁止踩踏牌子被风吹倒过两次，我扶起来两次，它又倒了一次'],how:['设定：从翻出来的树根和那个能站人的土坑开始，先把毁掉的部分写足','推进：写我们怎样把操场改成一小片林子，一锄一筐地写，工序要落实','意外：长出来的东西和预想的完全不同，连教务处都不知道该不该管','落点：结尾落叶盖住了新芽，我说这不算失败，只是慢，慢不等于白做'],trap:'容易写成环保口号或灾难感伤；只写人和泥土打交道的过程，议论一句也不要加，让土和苗自己说明白。',who:['我','班主任','体育老师']});
+BANK.push({id:'K095',t:'《校门口那棵香樟被移走的那个早晨》',g:'imagine',d:'nature',c:'change',e:'down',idea:'香樟在原地站了四十年，昨夜十点以后被连根拔走，今早只剩一个还湿着的坑，和一圈忽然显得很空的天。',mat:['树是晚上十点以后走的，卡车灯把半条路照成了白天的颜色','早上坑里的土还是湿的，踩下去会渗水，鞋底沾一层黏的黄泥','我们班有一半人的早自习路线要绕开那个坑，队伍自动分成了两股','中午有人在坑边放了一瓶矿泉水，瓶身上贴了纸条：到那边也要喝水'],how:['设定：从早上那个湿坑写起，先给后果不给原因，让读者先感到哪里不对','推进：一节课、一次值日、一顿午饭，每次经过都要绕，路线越走越长','意外：全班没有一个人提议种一棵新树，倒是有个女生在坑边放了瓶水','落点：结尾新坑比原来整齐，可我走那条路总要多慢半拍，慢在哪里我也说不清'],trap:'容易写成集体怀旧或者顺手做环保说教；痛要压在路线、鞋底泥和那瓶水这些小地方，人物一律不许表态。',who:['我','值日生','保安']});
+BANK.push({id:'K096',t:'《那棵柳树答应我明年还站在这里》',g:'imagine',d:'nature',c:'promise',e:'warm',idea:'小区要修排水渠，唯一要挪走的树是河边那棵柳，我跟它做了个约定：只要我每周都来看它，它就留在这个位置。',mat:['柳枝一直垂到水面，我用红绳在最矮的那根上系了个结，绳头留了很长的尾巴','第一次去看结还在，绳子被雨泡得发白发硬，一碰就掉粉','第五次去看结不见了，绳子断在同一个地方，断口沾着新泥，枝上积了一层灰','施工的师傅说渠道往河边挪一米也一样通，那样就不用动这棵树了'],how:['设定：先写我和柳树的约定，再交代工期只剩三周，这个约定从一开始就可能没用','推进：按周记录，每次只写一个变化，红绳是贯穿全部记录的线索','意外：约定没能保住树，却让大人们把渠道挪了一米，柳树反而留下了','落点：结尾渠修好了柳树也还在，可我从此不去系绳了，怕它又被谁解开'],trap:'容易把人写成和树说话的童话；对话要少，用红绳、断口和绳子上的灰代替抒情，让沉默自己说话。',who:['我','施工的师傅','外婆']});
+BANK.push({id:'K097',t:'《一条街的招牌一夜换了字》',g:'imagine',d:'society',c:'word',e:'insight',idea:'早上出门，熟悉的店名都换成了生僻字，认了半天才认出每家招牌下面多出来的那行小字，写的是店主最想被人叫的那个称呼。',mat:['面馆的招牌上那个面字不见了，换成一个我念不出来的繁体，压在红底上','小卖部换成手写体，老板说那是他女儿写的，写了一下午，手腕都酸了','五金店把修改成修好，后面加了贴在门口不撕，六个字挤在一块木板上','我念错了其中一个字，整条街的人笑了我一整路，笑完又没人肯说正确读法'],how:['设定：从我念错第一个字的那一声笑开始，全街的人先笑我，再慢慢解释规则','推进：一家一家走过去，把招牌的怪变化一个个摊开，摆得越怪越不敢细想','意外：每家招牌下的小字出自同一个人，而他从不承认，也从不解释','落点：结尾我回到面馆，替老板把那个字连着念对三遍，老板跟着念了三遍'],trap:'容易往商业包装上议论，或者顺手写成汉字科普；把笑和念错当成主线，议论压在最后一句里，说一半留一半。',who:['我','面馆老板','写招牌的人']});
+BANK.push({id:'K098',t:'《弄堂拆掉前的最后一个清晨》',g:'imagine',d:'hometown',c:'moment',e:'down',idea:'六点整，弄堂开始拆。我背着书包从门口穿过去，最后看见的是墙上一块块发黑的水管印子，那是这些房子从小把我量到大的尺子。',mat:['工人先卸门，一扇一扇靠墙摆好，像脱下来的一排衣服，编号贴在背面','我数了还亮着灯的窗，一共十一扇，其中一扇是我自己家的','那块黑印在两米高的地方，是我七岁把脸贴上去蹭的，蹭出一道白印','书包带子还挂在原来的铁环上，铁环上的漆掉了一半，环已经松了'],how:['设定：从早上六点那一下铁锤声开始，设定一个精确到分的时间点，不留缓冲','推进：穿门、抬头、量黑印，走的路线本身就是一个完整的告别仪式','意外：最舍不得的是一块长霉的墙皮，谁也没提，全家人都在看别的地方','落点：结尾我记住的不是房子，是那块黑印的高度，和它在我脸上的位置'],trap:'容易伤感过量，把所有景物都写成挽联；只写我熟悉的三个位置，其余一律略过，略过的地方才是疼。',who:['我','隔壁奶奶','拆迁工人']});
+BANK.push({id:'K099',t:'《努力到底有没有用》',g:'argue',d:'grow',c:'change',e:'plain',idea:'我用了三年相信努力有用，又用一次月考怀疑它；现在我的说法是：努力只保证你不会原地退步，它不负责把我送到想去的那一格。',mat:['同一份数学卷子，我刷题从每天两小时减到四十分钟，分数反而涨了十一分','同桌每天学到夜里十一点，连续两次月考都比我低，他却把错题记得比我牢','班里最用功的那位最后进了普通高中，第三年他再没被谁提起过','体育课练引体向上，我一个月从零做到四个，第五个卡了整整两个月'],how:['亮观点：一句话立住努力有用但有条件，把有用和保证这两个词拆开','立论据：用刷题减时和引体向上两组数据撑住，宁可用数据也不引名言','辨析：先接努力没用的反方，指出他是拿别人的懒当证据，例子不能乱对号','收束：给一句今晚就能执行的话——今天这一小时具体改掉了哪一处'],trap:'容易滑向努力没用的丧气话，或者反过来喊口号；必须至少有一组自己见效或失败的真实数据落场，否则读者不信。',who:['我','同桌','班主任']});
+BANK.push({id:'K100',t:'《名次表贴在教室后墙的那三十天》',g:'argue',d:'teacher',c:'contest',e:'insight',idea:'教室后墙贴着月考名次，有人靠它追上来，有人靠它睡不着；我想了三十天，结论是名次本身不伤人，把它当成唯一标准才伤人。',mat:['名次表用红纸打印，最大的那个数字有巴掌大，我的名字常年停在中间偏下','贴表的那三十天里，我课间宁可憋着也不去厕所，怕迎面碰上人看我的名次','同桌考了年级第一，红名单旁边他贴了自己的目标：下次还是第一','期末我把那张表撕下来折成纸飞机，从四楼窗口扔了，没跟任何人说'],how:['亮观点：把名次的意义从分数换成参照物，观点落在怎么用，不落在用不用','立论据：写后墙那张红纸的具体样子，以及三十天里我课间动作的变化','辨析：接没有名次谁知道自己几斤几两的反方，承认它的必要性，不假装全坏','收束：提出把公开表改成只有本人可见，让结论落成一个能执行的小改动'],trap:'容易写成吐槽考试的怨气文，两头不站；必须认真承认名次的用处，立场才站得住，读者才可能照着改。',who:['我','同桌','年级组长']});
+BANK.push({id:'K101',t:'《每月那五十块零花钱该给还是不该给》',g:'argue',d:'family',c:'word',e:'plain',idea:'零花钱该不该给，取决于它买的是什么：买必需的东西，是在教我记账；买想要的东西，就变成了向爸妈要第二个愿望。',mat:['我妈每月十号给我五十块，账本在我手上，年底剩的一百多就还回给她','我用它买过一双一百二十块的白球鞋，被念叨了整整两个星期','今年我把五十块拆成三份：一份吃饭，一份买书，剩下的放进制钱罐','班里一半同学的钱直接进了爸妈手机里的收款码，家长随时都看得见'],how:['亮观点：先把零花钱是预算还是补偿定义清楚，定义清楚，立场自然就站住了','立论据：拿我自己的账本和那双白球鞋作例子，两个例子都要带具体数字','辨析：接不给会让孩子虚荣的反方，用记账这条把虚荣的担子落到方法上','收束：落在一个具体动作上，比如每月把账本交给爸妈一起看一次'],trap:'容易变成跟父母要钱的变相申请书；全文不能出现一个求字，立场必须先立住，否则读者只会觉得你在讨糖。',who:['我','妈妈','班长']});
+BANK.push({id:'K102',t:'《补习班把我们推得更快了吗》',g:'argue',d:'family',c:'change',e:'guilt',idea:'我从初二开始上补习，第一年进步很明显，第二年成绩原地打转；我妈说再加一门试试，我答应了，然后偷偷退了一门，那天我在校门口站了很久。',mat:['每周二四晚上七点上到九点半，最后一节算吃饭，五点半就得从学校出发','第一次月考我进了班级前十五，家里第一次没有人念叨分数','第二年同样的老师同样的课，我的分数在六十上下整整摆了三次','退课那天我留了一节没去，理由说要上晚自习，其实想自己先试试'],how:['亮观点：结论落在需要的是哪种帮助而不是几个班，这句话要出现在前三分之一','立论据：给出时间账和三次分数，数字比感受更有说服力，也更难被反驳','辨析：接报了就有用的反方，指出有用的是补缺口而不是补全程，要分科说','收束：提出先用一周免费答疑试错，再决定要不要花钱，把决定权还给证据'],trap:'容易写成偷偷退课的冒险故事，爽了但没有观点；每写一段就要回到这节课补的是哪个缺口，否则整篇跑题。',who:['我','妈妈','补习班老师']});
+BANK.push({id:'K103',t:'《手机到底该不该带进校园》',g:'argue',d:'society',c:'crowd',e:'insight',idea:'我把班里五十部手机记了一天，能查题是两种，能偷看是两种；结论是能不能带不该靠罚，该看学校给不给第三种用法。',mat:['早读平均八分钟就有人掏一次手机，一学期被抓过三次，两次是在厕所门口','数学课我用它算完最后一道大题，班里至少十二个人在做同一件事，谁也不笑谁','我们班群一天四百多条，其中三百来条是表情包和转发，真讨论不到十条','学校的规定只有不许带三个字，没有写带了以后该怎么用，规定缺了后半句'],how:['亮观点：一句话明确站到允许带但要划定时段，立场要敢，不能骑墙','立论据：把我统计出来的数字直接写出来，数据本身就是论据，不必再加形容词','辨析：接带一定会更乱的反方，用被抓那三次做对照，先承认风险再谈办法','收束：给一个可执行方案，课间可用、上课入柜，由班主任一个人负责就够'],trap:'容易变成自嗨式的数据罗列，读者不信就等于没写；每个数字后面都要跟一处现场细节，数据和画面绑在一起。',who:['我','语文老师','学习委员']});
+BANK.push({id:'K104',t:'《端午的粽子到底还要不要包》',g:'argue',d:'culture',c:'moment',e:'warm',idea:'我家包粽子包了二十年，去年我爸第一次提议买现成的，理由是味道一样；那天晚上没有人反对，也没有人同意，气氛比粽子还黏。',mat:['粽叶要泡一整夜，棉线在指上绕四圈，奶奶说少绕一圈就松，馅会漏出来','我家的肉粽是咸的，隔壁是甜的，两家为这个争了十几年，从没赢过','去年的粽子确实味道一样，我咬第一口就知道是机器压的，压得太整齐','爸把粽叶收进柜子最上层，一整年没打开过，收的时候还跟我妈说了一声'],how:['亮观点：立场是要包但不包给所有人，把节日的重点放回一起动手这件事上','立论据：写包粽子的工序和两家咸甜之争，让传统有画面，不靠道理撑着','辨析：接方便就好的反方，追问一句一样是怎么测出来的，测不出就不能比','收束：给两全的做法，端午包一次平时允许买，标准和场合都分开说清楚'],trap:'容易写成怀旧散文，或者变成嫌弃外卖的道德指责；两边都得有具体的人和动作，只有道理没有人的论证站不住。',who:['我','爸爸','奶奶']});
+BANK.push({id:'K105',t:'《喜欢一个人到底要不要说出口》',g:'argue',d:'friend',c:'secret',e:'admire',idea:'一句喜欢在心里放了两年半；最后让我难受的不是没说出口，是我把她当成了一个不能得罪的人，连问一句的资格都自己取消了。',mat:['她借我的橡皮从来都还得很干净，两年里一次例外都没有，这点我记比谁都清','我记住了她喝水的杯子是蓝的，杯子换了以后我又去买了同一个款式','她转学那天我什么也没说，本子上那句草稿被我划了三道，纸都起了毛','两年里我为她改过七次说话的方式，七次我都记得，第一次在三月，最后在五月'],how:['亮观点：明确我的观点，不说不是错，把它当秘密守着才是问题，观点句要清楚','立论据：用换杯子、划三道、七次改口三件小事，说明我在意到了什么程度','辨析：接说出来可能被拒绝的反方，比较两种代价，不把勇敢和鲁莽混成一件事','收束：给一个马上能做的动作，把那七次为她改的地方，一件一件还回去'],trap:'容易滑成暗恋日记，抒情太多观点太少；每段必须有一件可核实的小事，全篇至少两句明确的观点句。',who:['我','她','同桌']});
+BANK.push({id:'K106',t:'《值日生到底该不该有回报》',g:'argue',d:'friend',c:'object',e:'plain',idea:'值日该不该有回报，我一直有分歧：我的答案是没有额外奖励，但必须有一句当众的确认，不然先累垮的是坚持做的那几个人。',mat:['我们班值日表贴在门后，每次换人都能听见一句我不想当，声音都很小','擦窗那位每学期都换人，去年一直换到第七个才固定，前六个都没撑过两周','有人提议按次加分，被班主任否了，理由是这是你分内的事，理由也确实对','去年国庆，连续一周值日的那几位各得一张便利贴，上面就写了谢谢两个字'],how:['亮观点：先给出没有奖励但要有确认的明确立场，两头都不靠，不许含糊','立论据：用值日表换人的速度和那张便利贴做证据，一快一慢正好对照着看','辨析：接没有回报谁愿意干的反方，用分内事这个边界解释，也不否认时间成本','收束：把建议说成可执行的一步，比如每月一张便利贴，字可以少但一定要有'],trap:'容易写成抱怨班主任的控诉文；语气必须站在建议的角度，不指责具体的某个人，读者才听得进去。',who:['我','班主任','擦窗户的同学']});
+BANK.push({id:'K107',t:'《我帮她把那本作业藏了起来》',g:'argue',d:'teacher',c:'mis',e:'guilt',idea:'我帮她藏过那本一直不交的作业，也顺手藏了自己的判断：该说的从来不是对不起，是这次我放你过去，下次你不能靠我藏。',mat:['她的作业本拖了三个星期，理由是家里没人签字，其实字早就写完放在抽屉里','我把它塞进书包夹层，跟老师说落在教室了，说完自己手心全是汗','老师后来在校门口找到我，我又说了一次不知道，声音我自己都认不出来','再见到她时她主动交了一次，作业本上有个新折角，那本子我一眼就认出来'],how:['亮观点：把争论落在包庇的收益和代价上，先给出我的判断标准，再讲故事','立论据：写藏作业那一周的心理和动作，只写能看见的，动机让读者自己补','辨析：接讲义气不该害人的反方，指出我保护的是她的情绪，不是她本人','收束：给一句能迁移到别处的话，帮忙可以，但一定要给自己设一个期限'],trap:'容易用愧疚代替思考，全篇只有自责没有观点；立意句必须出现在前三分之一，否则读者读完只会觉得你在求原谅。',who:['我','她','数学老师']});
+BANK.push({id:'K108',t:'《我们是不是太容易原谅自己》',g:'argue',d:'setback',c:'secret',e:'down',idea:'我复习了整整一年，失败过两次，两次都只用了两天就把自己说通；后来我发现，我最擅长的不是努力，是把理由编得又快又顺。',mat:['第一次失利我给自己找的理由是卷子太难，第二次是状态不好，两次一模一样','同一个理由我在两场不同的考试里各用了一次，用的时候都没有卡壳','同桌考砸了在教室哭了十分钟，第二天照常背单词，谁也没提，我也不提','原谅自己的那两天我刷短视频到一点多，理由是反正也看不进去了，先歇着'],how:['亮观点：把矛头直接立住，原谅自己成本太低，批评只对准方法不对准人','立论据：两次失利用了同一个理由，把规律摆出来，规律比感受更有说服力','辨析：接人总得往前走的反方，指出往前走不等于不用结账，账要留着才算走过','收束：给一个具体动作，下次再考砸，必须写出第三个理由才允许评价自己'],trap:'容易写成自我攻击，读者不舒服就离题了；批评要对准方法，不对着人格，更不要顺手把父母拉进来当被告。',who:['我','同桌','我妈']});
+BANK.push({id:'K109',t:'《读书到底要不要做笔记》',g:'argue',d:'culture',c:'word',e:'curio',idea:'我记了三年笔记，记满十七本，回想时能用上的不到三页；但要是没有那三页，我现在连其中一本的书名都想不起来。',mat:['高中第一本笔记全是抄写，抄到半本才发现抄的是书上本来就有的内容','真正派上用场的只有一页，用红笔标了一个疑问，一直到高考前我还在看','笔记最厚的那本是数学老师要求写的，也是我唯一一次从头看完的','后来我改成一本书只写三行：一句我不会的，一个我不同意的，一个我能用的'],how:['亮观点：把该不该记改成为回看而记还是为读而记，问题一说清，答案自己就出来了','立论据：十七本和三页两组数字对比，反差会自己说话，不用我再下判断','辨析：接不记就不算读过也记不住的反方，承认它的仪式感和短期记忆作用','收束：给一个能试的做法，先坚持三行一个月，一个月后拿这三行换一次回忆'],trap:'容易写成读书方法的流水账，读者记不住；核心只留一组对比数据，其余的放在骨架里，不必都写满。',who:['我','数学老师','同桌']});
+BANK.push({id:'K110',t:'《美术到底能不能当成一条出路》',g:'argue',d:'culture',c:'contest',e:'plain',idea:'我从初一学画到现在，家里一半人支持一半人反对；我的结论是它能不能当出路，取决于你受不受得住练了八年还没人看见。',mat:['画室墙上挂着三张奖状，最早那张是我九岁画的 涂色 小赛，纸都发黄','今年区里的比赛我进了复赛又下来，通知书是我妈先收到的，她当天什么也没说','学费一年两万四，是从家里买菜的钱里一点点省出来的，我妈说不要紧','画室老师说过一句话，画得好的人太多，一直画下去的人太少，我记到现在'],how:['亮观点：把能不能当出路换成能不能承受八年，观点落在时间上，不落在天赋上','立论据：奖状、通知书、学费从买菜钱里省，三处细节把家里的分歧压出来','辨析：接画画没前途的反方，指出这句话只对了一半，问题出在坚持的时间和家里','收束：给一个可试的办法，先去画室跟班一个月，用真实体验代替饭桌上的争论'],trap:'容易写成和父母赌气的对抗文，或者干脆替画画喊口号；家庭细节必须站得住，观点也不能只有我有梦想这四个字。',who:['我','画室老师','妈妈']});
+BANK.push({id:'K111',t:'《输了比赛还要不要谢对手》',g:'argue',d:'setback',c:'contest',e:'admire',idea:'我们班拔河输给隔壁班，我第一个想问的不是怎么练下次，是该不该去跟赢的人说一声恭喜；想了两周，我觉得该说，而且要说具体。',mat:['对方班赢了我们班四十公分，最后一跤我被拉倒，手掌在地砖上蹭掉一层皮','赛后他们班的人先走了，留下的只有一个女生在收绳子，收得很慢很慢','我第一次去说恭喜，说的是你们收绳子的方法好，我们班没一个人想过','第二次比赛还是输了，可这次散场时两边混在一起踢了十分钟球'],how:['亮观点：把该不该谢说成该说但要具体，空泛的恭喜不过是敷衍的一种形式','立论据：用输掉的四十公分、蹭掉皮的掌心和收绳子的女生做证据，三个都要有','辨析：接胜者不稀罕败者恭维的反方，说清楚稀罕的是被认真对待的那一部分','收束：给一个能年年做的动作，把恭喜绑到一个具体细节上，输赢都不省略'],trap:'容易写成输不起的自我安慰，或者反过来写成虚伪的客套；两边都要承认，情绪只从比分和绳子上长出来。',who:['我','隔壁班的女生','体育老师']});
+BANK.push({id:'K112',t:'《蚂蚁告诉我们的事》',g:'argue',d:'nature',c:'object',e:'curio',idea:'蚂蚁在墙根排成一列往高处搬，我蹲着看了三小时，最后明白一件事：它们从来不问这条路通不通，只问脚下这一寸稳不稳；这比很多道理都好用。',mat:['蚂蚁搬的是碎米粒和白糖粒，一趟一趟从不贪多，队伍始终只有一列','有只蚂蚁搬了半块饼干屑，走到半路饼干太重，它绕回洞口换成半块小的','我把手指横在它们路上试探，它们立刻改道，而不是硬撞或者停下来争执','雨点砸下来时它们加快速度，顺序完全没乱，谁都没有掉队，也没有争先'],how:['亮观点：把蚂蚁的行为翻译成一条可用标准，不评输赢，只讲脚下那一寸','立论据：用一趟只搬一列、绕回换小食、手指试探改道三个动作当全部论据','辨析：接人做不到这种程度是不是就太差的反方，指出标准低才用得上，不是抬高','收束：给一句能迁移的话，明天早自习前先把桌子底下那一块地面收干净'],trap:'容易写成昆虫科普加拟人金句，最后落到人类应该怎样就假了；三个观察动作要写全，议论不超过两句。',who:['我','观察笔记','同桌']});
+BANK.push({id:'K113',t:'《给三年后的自己的一封信》',g:'apply',d:'future',c:'first',e:'warm',idea:'写信给三年后读信的我，说清一件我现在最怕的事、一件我最想改的习惯，再留一个只有我自己认得出来的暗号，好检查这三年我到底变了没有。',mat:['我把信封口折了三层，里面塞了一张此刻的课表和一张食堂饭票','第一件我写的是怕什么：怕体检报告上出现第二个我不认识的词','第二件我写改什么：把生气时立刻回消息，改成先喝完一杯水','暗号我定成一个错别字，只有到时候还写错的人算我赢'],how:['称呼与格式：称呼写给三年后的自己，问候一句，正文四段，末尾署名和日期','主体一：先写现在的处境和最怕的那件事，用一张课表和一张饭票落地','主体二：再写想改的习惯和定下的暗号，暗号要别人看不懂，只有我懂','落款与祝福：结尾一句留给将来的话，不许许愿，只留一个可检验的说法'],trap:'容易写成流水账或自我检讨报告；每段必须有一件实物或一个日期，最后一句不能是祝你成功。',who:['我','三年后的我','同桌']});
+BANK.push({id:'K114',t:'《竞选学习委员的演讲稿》',g:'apply',d:'teacher',c:'contest',e:'insight',idea:'面向全班同学，说明我为什么想当学习委员、我打算做哪三件小事，并先认领自己最大的毛病，再让同学来监督这三件事。',mat:['开场先报姓名和座位号，不讲客气话，全篇控制在三分半以内','三件小事是每节课后留一道典型错题、每周一次答疑、每月一次投票选题','认领的毛病是我上次投票统计错了两个人的票数，我当场更正过','结尾承诺做不到就自动请辞，请班里同学当场记住这句话'],how:['称呼与格式：称呼写老师和同学各自一句，问候后直接进内容，不铺垫','主体一：讲三件小事，每件说清什么时候做、谁参与、怎么被检查','主体二：先认领一次真实的出错，再讲怎么改，认错在前，承诺在后','落款与祝福：结尾请大家监督并说出做不到就请辞，全篇不喊口号不排比'],trap:'容易写成自夸的竞选宣言，通篇形容词和排比；必须有一件认错的真事，三件小事都要能被当场验证。',who:['我','数学老师','竞争对手']});
+BANK.push({id:'K115',t:'《读〈骆驼祥子〉有感》',g:'apply',d:'culture',c:'object',e:'down',idea:'读祥子不是读他可怜，是读他每一次都以为自己还年轻；我的感想落在最后一辆空车上——他不是没本事，他是被一次次便宜地打发走了。',mat:['他第一次买车，三十块拉一年才攒够，买的那天夜里他高兴得没睡着','他第二次买车被大兵抢走，他没喊，喊了也没人替他还，这句写得最冷','他最后一次拉车是给曹先生赶车，那段车把子握得最稳，是全书里唯一亮的地方','书合上以后我查了一下虎妞的坟在哪儿，作者没写，我也一直没敢查下去'],how:['称呼与格式：书名加作者放在第一行，正文按买车三次的顺序写，不分段总结','主体一：按三起三落各写一段，每段只写一个动作和他当时的一句话','主体二：单独给最后一辆空车和那处最稳的车把子，各写一句我的判断','落款与祝福：结尾写我合上书后做的第一件事，是把那本借来的书按时还回去'],trap:'容易写成读后感套话加名言摘抄；三次买车必须各写一个具体动作，通篇不许出现一句我被深深感动。',who:['我','同桌','语文老师']});
+BANK.push({id:'K116',t:'《关于课间十分钟不上厕所的倡议书》',g:'apply',d:'society',c:'crowd',e:'protect',idea:'倡议全班把课间十分钟用在眼睛上而不是手机上，写清三条能立刻执行的换法，并请班主任每天在黑板角落记一次，作为我们班的记录。',mat:['倡议缘由写一次真实情况：上个学期有同学课间几乎不去操场，全班零人下楼','第一条：课间不下课改写生字本，桌子留在原位，人先到走廊尽头站着看远处','第二条：眼药水只留一支放讲台，谁都能用，用完在黑板角落画一道正字','第三条：每周五体育课多练五分钟望远，最后一节课老师提醒一次抬头'],how:['称呼与格式：称呼写全校同学，缘由一段，正文三条，末尾署名加日期','主体一：缘由只用一个班级的真实情况，不用数据也不喊视力下降','主体二：三条提议各写清什么时候做、谁先做、在哪里做，能落地为准','落款与祝福：结尾请班主任每天记一次正字，署名和日期留在右下角'],trap:'容易写成口号式倡议，通篇都是保护眼睛人人有责；每条提议都要能被真的执行，一条空话都不要留。',who:['我','班主任','班长']});
+BANK.push({id:'K117',t:'《一封推荐信》',g:'apply',d:'friend',c:'word',e:'admire',idea:'写给校外的夏令营老师，推荐我最好的朋友，理由只写三件她做过的事，并且把她最大的一个缺点也写进去，好让对方判断值不值得收。',mat:['开头写称呼和推荐理由的总起句，不铺垫天气也不铺垫心情','第一件事：她值日时把讲台的粉笔灰擦干净了再走，全学期一次没落','第二件事：我妈住院那阵子她每天给我带一份笔记，只写错题不讲安慰','第三件事：她的缺点是急了会打断人，她自己记在周记里，已经练了半年'],how:['称呼与格式：称呼顶格写，正文三件事分三段，末尾署名并附上联系方式','主体一：三件事各写一个动作和一个时间，让对方看见而不是听我形容','主体二：如实写一个缺点加她的改正过程，不藏着，也不重复夸三遍','落款与祝福：结尾写请对方直接联系我核实，署名后写我和她的关系'],trap:'容易把人夸成一个完美的人，写成求情的信；三件事必须各带时间，缺点那段不能省，省了推荐信就不真了。',who:['我','夏令营老师','被推荐的朋友']});
+BANK.push({id:'K118',t:'《在升旗仪式上念的颁奖词》',g:'apply',d:'teacher',c:'object',e:'warm',idea:'代表学校念一段颁给校运会接力亚军的颁奖词，四十字里不夸跑得快，只说他们跑错了两次还能把棒交出去这件事。',mat:['称呼写全校同学一句，先报奖项名称，再报队伍和每位同学的名字','不写速度和成绩，只写第三棒摔了一跤爬起来把棒递给第四棒的那两秒','把全队四十七次训练里换过八个人这件事写进去，八个人都上台','结尾一句送给所有没拿名次的人，念的时候抬头看台下'],how:['称呼与格式：称呼一句起，两句话报奖项和名字，正文控制在二百字内','主体一：写一个具体的接力动作，不写速度和名次，动词要落在手上','主体二：写换过八个人的训练，八个人的名字全部念到，一个不省','落款与祝福：结尾一句转向没拿名次的人，念完鞠躬，署名在最后一行'],trap:'容易写成表彰大会的套话，通篇是速度和成绩；只写两秒的动作和八个人的名字，抒情一句都不要加。',who:['我','接力队同学','体育老师']});
+BANK.push({id:'K119',t:'《参观记：上海博物馆的两块说明牌》',g:'apply',d:'culture',c:'journey',e:'curio',idea:'记一次看展，写清我在同一件展品前前后后去了三次，前两次都看错了说明牌，第三次才发现它少了半截说明。',mat:['路线从三楼青铜馆上到四楼书画馆，电梯在四楼停了九分钟','第一次看那只青铜觥，我以为它在喝酒，讲解员笑我想象力太丰富','第二次我又去，说明牌上写着宴饮器皿，我却盯着它腿上的裂纹看了很久','第三次才发现说明牌只有左半边，右半边是空的，柜里那块白色卡纸是新换的'],how:['称呼与格式：参观记不用称呼，按时间地点开篇，结尾落到一件东西上','主体一：写路线的三段和三楼的两次误读，误读要写得有理由','主体二：写第三次发现少半截说明牌，把细节和心里的疑问各写一句','落款与祝福：结尾写我把这件事记进周记本，说下次去要问讲解员为什么'],trap:'容易写成景点解说词的搬运，把展品资料当作文素材；至少要有一处我看错又改正的地方，看错才像真的去了。',who:['我','讲解员','同行同学']});
+BANK.push({id:'K120',t:'《采访稿：写给那个缺了两整个学期的同学》',g:'apply',d:'setback',c:'moment',e:'insight',idea:'采访因伤休学一年又回来的同级同学，问他最难的不是走路而是重新听懂课，为此我采访了他和替他记笔记的那个人，两边的话对不上。',mat:['采访前先写约定：他的原话我可以用，但他要求我别写他的伤情','我问他最难的是什么，他说不是走路，是听见老师讲课却接不上话的感觉','我问他靠什么补回来的，他说是靠同桌的笔记和每天中午的一对一','我后来去问同桌，同桌只说了一句，说他笔记记得比我细，别写我'],how:['称呼与格式：采访记按采访时间地点开篇，不加称呼，问题后直接接原话','主体一：写第一个问题和他真正的回答，回答要有一句完整的原话','主体二：写我去问第二个人，两边说法不一致，把不一致留在文章里','落款与祝福：结尾写我最后只删了一句，删掉的是他自己的真话'],trap:'容易写成歌颂坚强的励志文章，人物只有动作没有原话；必须保留两处说法不一致的地方，那才是采访。',who:['我','被采访的同学','替他记笔记的人']});
+BANK.push({id:'K121',t:'《给校长的建议书》',g:'apply',d:'grow',c:'change',e:'plain',idea:'建议把每天最后一节自习分成两段，前段自由、后段答疑，理由是全班都在最后十五分钟抄别人的作业，说明前面那段没被用起来。',mat:['称呼顶格写建议缘由，上周三是例子，全班最后一节有三十一个人在抄题','建议一：前四十分钟按自己的计划复习，后二十分钟由学科老师坐在讲台答疑','建议二：答疑时只讲当天讲过的题，超纲的题登记在本子上放到周末','建议三：先在一个班试两周，两周后由学生投票决定要不要全校推开'],how:['称呼与格式：称呼缘由各一段，建议分三条，末尾署名并写上所在班级','主体一：缘由用一个晚上的具体场面加人数，不用排名也不批评任何老师','主体二：三条建议各写清时间、内容和谁来负责，越能被执行越好','落款与祝福：结尾请校长考虑并说明试行办法，署名后附一句如可行愿配合记录'],trap:'容易变成抱怨晚自习的投诉信，语气重得像在告谁；建议必须带试行范围和时间表，只提意见不给办法的不会被采纳。',who:['我','班主任','班长']});
+BANK.push({id:'K122',t:'《一封感谢信》',g:'apply',d:'family',c:'promise',e:'warm',idea:'写信感谢陪我练了整整一个学期体育的体育老师，不写他教得好，只写他每次在我跑不动时都陪我走完最后一圈。',mat:['称呼写体育老师，问候一句，说明写信是为一学期以来最具体的几件事','第一件事：我的八百米从三分十二秒降到两分五十八秒，中间有两次是走着跑完的','第二件事：去年运动会前我发烧，他还把我换到了不用抢名额的项目上','第三件事：期末前最后一周他陪我跑操场，一句重话都没说，只在终点等我'],how:['称呼与格式：称呼问候一段，正文三件事分三段，末尾署名并写上日期','主体一：三件事各配一个数字或一个动作，让感谢落在可核对的事实上','主体二：写一件我当时没敢说的事，那就是不打扰他的慢这件事本身','落款与祝福：结尾祝福他的膝盖，署名后写上我的班级，别写成千篇一律的感谢语'],trap:'容易写成千篇一律的感谢模板，全篇是好话没有一件具体的事；三件事必须各带数字或时间，否则不如不写。',who:['我','体育老师','班长']});
+
+/* ══════════════ 3. 逻辑 ══════════════ */
+var LS = (function(){
+  var ok=true;
+  try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); }catch(e){ ok=false; }
+  return {ok:ok, get:function(k,d){ if(!ok) return d; try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+              set:function(k,v){ if(!ok) return; try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} } };
+})();
+
+var sel={g:null,d:null,c:null,e:null};
+var step=0;              // 0..3 选择步，4=定题
+var salt=0;              // 「换一个」
+var chosen=null;        // 确认的题目
+var slots={};            // 人物槽位当前取值
+var timerSec=2400, tInt=null, tickAt=0;
+var store=LS.get('zxz.v1',{fav:[],hist:[],imported:0});
+if(!store.fav)store.fav=[]; if(!store.hist)store.hist=[];
+function save(){ store.imported=BANK.filter(function(b){return b.imp;}).length; LS.set('zxz.v1',store); }
+
+function all(){ return BANK; }
+function byId(id){ for(var i=0;i<BANK.length;i++) if(BANK[i].id===id) return BANK[i]; return null; }
+function keyOf(s){ return [s.g,s.d,s.c,s.e].join('|'); }
+function match(b,s){ return (!s.g||b.g===s.g)&&(!s.d||b.d===s.d)&&(!s.c||b.c===s.c)&&(!s.e||b.e===s.e); }
+function pool(s){ var out=[],i; for(i=0;i<BANK.length;i++) if(match(BANK[i],s)) out.push(BANK[i]); return out; }
+
+/* 选项上要显示"这一步每个值还剩几篇"，所以要按当前其他选择算 */
+function counts(dim){
+  var s={g:sel.g,d:sel.d,c:sel.c,e:sel.e}, n={}, i,b;
+  for(i=0;i<BANK.length;i++){ b=BANK[i];
+    if(!match(b,s)) continue;
+    n[b[dim]]=(n[b[dim]]||0)+1;
+  }
+  return n;
+}
+
+/* 排序：稳定散列 + 「换一个」加盐，保证换出来的是另一批 */
+function hash(str){ var h=2166136261,i; for(i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0); }
+function rank(list,saltN){
+  var k=keyOf(sel)+'#'+saltN;
+  return list.slice().sort(function(a,b){
+    var d=hash(k+a.id)-hash(k+b.id);
+    if(d) return d;
+    return hash(a.id)-hash(b.id);
+  });
+}
+/* 补充搜索：按 c→e→d→g 的顺序【累积】清空维度，一直退到池子够 3 篇为止。
+   三个曾经的错，逐个都是真实 bug：
+   1) 一次只去掉一个维度 —— 四个维度互斥时，去掉任意单个仍可能为空，只有累积去掉才退得回去；
+   2) 先检查未放宽的池子 —— 精确命中 1 篇时立刻返回，放宽从未发生；
+   3) 退到第一个非空池子就停 —— 例：rec/family/contest/curio 去掉 c 后有 2 篇，
+      就再也不往下退，用户只拿到 2 篇。用户要的是「挑定一篇」，2 篇没法挑，
+      所以必须退到够 3 篇（产品不变量：出题页永远给 3 篇让他比较）。 */
+function relaxedPool(){
+  var order=['c','e','d','g'], s={g:sel.g,d:sel.d,c:sel.c,e:sel.e}, dropped=[];
+  var last=null;
+  for(var i=0;i<order.length;i++){
+    s[order[i]]=null; dropped.push(order[i]);
+    var l=pool(s);
+    last={list:l,dropped:dropped.slice()};
+    if(l.length>=3) return last;
+  }
+  return last||{list:[],dropped:dropped};
+}
+
+function results(){
+  var exact=pool(sel), shown=[], seen={}, i;
+  /* 先给「四步全中」的题，一篇题只出现一次 */
+  function take(list){
+    for(var k=0;k<list.length && shown.length<3;k++){
+      var x=list[k], tag=x.g+'|'+x.d+'|'+x.c+'|'+x.e;
+      if(seen[tag]) continue;
+      seen[tag]=1; shown.push(x);
+    }
+  }
+  take(rank(exact,salt));
+  /* 凑不满 3 篇就累积放宽补足。放宽池包含精确池的题，但那些已在 seen 里，
+     所以新增的都是真正放宽条件才找到的 —— extra 就是「有多少篇是靠放宽才出现的」。 */
+  var dropped=null, extra=0;
+  if(shown.length<3){
+    var rp=relaxedPool();
+    if(rp.list.length){
+      var before=shown.length;
+      take(rank(rp.list,salt));
+      extra=shown.length-before;
+      // 放宽了也没带来新题（放宽池里的题全在精确池里、已进 seen），别显示放宽提示。
+      // 注意用 !extra 而不是 !dropped.length：零选择时 relaxedPool() 会返回
+      // 一个非空 dropped（它照样清掉了 c/e/d/g 才找到够 3 篇的池子），
+      // 但其实什么都没放宽，用 dropped.length 判断会让 UI 显示一条空的「放宽」提示。
+      dropped=extra?rp.dropped:null;
+    }
+  }
+  return {list:exact,shown:shown,relaxed:dropped,extra:extra};
+}
+
+function el(tag,cls,txt){ var e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
+function slotDefault(b){
+  var w=(b.who&&b.who.length)?b.who[0]:null;
+  return slots[b.id]!=null?slots[b.id]:w;
+}
+function finalTitle(b){
+  var w=slotDefault(b);
+  if(!w) return b.t;
+  return b.t.replace(/\{[^}]+\}/g,w);
+}
+function badge(t){ var m=(t.emo||'·')+' '+t.nm; return m; }
+
+/* ── 视图：步骤条 ── */
+function renderSteps(){
+  var box=document.getElementById('steps'); box.innerHTML='';
+  var labels=['体裁','领域','切口','情感','定题'];
+  for(var i=0;i<5;i++){
+    var d=el('div','sdot'+(i<step?' done':'')+(i===step?' cur':''));
+    d.setAttribute('data-i',i);
+    var bar=el('div','sbar'); bar.appendChild(el('i'));
+    var lab=el('div','slab',labels[i]);
+    d.appendChild(bar); d.appendChild(lab);
+    if(i<step) d.addEventListener('click',(function(n){ return function(){ goStep(n); }; })(i));
+    box.appendChild(d);
+  }
+}
+
+/* ── 视图：选择步 ── */
+function renderChoice(){
+  var v=document.getElementById('view'); v.innerHTML='';
+  var st=STEPS[step], key=st.k, T=st.T;
+  var n=counts(key);
+  var nAll=0, s0={g:sel.g,d:sel.d,c:sel.c,e:sel.e};
+  s0[key]=null;
+  BANK.forEach(function(b){ if(match(b,s0)) nAll++; });
+  var keys=Object.keys(T).filter(function(k){ return n[k]>0; });
+
+  var h=el('div','qhead fade');
+  h.appendChild(el('div','k',st.t.replace(/^第 (\d) 步 · (.)(.*)$/,function(_,i,a,b){return 'STEP '+i+' / 4 · '+a+b;})));
+  var Q={
+    g:['这次想写哪一种文体的作文？','体裁一选，后面三步的选项会自动缩到真正能写的范围。'],
+    d:['这件事发生在谁的范围里？','领域定了，素材才有地方找——这一步最容易卡住，先随便选一个也行。'],
+    c:['从哪里下笔最省力？','切口决定细节往哪儿使劲，也是结构最省事的一种。'],
+    e:['你想让读者读完是什么心情？','情感是立意的落点。选一个，别选三个。']
+  }[key];
+  h.appendChild(el('h2',null,Q[0]));
+  h.appendChild(el('p',null,Q[1]));
+  v.appendChild(h);
+
+  if(sel.g) v.appendChild(trail());
+
+  var g=el('div','grid');
+
+  /* 「不限」永远是第一个选项。四个维度交叉之后命中数会急剧变小
+     （130 篇里 rec+family+object+warm 通常只有 1 篇），
+     所以每一步都必须能说「还没想好」，否则用户会被逼进死路。 */
+  var any=el('button','opt');
+  if(!sel[key]) any.classList.add('pick');
+  any.appendChild(el('span','emo','✳️'));
+  any.appendChild(el('span','nm','不限'));
+  any.appendChild(el('span','ds','这一步还没想好，先看全部'));
+  any.appendChild(el('span','ct',nAll+' 篇'));
+  any.addEventListener('click',function(){ chooseDim(key,null); });
+  g.appendChild(any);
+
+  keys.forEach(function(k){
+    var t=T[k];
+    var b=el('button','opt');
+    b.appendChild(el('span','emo',t.emo));
+    b.appendChild(el('span','nm',t.nm));
+    b.appendChild(el('span','ds',t.ds));
+    b.appendChild(el('span','ct',n[k]+' 篇'));
+    if(sel[key]===k) b.classList.add('pick');
+    b.addEventListener('click',function(){ chooseDim(key,sel[key]===k?null:k); });
+    g.appendChild(b);
+  });
+  v.appendChild(g);
+  if(!keys.length){
+    v.appendChild(el('div','empty','这一步没有可写的组合了。选「不限」，或者点下面的「回去改一步」。'));
+  }
+  return {total:n};
+}
+
+/* 选一个维度值：上层改了，下层清空；选完自动进下一步 */
+function chooseDim(key,val){
+  sel[key]=val;
+  var order=['g','d','c','e'], at=order.indexOf(key);
+  for(var j=at+1;j<4;j++) sel[order[j]]=null;
+  salt=0; chosen=null;
+  step=val?(at+1):at;
+  render();
+  if(val && at<3){ setTimeout(function(){ if(step===at) step=at+1; render(); },200); }
+}
+
+function trail(){
+  var t=el('div','trail');
+  var names={g:G,d:D,c:C,e:E};
+  ['g','d','c','e'].forEach(function(k){
+    if(!sel[k]) return;
+    var ch=el('span','chip x');
+    ch.appendChild(el('b',null,names[k][sel[k]].nm));
+    ch.appendChild(document.createTextNode(' ✕'));
+    ch.addEventListener('click',function(){
+      sel[k]=null; var i=STEPS.findIndex(function(s){return s.k===k;});
+      for(var j=i+1;j<STEPS.length;j++) sel[STEPS[j].k]=null;
+      step=i; salt=0; render();
+    });
+    t.appendChild(ch);
+  });
+  return t;
+}
+
+/* ── 视图：定题 ── */
+function renderResults(){
+  var v=document.getElementById('view'); v.innerHTML='';
+  var R=results();
+  var h=el('div','qhead fade');
+  h.appendChild(el('div','k','STEP 5 / 4 · 固定组合'));
+  h.appendChild(el('h2',null,'这几篇是你刚才那条路的固定组合'));
+  h.appendChild(el('p',null,'同一组选择永远得到同一批题 —— 考试前练熟的组合，换个顺序还想得起来才算真的会。'));
+  v.appendChild(h);
+  v.appendChild(trail());
+
+  var c=el('div','cnt');
+  if(!R.list.length){
+    c.innerHTML='你选的「'+G[sel.g].nm+' / '+D[sel.d].nm+' / '+C[sel.c].nm+' / '+E[sel.e].nm+'」这一路目前是空的。';
+  } else if(R.relaxed){
+    var RN={g:G,d:D,c:C,e:E};
+    c.innerHTML='严格按这四步，<b>'+R.list.length+'</b> 篇。下面 '+R.shown.length+' 篇里有 <b>'+R.extra+'</b> 篇是放宽了'
+      +R.relaxed.map(function(k){return '「'+RN[k].nm+'」';}).join('')+'之后才找到的。';
+  } else {
+    c.innerHTML='这一路共有 <b>'+R.list.length+'</b> 篇，先给你 '+R.shown.length+' 篇，挑定一篇再往下写。';
+  }
+  v.appendChild(c);
+
+  if(!R.shown.length){
+    v.appendChild(el('div','empty','放宽到底也没有题。回上一步改一个条件，或者用右上角「题材库 → 加题」把老师给的题目贴进来。'));
+    return;
+  }
+  R.shown.forEach(function(b){ v.appendChild(topicCard(b)); });
+
+  var row=el('div','acts'); row.style.padding='0';
+  var more=el('button','abtn',R.list.length>3?'换一批（同一路换 3 篇）':'这条路只有 '+R.list.length+' 篇');
+  if(R.list.length<=3){
+    more.style.opacity='.5';
+    more.addEventListener('click',function(){ toast('这条路就这几篇，回上一步放宽一个条件试试'); });
+  } else {
+    more.addEventListener('click',function(){ salt++; render(); window.scrollTo(0,0); });
+  }
+  row.appendChild(more);
+  var back=el('button','abtn','回去改一步');
+  back.addEventListener('click',function(){ step=3; render(); window.scrollTo(0,0); });
+  row.appendChild(back);
+  v.appendChild(row);
+}
+
+function topicCard(b){
+  var card=el('div','card fade');
+  var tl=el('div','topline');
+  tl.appendChild(el('div','tt',finalTitle(b)));
+  tl.appendChild(el('div','gbadge',G[b.g].emo+' '+G[b.g].nm));
+  card.appendChild(tl);
+
+  var s1=el('div','sect');
+  s1.appendChild(el('h4',null,'这篇要说什么（立意一句话）'));
+  s1.appendChild(el('p','idea',b.idea));
+  card.appendChild(s1);
+
+  if(b.who&&b.who.length){
+    var s0=el('div','sect');
+    s0.appendChild(el('h4',null,'主角换成谁'));
+    var sl=el('div','slots');
+    b.who.forEach(function(w){
+      var btn=el('button','slot');
+      btn.appendChild(document.createTextNode(w));
+      var on=slotDefault(b)===w;
+      if(on){ btn.style.background='#a78bfa40'; btn.style.borderColor='#a78bfa'; }
+      btn.addEventListener('click',function(e){
+        e.stopPropagation(); slots[b.id]=w;
+        var host=card.querySelector('.tt'); if(host) host.textContent=finalTitle(b);
+        var s=card.querySelectorAll('.slot'); for(var i=0;i<s.length;i++){ s[i].style.background=''; s[i].style.borderColor=''; }
+        btn.style.background='#a78bfa40'; btn.style.borderColor='#a78bfa';
+      });
+      sl.appendChild(btn);
+    });
+    var tip=el('span','chip','点一下换人物');
+    tip.style.borderStyle='dashed';
+    sl.appendChild(tip);
+    s0.appendChild(sl);
+    card.appendChild(s0);
+  }
+
+  var s2=el('div','sect');
+  s2.appendChild(el('h4',null,'能用上的真实素材（勾掉用过的）'));
+  var ul=el('ul','mat');
+  b.mat.forEach(function(m,i){
+    var li=el('li',null,m);
+    li.dataset.i=i;
+    li.addEventListener('click',function(){ li.classList.toggle('on'); });
+    ul.appendChild(li);
+  });
+  s2.appendChild(ul);
+  card.appendChild(s2);
+
+  var s3=el('div','sect');
+  s3.appendChild(el('h4',null,'怎么搭（4 步骨架）'));
+  var ol=el('ol','how');
+  b.how.forEach(function(h){ ol.appendChild(el('li',null,h)); });
+  s3.appendChild(ol);
+  card.appendChild(s3);
+
+  var s4=el('div','sect');
+  s4.appendChild(el('h4',null,'最容易写成什么样'));
+  var tr=el('div','trap');
+  tr.appendChild(el('b',null,'翻车点　'));
+  tr.appendChild(document.createTextNode(b.trap));
+  s4.appendChild(tr);
+  card.appendChild(s4);
+
+  var acts=el('div','acts');
+  var fav=el('button','abtn sm');
+  function paintFav(){
+    var on=store.fav.indexOf(b.id)>=0;
+    fav.textContent=on?'★ 已收藏':'☆ 收藏';
+    fav.style.color=on?'var(--gold)':'';
+  }
+  paintFav();
+  fav.addEventListener('click',function(){
+    var i=store.fav.indexOf(b.id);
+    if(i>=0) store.fav.splice(i,1); else store.fav.push(b.id);
+    save(); paintFav(); toast(i>=0?'已取消收藏':'已收进题材库');
+  });
+  var copy=el('button','abtn sm','复制支架');
+  copy.addEventListener('click',function(){ copyPlan(b); });
+  var go=el('button','abtn pri','就写这篇 →');
+  go.addEventListener('click',function(){
+    chosen=b; slots[b.id]=slotDefault(b);
+    if(store.hist.indexOf(b.id)<0){ store.hist.push(b.id); if(store.hist.length>30) store.hist.shift(); }
+    save(); step=4; render(); window.scrollTo(0,0);
+  });
+  acts.appendChild(fav); acts.appendChild(copy); acts.appendChild(go);
+  card.appendChild(acts);
+  return card;
+}
+
+/* ── 视图：写作台 ── */
+function renderDesk(){
+  var v=document.getElementById('view'); v.innerHTML='';
+  var b=chosen; if(!b){ step=4; render(); return; }
+  var q=QUOTA[b.g]||QUOTA.rec;
+
+  var h=el('div','qhead fade');
+  h.appendChild(el('div','k','写作台 · 已定题'));
+  h.appendChild(el('h2',null,finalTitle(b)));
+  h.appendChild(el('p',null,G[b.g].nm+' · '+D[b.d].nm+' · '+C[b.c].nm+' · '+E[b.e].nm));
+  v.appendChild(h);
+
+  /* 计时 */
+  var tm=el('div','timer');
+  var t=el('div','t',fmt(timerSec));
+  var info=el('div','info');
+  function paintInfo(){
+    info.innerHTML='';
+    info.appendChild(el('div',null,timerSec>600?'离考试交卷还有 '+Math.ceil(timerSec/60)+' 分钟，先花 3 分钟列骨架':'只剩 '+Math.ceil(timerSec/60)+' 分钟：别再改开头，直接把主体写完。'));
+    info.appendChild(el('div',null,'分段目标：'+QUOTA_LAB.map(function(l,i){return l+q[i]+'字';}).join(' · ')));
+  }
+  paintInfo();
+  var start=el('button','tbtn2','开始');
+  var reset=el('button','tbtn2','重置');
+  reset.addEventListener('click',function(){ stop(); timerSec=2400; t.textContent=fmt(timerSec); tm.classList.remove('hot'); paintInfo(); });
+  function stop(){ if(tInt){ clearInterval(tInt); tInt=null; start.textContent='开始'; } }
+  function paint(){ t.textContent=fmt(timerSec); tm.classList.toggle('hot',timerSec<=600); paintInfo(); }
+  start.addEventListener('click',function(){
+    if(tInt){ stop(); return; }
+    tickAt=Date.now(); start.textContent='暂停';
+    tInt=setInterval(function(){
+      var n=Math.floor((Date.now()-tickAt)/1000);
+      timerSec=Math.max(0,2400-n); paint();
+      if(timerSec<=0){ stop(); start.textContent='开始'; toast('时间到'); }
+    },250);
+  });
+  tm.appendChild(t); tm.appendChild(info); tm.appendChild(start); tm.appendChild(reset);
+  v.appendChild(tm);
+
+  /* 配额 */
+  var qa=el('div','qa');
+  QUOTA_LAB.forEach(function(l,i){ var d=el('div'); d.appendChild(el('b',null,q[i])); d.appendChild(el('span',null,l)); qa.appendChild(d); });
+  v.appendChild(qa);
+
+  /* 立意 */
+  var s1=el('div','sect');
+  s1.appendChild(el('h4',null,'立意（这句抄上去，开头结尾都要绕着它）'));
+  s1.appendChild(el('p','idea',b.idea));
+  v.appendChild(s1);
+
+  /* 素材清单 */
+  var s2=el('div','sect');
+  s2.appendChild(el('h4',null,'素材清单（写到一个勾一个，够 3 个就能开写）'));
+  var ul=el('ul','mat');
+  var cnt=el('div','cnt','已用 0 / '+b.mat.length);
+  b.mat.forEach(function(m){
+    var li=el('li',null,m);
+    li.addEventListener('click',function(){
+      li.classList.toggle('on');
+      var on=ul.querySelectorAll('li.on').length;
+      cnt.innerHTML='已用 <b>'+on+'</b> / '+b.mat.length;
+    });
+    ul.appendChild(li);
+  });
+  s2.appendChild(cnt); s2.appendChild(ul);
+  v.appendChild(s2);
+
+  /* 骨架 */
+  var s3=el('div','sect');
+  s3.appendChild(el('h4',null,'骨架'));
+  var ol=el('ol','how');
+  b.how.forEach(function(h){ ol.appendChild(el('li',null,h)); });
+  s3.appendChild(ol);
+  v.appendChild(s3);
+
+  /* 避坑 + 拓展 */
+  var s4=el('div','sect');
+  s4.appendChild(el('h4',null,'翻车点'));
+  var tr=el('div','trap');
+  tr.appendChild(el('b',null,'注意　'));
+  tr.appendChild(document.createTextNode(b.trap));
+  s4.appendChild(tr);
+  v.appendChild(s4);
+
+  var same=pool(sel).filter(function(x){ return x.id!==b.id && x.g===b.g; }).slice(0,3);
+  if(same.length){
+    var s5=el('div','sect');
+    s5.appendChild(el('h4',null,'同一体裁，别的备选（万一写到一半卡住）'));
+    same.forEach(function(x){
+      var m=el('div','mini');
+      m.appendChild(el('div','mt',finalTitle(x)));
+      var ms=el('div','ms');
+      ms.appendChild(el('span',null,D[x.d].nm)); ms.appendChild(el('span',null,C[x.c].nm)); ms.appendChild(el('span',null,E[x.e].nm));
+      m.appendChild(ms);
+      m.addEventListener('click',function(){ chosen=x; step=4; salt=0; render(); window.scrollTo(0,0); toast('已换成：'+finalTitle(x)); });
+      s5.appendChild(m);
+    });
+    v.appendChild(s5);
+  }
+
+  var row=el('div','acts'); row.style.padding='0';
+  var cp=el('button','abtn pri','复制整份写作单');
+  cp.addEventListener('click',function(){ copyPlan(b); });
+  var back=el('button','abtn','换一篇');
+  back.addEventListener('click',function(){ step=4; render(); });
+  var clear=el('button','abtn sm','清掉本篇');
+  clear.addEventListener('click',function(){
+    chosen=null; slots={}; step=4; salt++; render(); toast('已清空，重新挑一篇');
+  });
+  row.appendChild(cp); row.appendChild(back); row.appendChild(clear);
+  v.appendChild(row);
+}
+
+function fmt(s){ var m=Math.floor(s/60), x=s%60; return (m<10?'0':'')+m+':'+(x<10?'0':'')+x; }
+
+function planText(b){
+  var w=slotDefault(b), q=QUOTA[b.g]||QUOTA.rec, L=[];
+  L.push('【题目】'+finalTitle(b));
+  L.push('【体裁】'+G[b.g].nm+'　【领域】'+D[b.d].nm+'　【切口】'+C[b.c].nm+'　【情感】'+E[b.e].nm);
+  L.push('');
+  L.push('【立意】'+b.idea);
+  L.push('');
+  L.push('【素材清单】');
+  b.mat.forEach(function(m,i){ L.push('  '+(i+1)+'. '+m); });
+  L.push('');
+  L.push('【骨架】');
+  b.how.forEach(function(h,i){ L.push('  '+(i+1)+'. '+h); });
+  L.push('');
+  L.push('【翻车点】'+b.trap);
+  L.push('');
+  L.push('【字数】开头'+q[0]+' · 主体'+q[1]+' · 结尾'+q[2]+'　合计 '+(q[0]+q[1]+q[2])+' 字');
+  return L.join('\n');
+}
+function copyPlan(b){
+  var txt=planText(b);
+  function fallback(){
+    var ta=document.createElement('textarea');
+    ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    var okc=false;
+    try{ okc=document.execCommand('copy'); }catch(e){}
+    document.body.removeChild(ta);
+    toast(okc?'已复制到剪贴板':'复制失败，长按文字手动复制');
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){ toast('已复制到剪贴板'); }, fallback);
+  } else fallback();
+}
+
+/* ── 抽屉 ── */
+var libTab='fav';
+function openSheet(tab){
+  libTab=tab||libTab;
+  document.getElementById('sheet').classList.add('on');
+  document.body.classList.add('lb-open');
+  document.getElementById('btnLib').classList.add('on');
+  renderSheet();
+}
+function closeSheet(){
+  document.getElementById('sheet').classList.remove('on');
+  document.body.classList.remove('lb-open');
+  document.getElementById('btnLib').classList.remove('on');
+}
+function renderSheet(){
+  var body=document.getElementById('shBody'); body.innerHTML='';
+  var tabs=el('div','tabs');
+  [['fav','收藏'],['hist','写过'],['imp','加题'],['how','怎么用']].forEach(function(t){
+    var b=el('button','tbtn'+(libTab===t[0]?' on':''),t[1]);
+    b.style.flex='1';
+    b.addEventListener('click',function(){ libTab=t[0]; renderSheet(); });
+    tabs.appendChild(b);
+  });
+  body.appendChild(tabs);
+
+  if(libTab==='fav'||libTab==='hist'){
+    var ids=libTab==='fav'?store.fav.slice().reverse():store.hist.slice().reverse();
+    body.appendChild(el('div','note',libTab==='fav'?('收藏 '+ids.length+' 篇'):('记录里 '+ids.length+' 篇')));
+    if(!ids.length){
+      body.appendChild(el('div','empty',libTab==='fav'?'还没收藏。定题时点「☆ 收藏」，考前把这几篇背下来。':'还没有记录。定一篇题就会自动记在这里。'));
+    }
+    ids.forEach(function(id){
+      var b=byId(id); if(!b) return;
+      var m=el('div','mini');
+      m.appendChild(el('div','mt',finalTitle(b)));
+      var ms=el('div','ms');
+      ms.appendChild(el('span',null,G[b.g].nm)); ms.appendChild(el('span',null,D[b.d].nm));
+      ms.appendChild(el('span',null,C[b.c].nm)); ms.appendChild(el('span',null,E[b.e].nm));
+      ms.appendChild(el('span',null,b.imp?'自加':'内置'));
+      m.appendChild(ms);
+      var d=el('button','del','✕');
+      d.title='删除';
+      d.addEventListener('click',function(e){
+        e.stopPropagation();
+        var i=store[libTab==='fav'?'fav':'hist'].indexOf(id);
+        if(i>=0) store[libTab==='fav'?'fav':'hist'].splice(i,1);
+        save(); renderSheet();
+      });
+      ms.appendChild(d);
+      // 点侧栏里的题目：只切题，不关侧栏 —— 她多半是开着侧栏对照着挑
+      m.addEventListener('click',function(){
+        chosen=b; slots[b.id]=slotDefault(b); step=4; render(); window.scrollTo(0,0);
+        toast('已选：'+finalTitle(b).replace(/</g,'&lt;'));
+      });
+      body.appendChild(m);
+    });
+  }
+  else if(libTab==='imp'){
+    body.appendChild(el('div','note','一行一篇，竖线分隔：题目 | 体裁 | 领域 | 切口 | 情感。体裁/领域/切口/情感 可写 g/d/c/e + 名称，如 "g记叙"。写错会逐行报错，不会把整批丢掉。'));
+    var ta=el('textarea','ta');
+    ta.placeholder='我家的小黄狗 | g记叙 | d家庭亲情 | c一件旧物 | e温暖感动\n半命题：《____的味道》 | 记叙 | 成长烦恼 | 一个第一次 | 成长领悟';
+    ta.value=LS.get('zxz.imp.draft','');
+    body.appendChild(ta);
+    var row=el('div','acts'); row.style.padding='10px 0 0';
+    var ok=el('button','abtn pri','导入');
+    var msg=el('div');
+    ok.addEventListener('click',function(){
+      var res=parseImport(ta.value);
+      LS.set('zxz.imp.draft',ta.value);
+      msg.innerHTML='<div class="note">成功 '+res.ok+' 篇'+(res.err.length?'，跳过 '+res.err.length+' 行：<br>'+res.err.slice(0,8).map(function(e){return '· '+e;}).join('<br>'):'。')+'</div>';
+    });
+    row.appendChild(ok);
+    body.appendChild(row); body.appendChild(msg);
+    var saved=store.fav.concat(store.hist);
+    body.appendChild(el('div','note','当前题目库共 '+BANK.length+' 篇（内置 '+(BANK.length-BANK.filter(function(b){return b.imp;}).length)+' 篇 + 自加 '+BANK.filter(function(b){return b.imp;}).length+' 篇）。'));
+  }
+  else {
+    var KV=[
+      ['第1步','先定体裁。这一步把"能写什么"缩到一类，不用担心选错，后面都能改。'],
+      ['第2步','定领域：这件事发生在谁的范围里。很多人卡住不是没素材，是领域太大。'],
+      ['第3步','定切口：从哪里下笔。选"一件旧物"通常最容易写出细节。'],
+      ['第4步','定情感：你想让读者读完什么心情。只选一个，贪多会写成四平八稳。'],
+      ['第5步','这一步给的是固定组合，不是随机的。同一组选择永远给出同一批 3 篇 —— 考前把喜欢的那几组练熟。'],
+      ['写作台','定题后有 40 分钟倒计时和分段字数。开头/主体/结尾的配额按体裁给，照着分就不会写飘。'],
+      ['人物槽位','题目里带「外婆」「同桌」这类词的，点一下就能换成奶奶、换成班长。真实素材比好题目重要。'],
+      ['避坑','每篇都有"翻车点"，写之前扫一眼，能省掉一类最低级的失分。'],
+      ['加题','自己碰到好题目，用"加题"页按格式贴进去，以后所有步骤都能选到它。']
+    ];
+    KV.forEach(function(k){
+      var r=el('div','kv'); r.appendChild(el('b',null,k[0])); r.appendChild(el('span',null,k[1]));
+      body.appendChild(r);
+    });
+    body.appendChild(el('div','note','题目库：内置 '+BANK.length+' 篇固定组合，方向：上海中考 600 字记叙文为主（2023—2025 连续三年都是自拟命题），兼收想象、议论、应用文。'));
+  }
+}
+
+/* 导入解析 */
+/* 导入别名表：别名 → 维度代码。必须显式建表：
+   拿中文别名去 indexOf(['rec','scene',...]) 永远匹配不上，
+   「含关键字兜底」也会把 '记叙' 判成 '记叙文' 之外的任何东西。 */
+var ALIAS={
+ g:{rec:['g','rec','记叙','记叙文','叙事','写人','写事','故事'],
+    scene:['scene','写景','状物','写景状物','景物','托物言志'],
+    imagine:['imagine','想象','科幻','童话','穿越','科幻想象'],
+    argue:['argue','议论','说理','议论文','演讲稿式议论'],
+    apply:['apply','应用','应用文','书信','书信体','读后感']},
+ d:{family:['family','家庭','亲情','家人','父母','长辈'],
+    teacher:['teacher','师长','老师','同窗','师生'],
+    friend:['friend','同学','友谊','友情','伙伴'],
+    grow:['grow','成长','烦恼','心事','自我','青春期'],
+    setback:['setback','挫折','励志','失败','坚持'],
+    nature:['nature','自然','人与自然','季节','生物','天气'],
+    society:['society','社会','见闻','凡人','城市'],
+    culture:['culture','文化','传统','习俗','节日','老手艺'],
+    hometown:['hometown','家乡','风物','弄堂','本土'],
+    future:['future','科技','未来','科幻','幻想']},
+ c:{object:['c','object','旧物','物件','一件旧物','物品'],
+    moment:['moment','瞬间','一刻','一个瞬间','定格'],
+    promise:['promise','约定','承诺','一个约定'],
+    first:['first','第一次','首次','初体验'],
+    mis:['mis','误解','误会','一次误解','冤枉'],
+    contest:['contest','比赛','竞赛','赛场','一场比赛'],
+    journey:['journey','出行','旅途','路上','一段出行','坐车'],
+    secret:['secret','秘密','小秘密','藏起来'],
+    word:['word','一句话','口头禅','某句话'],
+    crowd:['crowd','一群人','人群','众生相','大家'],
+    change:['change','变化','前后','一种变化','转变']},
+ e:{warm:['warm','温暖','感动','温暖感动'],
+    guilt:['guilt','愧疚','释然','愧疚到释然','后悔'],
+    admire:['admire','敬佩','佩服','敬仰'],
+    down:['down','失落','振作','失落振作','低落'],
+    plain:['plain','平凡','平凡里的光','普通'],
+    insight:['insight','领悟','成长领悟','明白','感悟'],
+    curio:['curio','好奇','探索','疑问','好奇探索'],
+    protect:['protect','守护','保护','守住']}
+};
+var ALIAS_ORDER={g:['rec','scene','imagine','argue','apply'],
+ d:['family','teacher','friend','grow','setback','nature','society','culture','hometown','future'],
+ c:['object','moment','promise','first','mis','contest','journey','secret','word','crowd','change'],
+ e:['warm','guilt','admire','down','plain','insight','curio','protect']};
+
+function normCode(dim,raw){
+  var s=String(raw==null?'':raw).trim(); if(!s) return null;
+  var table=ALIAS[dim]||{}, order=ALIAS_ORDER[dim]||[], low=s.toLowerCase(), i,j,k;
+  /* 1 精确命中别名表 */
+  for(k in table){ var al=table[k];
+    for(i=0;i<al.length;i++) if(low===al[i]||s===al[i]) return k;
+  }
+  /* 2 词包含：'g记叙' / '记叙文（600字）' / '成长类' */
+  var best=null, bestLen=0;
+  for(k in table){ var al2=table[k];
+    for(j=0;j<al2.length;j++){
+      var a=al2[j];
+      if(a.length<2) continue;                 // 排除 'g'/'d' 这类单字母，避免 'growth' 误配
+      if(low.indexOf(a)>=0 || s.indexOf(a)>=0){
+        if(a.length>bestLen){ best=k; bestLen=a.length; }   // 取最长匹配，「成长」胜过「成长烦恼」
+      }
+    }
+  }
+  if(best) return best;
+  /* 3 显示名包含：'家庭亲情' 已被表覆盖，这里兜底 nm.indexOf(s) */
+  var T={g:G,d:D,c:C,e:E}[dim];
+  for(i=0;i<order.length;i++){ var nm=T[order[i]].nm;
+    if(s.length>=2 && (nm.indexOf(s)>=0)) return order[i];
+  }
+  return null;
+}
+function mapName(dim,a){ return null; }  // 已并入 normCode 的别名表，仅保留占位
+function parseImport(txt){
+  var res={ok:0,err:[]}, lines=String(txt||'').split(/\r?\n/), i;
+  var used={}; BANK.forEach(function(b){ used[b.id]=1; });
+  for(i=0;i<lines.length;i++){
+    var ln=lines[i]; if(!ln.trim()) continue;
+    var parts=ln.split(/[|｜]/).map(function(s){return s.trim();});
+    var t=parts[0];
+    if(!t){ res.err.push('第'+(i+1)+'行：题目是空的'); continue; }
+    var g=parts[1]?normCode('g',parts[1]):'rec';
+    var d=parts[2]?normCode('d',parts[2]):null;
+    var c=parts[3]?normCode('c',parts[3]):null;
+    var e=parts[4]?normCode('e',parts[4]):null;
+    if(!g){ res.err.push('第'+(i+1)+'行：体裁「'+parts[1]+'」认不出'); continue; }
+    var id='U'+hash(ln).toString(36)+i;
+    if(used[id]){ id='U'+id+i; }
+    used[id]=1;
+    BANK.push({
+      id:id,t:t,g:g,d:d||'family',c:c||'object',e:e||'insight',imp:true,
+      who:null, idea:'（自加题目）先补一句立意：这篇想让读者读完记住什么？',
+      mat:['把题目里最具体的一个名词换成你自己的人/事','写一个只有你才知道的细节','写一句当时的原话','写一个当时没做、现在后悔的动作'],
+      how:['开头：一句话就出现题目里的那个关键物，别铺垫','主体：把那件东西拆成三个可摸可闻的细节','转折：写一件当时不懂、现在懂了的事','结尾：让那件东西再出现一次，换一种眼光'],
+      trap:'自加题最容易写成流水账：把"发生→经过→结束"当作文结构。中间必须有一处停下来想。'
+    });
+    res.ok++;
+  }
+  save();
+  return res;
+}
+
+/* ── 路由 ── */
+function goStep(n){ step=n; if(n<4) salt=0; chosen=(n===4?chosen:null); render(); window.scrollTo(0,0); }
+function render(){
+  /* 三个页面状态：step<4 选维度，step===4 且还没定题 = 出题列表，
+     step===4 且 chosen = 写作台。step 单独一个数分不开后两个，必须看 chosen。 */
+  if(step<4) renderChoice();
+  else if(chosen) renderDesk();
+  else renderResults();
+  renderSteps(); renderNav();
+}
+function renderNav(){
+  var nav=document.getElementById('nav'), hint=document.getElementById('navhint'), back=document.getElementById('btnBack');
+  nav.classList.remove('hide');
+  back.style.visibility = (step>0 || (step===4&&chosen))?'visible':'hidden';
+  back.textContent=(step===4&&chosen)?'← 回到选题':'上一步';
+  back.onclick=function(){
+    if(step===4){ if(chosen){ chosen=null; } else { step=3; } }
+    else step=Math.max(0,step-1);
+    render(); window.scrollTo(0,0);
+  };
+  /* 定题页给一个「就按现在这几步」的主按钮：四步都是选填，
+     只选一步也能出题——这是这个工具的常态路径，不该藏起来。 */
+  var old=document.getElementById('navGo'); if(old) old.remove();
+  if(step<4){
+    var go=el('button','abtn pri');
+    go.id='navGo';
+    go.textContent='就按这几步出题 →';
+    go.style.flex='none';
+    go.addEventListener('click',function(){ step=4; salt=0; render(); window.scrollTo(0,0); });
+    nav.appendChild(go);
+  }
+  var names={g:G,d:D,c:C,e:E};
+  if(step<4){
+    var at=['g','d','c','e'].indexOf(STEPS[step].k);
+    var picked=['g','d','c','e'].filter(function(k){return !!sel[k];});
+    if(!picked.length) hint.innerHTML='一步都不用选 —— 直接点右边就能看全部 '+BANK.length+' 篇。';
+    else hint.innerHTML='已选 <b style="color:var(--gold)">'+picked.length+'</b> 步 · 再选会更准，也可以直接出题。';
+  } else if(chosen){
+    hint.innerHTML='已定：<b style="color:var(--gold)">'+finalTitle(chosen).replace(/</g,'&lt;')+'</b>';
+  } else {
+    hint.textContent='挑一篇点「就写这篇」';
+  }
+}
+
+/* ── toast ── */
+var tOut=null;
+function toast(msg){
+  var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
+  if(tOut) clearTimeout(tOut);
+  tOut=setTimeout(function(){ t.classList.remove('on'); },1900);
+}
+
+/* ── 启动 ── */
+document.getElementById('btnLib').addEventListener('click',function(){ openSheet('fav'); });
+document.getElementById('btnReset').addEventListener('click',function(){
+  sel={g:null,d:null,c:null,e:null}; chosen=null; slots={}; step=0; salt=0; render(); window.scrollTo(0,0);
+  toast('回到第 1 步');
+});
+document.getElementById('shClose').addEventListener('click',closeSheet);
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeSheet(); });
+
+/* 自检 */
+(function selfTest(){
+  var bad=[];
+  var seen={}, need={g:{},d:{},c:{},e:{}};
+  BANK.forEach(function(b){
+    if(!b.id||!b.t||!b.idea||!b.mat||!b.mat.length||!b.how||!b.how.length||!b.trap){ bad.push('字段缺失: '+JSON.stringify(b.t)); return; }
+    if(seen[b.id]) bad.push('重复 id '+b.id);
+    seen[b.id]=1;
+    ['g','d','c','e'].forEach(function(k){ if(!b[k]) bad.push(b.id+' 缺 '+k); else need[k][b[k]]=1; });
+  });
+  ['g','d','c','e'].forEach(function(k){
+    var T={g:G,d:D,c:C,e:E}[k];
+    Object.keys(T).forEach(function(x){ if(!need[k][x]) bad.push('没有任何题目用到 '+k+'='+x+'（'+T[x].nm+'）'); });
+  });
+  if(!LS.ok) bad.push('localStorage 不可用，收藏功能会失效（不影响做题）');
+  window.__ZXZ={bad:bad,n:BANK.length};
+  if(bad.length && console.warn) console.warn('[作文题材向导] 自检发现问题:',bad);
+})();
+
+render();
+
+/* 测试钩子 */
+window.__T={
+  G:G,D:D,C:C,E:E, STEPS:STEPS,
+  bank:function(){ return BANK; },
+  sel:function(){ return sel; },
+  set:function(k,v){ sel[k]=v; },
+  setStep:function(n){ step=n; },
+  setSalt:function(n){ salt=n; },
+  go:function(n){ step=n; render(); },
+  render:function(){ render(); },
+  results:function(){ return results(); },
+  pool:function(s){ return pool(s||sel); },
+  counts:function(d){ return counts(d); },
+  rank:function(l,s){ return rank(l,s); },
+  hash:hash,
+  match:match,
+  keyOf:keyOf,
+  parseImport:parseImport,
+  normCode:normCode,
+  planText:function(id){ var b=byId(id); return b?planText(b):null; },
+  byId:byId,
+  finalTitle:finalTitle,
+  setSlot:function(id,w){ slots[id]=w; },
+  getSlot:slotDefault,
+  store:function(){ return store; },
+  save:save,
+  lsOk:LS.ok,
+  QUOTA:QUOTA
+};
+})();
+</script>
+</body>
+</html>
