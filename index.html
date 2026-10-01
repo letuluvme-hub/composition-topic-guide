@@ -54,6 +54,12 @@ h1,h2,h3{margin:0;font-weight:800;letter-spacing:.01em}
 .sdot.done .slab{color:var(--mut)}
 .sdot.cur .slab{color:var(--gold);font-weight:700}
 .sdot.cur .sbar i{width:100%}
+/* 走过但没选值的步（「不限」路过）：条子虚线 + 标签灰，一眼看出跳过了哪步 */
+.sdot.done0 .sbar{background:repeating-linear-gradient(90deg,#ffffff30 0 4px,transparent 4px 8px)}
+.sdot.done0 .slab{color:#6a7690}
+/* 还没走到过的步：不可点，视觉上压暗 */
+.sdot.sdim{opacity:.35;cursor:default}
+.sdot:not(.sdim){cursor:pointer}
 
 /* ── 主区 ───────────────────────────── */
 main{max-width:720px;margin:0 auto;padding:14px}
@@ -105,6 +111,9 @@ main{max-width:720px;margin:0 auto;padding:14px}
 .how li::before{content:counter(s);position:absolute;left:0;top:8px;width:20px;height:20px;border-radius:50%;background:#6ee7f01f;color:var(--cyan);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
 .trap{background:#ff6b8110;border:1px solid #ff6b8130;border-radius:var(--r1);padding:10px 12px;font-size:13.3px;color:#ffd0d7;line-height:1.65}
 .trap b{color:var(--bad)}
+/* 完全符合的卡：绿色标记，和「差得较多」的红色 trap 形成对比 */
+.hit{background:#5ddc9a12;border:1px solid #5ddc9a3a;border-radius:var(--r1);padding:10px 12px;font-size:13.3px;color:#d3ffe9;line-height:1.65}
+.hit b{color:var(--ok)}
 .acts{display:flex;gap:8px;padding:0 15px 15px;flex-wrap:wrap}
 .abtn{flex:1;min-width:120px;padding:11px 12px;border-radius:var(--r1);background:var(--card2);border:1px solid var(--line);font-size:14px;font-weight:600;color:var(--fg);transition:.18s var(--ease)}
 .abtn:hover{border-color:var(--gold);color:var(--gold)}
@@ -133,9 +142,23 @@ main{max-width:720px;margin:0 auto;padding:14px}
 .tbtn2{padding:8px 13px;border-radius:9px;background:var(--card2);border:1px solid var(--line);font-size:13px;font-weight:600}
 .tbtn2:hover{border-color:var(--gold);color:var(--gold)}
 
-/* ── 底部导航 ───────────────────────── */
-.nav{position:sticky;bottom:0;z-index:30;margin:16px -14px calc(-28px - var(--sab));padding:12px 14px calc(14px + var(--sab));background:linear-gradient(0deg,#0e1420 62%,#0e142000);display:flex;gap:9px;align-items:center;max-width:720px}
+/* ── 底栏导航 ───────────────────────── */
+/* 坑：这个 nav 是 body 的直接子元素（不是 main 里的），之前却写了 margin:0 -14px
+   去抵消 main 的 padding —— 于是它比视口宽 28px（实测 x=-14, w=418 @390px 视口），
+   右侧按钮的右边缘落在 393px，超出视口 3px。按钮少的时候看不出来，
+   加到三个才暴露。负边距必须删：body 本来就没有横向 padding。 */
+.nav{position:sticky;bottom:0;z-index:30;margin:16px 0 calc(-28px - var(--sab));padding:12px 14px calc(14px + var(--sab));background:linear-gradient(0deg,#0e1420 62%,#0e142000);display:flex;gap:9px;align-items:center;max-width:720px;margin-left:auto;margin-right:auto}
 .nav .navhint{flex:1;font-size:11.5px;color:var(--dim);line-height:1.4;min-width:0}
+@media(max-width:430px){
+ .nav{gap:6px;padding:10px 11px calc(12px + var(--sab))}
+ .nav .abtn{padding:9px 10px;font-size:13px;min-width:0;white-space:nowrap}
+ .nav #btnBack{font-size:12.5px;padding:9px 8px}
+ .nav .navhint{font-size:11px}
+}
+@media(max-width:350px){
+ .nav .abtn{font-size:12px;padding:9px 7px;letter-spacing:-.02em}
+ .nav .navhint{display:none}   /* 320px 下先让位给按钮，说明性文字已在页面上方出现 */
+}
 
 /* ── 抽屉（题材库/导入） ─────────────── */
 /* 从右侧滑入的侧栏，无全屏遮罩：点「题材库」不该把整个主区变暗盖住。 */
@@ -742,6 +765,7 @@ var LS = (function(){
 
 var sel={g:null,d:null,c:null,e:null};
 var step=0;              // 0..3 选择步，4=定题
+var maxStep=0;           // 走到过的最远步；步骤条据此允许跳回/跳到任意已到达的步
 var salt=0;              // 「换一个」
 var chosen=null;        // 确认的题目
 var slots={};            // 人物槽位当前取值
@@ -757,16 +781,14 @@ function match(b,s){ return (!s.g||b.g===s.g)&&(!s.d||b.d===s.d)&&(!s.c||b.c===s
 function pool(s){ var out=[],i; for(i=0;i<BANK.length;i++) if(match(BANK[i],s)) out.push(BANK[i]); return out; }
 
 /* 选项上要显示"这一步每个值还剩几篇"，所以要按当前其他选择算 */
-/* 每一步的选项按哪些已选维度过滤 —— 这是"后面步骤选项太少"的根因所在。
-   实测：第 4 步若按 g+d+c 全部过滤，79% 的路径是 0 个选项（122 篇时）；
-   就算只按 g+d 过滤，122 篇里有 30 个 (g,d) 组合是空的，同样大面积空白。
-   四维交叉 = 5×10×11×8 = 4400 个格子，任何数据规模都填不满。
+/* 每一步的选项按哪些已选维度过滤 —— 选项卡上标的篇数必须与出题口径一致。
+   旧版选项只按体裁过滤、显示 12 篇，出题却按四维过滤、实际命中 0.1 篇：
+   虚高 105 倍，90.4% 的情况下 3 张卡全不符合选择（实测 4000 组遍历）。
 
-   结论：每一步【只依赖第 1 步的体裁】。体裁是主分叉（记叙文 74 篇 vs 应用文 10 篇），
-   后续领域/切口/情感三步都在同一个体裁池子里各自展开 —— 领域已经在第 2 步问过，
-   情感再拿它做交叉纯粹是把选项砍光。四维的精确命中交给 relaxedPool()
-   的累积放宽兜底（实测 400/400 全有题）。 */
-var STEP_SCOPE={g:[], d:['g'], c:['g'], e:['g']};
+   现在的口径：显示【选了这一项之后，严格命中四维的篇数】。
+   这样卡片上的数字就是她真正会拿到几篇，不会骗人。数字变小是应该的 ——
+   它终于说实话了。 */
+var STEP_SCOPE={g:[], d:['g','c','e'], c:['g','d','e'], e:['g','d','c']};
 function counts(dim){
   var scope=STEP_SCOPE[dim]||[], n={}, i,j,b;
   for(i=0;i<BANK.length;i++){ b=BANK[i];
@@ -799,64 +821,64 @@ function rank(list,saltN){
     return hash(a.id)-hash(b.id);
   });
 }
-/* 补充搜索：按 c→e→d→g 的顺序【累积】清空维度，一直退到池子够 3 篇为止。
-   三个曾经的错，逐个都是真实 bug：
-   1) 一次只去掉一个维度 —— 四个维度互斥时，去掉任意单个仍可能为空，只有累积去掉才退得回去；
-   2) 先检查未放宽的池子 —— 精确命中 1 篇时立刻返回，放宽从未发生；
-   3) 退到第一个非空池子就停 —— 例：rec/family/contest/curio 去掉 c 后有 2 篇，
-      就再也不往下退，用户只拿到 2 篇。用户要的是「挑定一篇」，2 篇没法挑，
-      所以必须退到够 3 篇（产品不变量：出题页永远给 3 篇让他比较）。 */
-function relaxedPool(){
-  var order=['c','e','d','g'], s={g:sel.g,d:sel.d,c:sel.c,e:sel.e}, dropped=[];
-  var last=null;
-  for(var i=0;i<order.length;i++){
-    s[order[i]]=null; dropped.push(order[i]);
-    var l=pool(s);
-    last={list:l,dropped:dropped.slice()};
-    if(l.length>=3) return last;
-  }
-  return last||{list:[],dropped:dropped};
+/* 出一批题。
+   设计决定（都是被实测数据逼出来的）：
+   1) 选项卡上的篇数与出题口径必须一致 —— 旧版选项只按体裁过滤、显示 12 篇，
+      而出题按四维过滤、实际命中 0.1 篇，虚高 105 倍，90.4% 的情况下
+      3 张卡全不符合选择。所以 STEP_SCOPE 与这里的排序口径统一。
+   2) 不做「硬过滤 + 放宽」，改成「按符合度排序」：每篇题算它符合几个维度
+      （4=全中，3=差一项…），先给符合度最高的。四维交叉 4400 格、462 篇
+      填不满，硬过滤必然大面积空；排序则总能给出结果，且最符合的排最前。
+   3) 「换一批」在同一路里轮换，靠 salt 改变排序起点。 */
+function matchScore(b){
+  var keys=['g','d','c','e'], n=0;
+  for(var i=0;i<4;i++){ if(!sel[keys[i]] || b[keys[i]]===sel[keys[i]]) n++; }
+  return n;   // 未选维度算「符合」，因为那不是她的要求
 }
-
 function results(){
-  var exact=pool(sel), shown=[], seen={}, extra=0;
-  /* 同一组合的题只出现一次 —— 这是刻意的：3 张卡如果都是 rec|family|object|warm，
-     对她等于只给了 1 个选择。 */
-  function take(list){
-    for(var k=0;k<list.length && shown.length<3;k++){
-      var x=list[k], tag=x.g+'|'+x.d+'|'+x.c+'|'+x.e;
-      if(seen[tag]) continue;
-      seen[tag]=1; shown.push(x);
-    }
+  var list=pool(sel);          // 严格命中（可能为空）
+  var wide=BANK;               // 放宽池：全部题目
+  var seen={}, out=[], i;
+
+  /* 排序键：符合度降序 → salt 决定的稳定散列。
+     散列保证「同一选择 + 同一 salt」永远同一批（考前可练熟），
+     salt 变了就换出另一批（同路轮换）。 */
+  function cmp(a,b){
+    var d=matchScore(b)-matchScore(a);
+    if(d) return d;
+    var ha=hash(salt+'|'+keyOf(sel)+'|'+a.id), hb=hash(salt+'|'+keyOf(sel)+'|'+b.id);
+    return ha-hb;
   }
-  /* 放宽池的补足不走 seen 去重。见过的代价：apply 体裁只有 36 篇，
-     去掉 c/e 后按 g+d 过滤的池子里同组合题很多，去重把它们全挡掉，
-     实测 117/3000 组随机选择只能给 2 篇（3.9%）—— 用户撞上就又变成
-     「选项太少」了。所以放宽层只按 id 去重：宁可给两篇同类的，
-     也好过凑不满三篇让她没法挑。 */
-  function takeLoose(list){
-    var idSeen={};
-    for(var k=0;k<shown.length;k++) idSeen[shown[k].id]=1;
-    for(var j=0;j<list.length && shown.length<3;j++){
-      var y=list[j];
-      if(idSeen[y.id]) continue;
-      idSeen[y.id]=1; shown.push(y); extra++;
-    }
+
+  /* 先放严格命中的（它们必然是符合度最高的），再按符合度补齐。
+     同一 (g,d,c,e) 组合只出现一次 —— 3 张卡如果维度全一样，对她等于只给了 1 个选择。 */
+  function push(b){
+    var tag=b.g+'|'+b.d+'|'+b.c+'|'+b.e;
+    if(seen[tag]) return false;
+    seen[tag]=1; out.push(b); return true;
   }
-  take(rank(exact,salt));
-  var dropped=null;
-  if(shown.length<3){
-    var rp=relaxedPool();
-    if(rp.list.length){
-      takeLoose(rank(rp.list,salt));
-      // 放宽了也没带来新题（放宽池里的题全在精确池里），别显示放宽提示。
-      // 注意用 extra 而不是 dropped.length：零选择时 relaxedPool() 会返回
-      // 一个非空 dropped（它照样清掉了 c/e/d/g 才找到够 3 篇的池子），
-      // 但其实什么都没放宽，用 dropped.length 判断会让 UI 显示一条空的「放宽」提示。
-      dropped=extra?rp.dropped:null;
-    }
+  var strictSorted=list.slice().sort(cmp);
+  for(i=0;i<strictSorted.length && out.length<3;i++) push(strictSorted[i]);
+
+  /* 不够 3 篇才从全库里按符合度补。 */
+  var extra=0;
+  if(out.length<3){
+    var wideSorted=wide.slice().sort(cmp);
+    for(i=0;i<wideSorted.length && out.length<3;i++) if(push(wideSorted[i])) extra++;
   }
-  return {list:exact,shown:shown,relaxed:dropped,extra:extra};
+
+  /* 符合度统计：用来如实告诉用户这批里几篇是真中选、几篇是相近的 */
+  var full=0, near=0;
+  for(i=0;i<out.length;i++){ var sc=matchScore(out[i]); if(sc===4) full++; else if(sc===3) near++; }
+
+  return {
+    list:list,               // 严格命中数
+    shown:out,
+    relaxed:(out.length&&full<out.length)?true:null,
+    extra:out.length-full-near,
+    full:full, near:near,
+    picked:['g','d','c','e'].filter(function(k){return !!sel[k];}).length
+  };
 }
 
 function el(tag,cls,txt){ var e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
@@ -871,17 +893,25 @@ function finalTitle(b){
 }
 function badge(t){ var m=(t.emo||'·')+' '+t.nm; return m; }
 
-/* ── 视图：步骤条 ── */
+/* ── 视图：步骤条 ──
+   可点击范围是 0..maxStep（走到过的最远处），不是 0..step-1。
+   原实现只有「已完成的步」可点，于是点过「不限」之后既回不去也跳不过来。
+   样式上区分三种态：cur（当前）/ done（已走过）/ open（走过但不在当前）。 */
 function renderSteps(){
   var box=document.getElementById('steps'); box.innerHTML='';
   var labels=['体裁','领域','切口','情感','定题'];
   for(var i=0;i<5;i++){
-    var d=el('div','sdot'+(i<step?' done':'')+(i===step?' cur':''));
+    var reachable = i<=maxStep;
+    /* cur=当前；done=走过且已选过值；done0=走到了但没选（点了「不限」路过） */
+    var picked = sel[['g','d','c','e'][i]];
+    var cls = 'sdot'+(i===step?' cur':(reachable&&picked?' done':' done0'))
+              +(reachable?'':' sdim');
+    var d=el('div',cls);
     d.setAttribute('data-i',i);
     var bar=el('div','sbar'); bar.appendChild(el('i'));
     var lab=el('div','slab',labels[i]);
     d.appendChild(bar); d.appendChild(lab);
-    if(i<step) d.addEventListener('click',(function(n){ return function(){ goStep(n); }; })(i));
+    if(reachable && i!==step) d.addEventListener('click',(function(n){ return function(){ goStep(n); }; })(i));
     box.appendChild(d);
   }
 }
@@ -897,11 +927,11 @@ function renderChoice(){
   var h=el('div','qhead fade');
   h.appendChild(el('div','k',st.t.replace(/^第 (\d) 步 · (.)(.*)$/,function(_,i,a,b){return 'STEP '+i+' / 4 · '+a+b;})));
   var Q={
-    g:['这次想写哪一种文体的作文？','体裁一选，后面三步的选项会自动缩到真正能写的范围。'],
-    d:['这件事发生在谁的范围里？','领域定了，素材才有地方找——这一步最容易卡住，先随便选一个也行。'],
-    c:['从哪里下笔最省力？','切口决定细节往哪儿使劲，也是结构最省事的一种。'],
-    e:['你想让读者读完是什么心情？','情感是立意的落点。选一个，别选三个。']
-  }[key];
+      g:['这次想写哪一种文体的作文？','每一步下面的数字 = 选了它之后，你真正能拿到的篇数。数字会越选越小，这是实话。'],
+      d:['这件事发生在谁的范围里？','选完这一步，下面每个选项上的数字就是「选了它能拿到几篇」。'],
+      c:['从哪里下笔最省力？','切口决定细节往哪儿使劲，也是结构最省事的一种。'],
+      e:['你想让读者读完是什么心情？','选完这里就出题。卡片上的数字会告诉你这一路到底有几篇。']
+    }[key];
   h.appendChild(el('h2',null,Q[0]));
   h.appendChild(el('p',null,Q[1]));
   v.appendChild(h);
@@ -940,15 +970,22 @@ function renderChoice(){
   return {total:n};
 }
 
-/* 选一个维度值：上层改了，下层清空；选完自动进下一步 */
+/* 选一个维度值：上层改了，下层清空。
+   「不限」（val=null）的语义是「这一步我跳过，继续往下」而不是「停在这一步」——
+   原实现 step=val?(at+1):at 让它停在原地，于是点一次「不限」就再也走不到下一步，
+   后面三个维度全都没法筛。maxStep 记录走到过的最远处，
+   步骤条据此允许自由跳转（不只是「已完成的步」可点）。
+   最后一格(下标3)选完之后【直接出题】：她已经答完四个问题，
+   再要求点一次底栏按钮是多余的一步，也是「点完没反应」的错觉来源。 */
 function chooseDim(key,val){
   sel[key]=val;
   var order=['g','d','c','e'], at=order.indexOf(key);
   for(var j=at+1;j<4;j++) sel[order[j]]=null;
   salt=0; chosen=null;
-  step=val?(at+1):at;
+  if(at>=3){ maxStep=4; step=4; render(); window.scrollTo(0,0); return; }
+  step=at+1;
+  if(step>maxStep) maxStep=step;
   render();
-  if(val && at<3){ setTimeout(function(){ if(step===at) step=at+1; render(); },200); }
 }
 
 function trail(){
@@ -972,69 +1009,64 @@ function trail(){
 /* ── 视图：定题 ── */
 function renderResults(){
   var v=document.getElementById('view'); v.innerHTML='';
-  var R=results();
+  var R=results(), RN={g:G,d:D,c:C,e:E};
+
   var h=el('div','qhead fade');
-  h.appendChild(el('div','k','STEP 5 / 4 · 固定组合'));
-  h.appendChild(el('h2',null,'这几篇是你刚才那条路的固定组合'));
-  h.appendChild(el('p',null,'同一组选择永远得到同一批题 —— 考试前练熟的组合，换个顺序还想得起来才算真的会。'));
+  h.appendChild(el('div','k','STEP 5 / 4 · 按符合度给你最接近的'));
+  h.appendChild(el('h2',null,'这几篇最接近你刚才选的条件'));
+  h.appendChild(el('p',null,'四步全中是一种要求，写出来是另一回事。下面每张卡都标了它符合你哪几步。'));
   v.appendChild(h);
   v.appendChild(trail());
 
   var c=el('div','cnt');
-  var RN={g:G,d:D,c:C,e:E};
   if(!R.shown.length){
-    c.innerHTML='你选的这一路暂时没有题。';
-  } else if(R.relaxed){
-    /* 放宽是常态而不是例外（选项只按体裁过滤，四维交叉必然多为空），
-       所以措辞要说清楚「这 3 篇各自满足了哪几步」，而不是像出了错在补救。 */
-    var lab=[];
-    if(sel.g) lab.push(RN.g.nm);
-    if(sel.d) lab.push(RN.d.nm);
-    if(sel.c) lab.push(RN.c.nm);
-    if(sel.e) lab.push(RN.e.nm);
-    c.innerHTML='按你选的「'+lab.join(' · ')+'」，严格命中有 <b>'+R.list.length+'</b> 篇。'
-      +'下面这 '+R.shown.length+' 篇里有 <b>'+R.extra+'</b> 篇不完全符合，'
-      +'放宽了 '+R.relaxed.map(function(k){return '「'+RN[k].nm+'」';}).join('')+'。';
+    c.innerHTML='题库里没有可用的题目。';
+  } else if(!R.picked){
+    c.innerHTML='还没选任何条件 —— 从 '+BANK.length+' 篇里挑一个开始。';
+  } else if(R.full===R.shown.length){
+    c.innerHTML='这 '+R.shown.length+' 篇都完全符合你选的四项条件。';
   } else {
-    c.innerHTML='严格按这四步共有 <b>'+R.list.length+'</b> 篇，先给你 '+R.shown.length+' 篇，挑定一篇再往下写。';
+    var parts=[];
+    if(R.full) parts.push('<b style="color:var(--ok)">'+R.full+'</b> 篇完全符合');
+    if(R.near) parts.push('<b style="color:var(--gold)">'+R.near+'</b> 篇只差一项');
+    if(R.extra) parts.push('<b>'+R.extra+'</b> 篇差得较多');
+    c.innerHTML='严格四项全中的只有 <b>'+R.list.length+'</b> 篇，所以按符合度给了最接近的 '+R.shown.length+' 篇：'+parts.join('、')+'。';
   }
   v.appendChild(c);
 
   if(!R.shown.length){
-    v.appendChild(el('div','empty','放宽到底也没有题。回上一步改一个条件，或者用右上角「题材库 → 加题」把老师给的题目贴进来。'));
+    v.appendChild(el('div','empty','回上一步改一个条件，或者用右上角「题材库 → 加题」把老师给的题目贴进来。'));
     return;
   }
-  /* 放宽补进来的题要标出来，否则用户会以为这三篇都精确命中了 */
+
+  /* 每张卡都标明：全中 / 差哪一项 */
   R.shown.forEach(function(b){
     var card=topicCard(b);
-    if(R.relaxed){
-      var miss=[];
-      if(sel.g&&b.g!==sel.g) miss.push(RN.g.nm);
-      if(sel.d&&b.d!==sel.d) miss.push(RN.d.nm);
-      if(sel.c&&b.c!==sel.c) miss.push(RN.c.nm);
-      if(sel.e&&b.e!==sel.e) miss.push(RN.e.nm);
-      if(miss.length){
-        var tag=el('div','sect');
-        var line=el('div','trap');
-        line.appendChild(el('b',null,'不完全符合　'));
-        line.appendChild(document.createTextNode('这篇是「'+miss.join('、')+'」不同才被补进来的。'));
-        tag.appendChild(line);
-        card.insertBefore(tag, card.children[1]||null);
-      }
+    var miss=[];
+    if(sel.g&&b.g!==sel.g) miss.push(RN.g.nm);
+    if(sel.d&&b.d!==sel.d) miss.push(RN.d.nm);
+    if(sel.c&&b.c!==sel.c) miss.push(RN.c.nm);
+    if(sel.e&&b.e!==sel.e) miss.push(RN.e.nm);
+    var tag=el('div','sect');
+    var line=el('div', miss.length?'trap':'hit');
+    if(miss.length===0){
+      line.appendChild(el('b',null,'完全符合　'));
+      line.appendChild(document.createTextNode('四项都命中你选的条件。'));
+    } else if(miss.length===1){
+      line.appendChild(el('b',null,'只差一项　'));
+      line.appendChild(document.createTextNode('你选了「'+miss[0]+'」，这篇写的是别的方向。'));
+    } else {
+      line.appendChild(el('b',null,'差 '+miss.length+' 项　'));
+      line.appendChild(document.createTextNode('你选的「'+miss.join('、')+'」这几项都不同。'));
     }
+    tag.appendChild(line);
+    card.insertBefore(tag, card.children[1]||null);
     v.appendChild(card);
   });
 
   var row=el('div','acts'); row.style.padding='0';
-  /* 「换一批」按实际展示的池子大小判断，不是精确命中数 ——
-     放宽后明明有 8 篇可换，却因为精确命中只有 1 篇而把按钮禁用，是错的。 */
-  var more=el('button','abtn',R.shown.length<3?'这条路就这几篇':'换一批（同一路换 3 篇）');
-  if(R.shown.length<3){
-    more.style.opacity='.5';
-    more.addEventListener('click',function(){ toast('这条路就这几篇，回上一步放宽一个条件试试'); });
-  } else {
-    more.addEventListener('click',function(){ salt++; render(); window.scrollTo(0,0); });
-  }
+  var more=el('button','abtn','换一批（同一路换 3 篇）');
+  more.addEventListener('click',function(){ salt++; render(); window.scrollTo(0,0); });
   row.appendChild(more);
   var back=el('button','abtn','回去改一步');
   back.addEventListener('click',function(){ step=3; render(); window.scrollTo(0,0); });
@@ -1478,7 +1510,7 @@ function parseImport(txt){
 }
 
 /* ── 路由 ── */
-function goStep(n){ step=n; if(n<4) salt=0; chosen=(n===4?chosen:null); render(); window.scrollTo(0,0); }
+function goStep(n){ step=n; if(n<4) salt=0; if(n!==4) chosen=null; render(); window.scrollTo(0,0); }
 function render(){
   /* 三个页面状态：step<4 选维度，step===4 且还没定题 = 出题列表，
      step===4 且 chosen = 写作台。step 单独一个数分不开后两个，必须看 chosen。 */
@@ -1490,30 +1522,61 @@ function render(){
 function renderNav(){
   var nav=document.getElementById('nav'), hint=document.getElementById('navhint'), back=document.getElementById('btnBack');
   nav.classList.remove('hide');
-  back.style.visibility = (step>0 || (step===4&&chosen))?'visible':'hidden';
-  back.textContent=(step===4&&chosen)?'← 回到选题':'上一步';
-  back.onclick=function(){
-    if(step===4){ if(chosen){ chosen=null; } else { step=3; } }
-    else step=Math.max(0,step-1);
-    render(); window.scrollTo(0,0);
-  };
-  /* 定题页给一个「就按现在这几步」的主按钮：四步都是选填，
-     只选一步也能出题——这是这个工具的常态路径，不该藏起来。 */
-  var old=document.getElementById('navGo'); if(old) old.remove();
+  /* 「上一步」只在真的有上一步时【存在】，而不是用 visibility:hidden 藏起来 ——
+     visibility:hidden 的元素照样占布局（实测第1步它占 56px，把 navGo 的右边缘
+     顶到 393px，超出 390px 视口 3px）。没有上一步时就把它从 DOM 里摘掉。 */
+  var canBack = step>0 || (step===4&&chosen);
+  if(!canBack){ if(back.parentNode) back.parentNode.removeChild(back); }
+  else {
+    if(!back.parentNode) nav.insertBefore(back, nav.firstChild);
+    back.style.visibility='visible';
+    back.textContent=(step===4&&chosen)?'← 回到选题':'上一步';
+    back.onclick=function(){
+      if(step===4){ if(chosen){ chosen=null; } else { step=3; } }
+      else step=Math.max(0,step-1);
+      render(); window.scrollTo(0,0);
+    };
+  }
+
+  /* 底栏两个出口：
+     「下一步」= 直接去下一个维度（当前步没选也能走，相当于在这一步点「不限」再往前）
+     「就按这几步出题」= 现在就出结果，不必走完四步
+     两个都在，因为「点不限卡住」正是因为只有后者能往前走。 */
+  ['navGo','navNext'].forEach(function(id){ var o=document.getElementById(id); if(o) o.remove(); });
   if(step<4){
+    var next=el('button','abtn');
+    next.id='navNext';
+    next.textContent='下一步';   /* 不带箭头：390px 下三个按钮的 nowrap 宽度会超出视口 3px */
+    /* flex:0 1 auto 而不是 none —— none 会让按钮不参与压缩，
+       窄屏放不下时整条底栏就横向溢出（实测 320px 时右边缘到 338px）。 */
+    next.style.flex='0 1 auto';
+    next.addEventListener('click',function(){
+      var at=['g','d','c','e'].indexOf(STEPS[step].k);
+      step=Math.min(at+1,3);
+      if(step>maxStep) maxStep=step;
+      if(at>=3 && maxStep<4) maxStep=4;   // 走到最后一格后，「定题」格变为可点
+      render(); window.scrollTo(0,0);
+    });
+    nav.appendChild(next);
     var go=el('button','abtn pri');
     go.id='navGo';
-    go.textContent='就按这几步出题 →';
-    go.style.flex='none';
+    go.textContent='按这几步出题';
+    go.style.flex='0 1 auto';   /* 可压缩：390px 下 flex:0 0 auto 会让右边缘超出视口 3px */
     go.addEventListener('click',function(){ step=4; salt=0; render(); window.scrollTo(0,0); });
     nav.appendChild(go);
   }
   var names={g:G,d:D,c:C,e:E};
   if(step<4){
-    var at=['g','d','c','e'].indexOf(STEPS[step].k);
+    var at2=['g','d','c','e'].indexOf(STEPS[step].k);
+    var cur=STEPS[step].k;
     var picked=['g','d','c','e'].filter(function(k){return !!sel[k];});
-    if(!picked.length) hint.innerHTML='一步都不用选 —— 直接点右边就能看全部 '+BANK.length+' 篇。';
-    else hint.innerHTML='已选 <b style="color:var(--gold)">'+picked.length+'</b> 步 · 再选会更准，也可以直接出题。';
+    var mine=names[cur][sel[cur]];
+    if(!picked.length){
+      hint.innerHTML='一步都不用选 —— 点右边直接看全部 '+BANK.length+' 篇。';
+    } else {
+      hint.innerHTML=(mine ? ('第 '+(at2+1)+' 步已选 <b style="color:var(--gold)">'+mine.nm+'</b> · ') : '')
+        +'共选了 '+picked.length+' 步';
+    }
   } else if(chosen){
     hint.innerHTML='已定：<b style="color:var(--gold)">'+finalTitle(chosen).replace(/</g,'&lt;')+'</b>';
   } else {
@@ -1532,7 +1595,8 @@ function toast(msg){
 /* ── 启动 ── */
 document.getElementById('btnLib').addEventListener('click',function(){ openSheet('fav'); });
 document.getElementById('btnReset').addEventListener('click',function(){
-  sel={g:null,d:null,c:null,e:null}; chosen=null; slots={}; step=0; salt=0; render(); window.scrollTo(0,0);
+  sel={g:null,d:null,c:null,e:null}; chosen=null; slots={}; step=0; salt=0; maxStep=0;
+  render(); window.scrollTo(0,0);
   toast('回到第 1 步');
 });
 document.getElementById('shClose').addEventListener('click',closeSheet);
@@ -1566,6 +1630,9 @@ window.__T={
   sel:function(){ return sel; },
   set:function(k,v){ sel[k]=v; },
   setStep:function(n){ step=n; },
+  getStep:function(){ return step; },
+  getMaxStep:function(){ return maxStep; },
+  chooseDim:chooseDim,
   setSalt:function(n){ salt=n; },
   go:function(n){ step=n; render(); },
   render:function(){ render(); },
@@ -1577,6 +1644,7 @@ window.__T={
   rank:function(l,s){ return rank(l,s); },
   hash:hash,
   match:match,
+  matchScore:matchScore,
   keyOf:keyOf,
   parseImport:parseImport,
   normCode:normCode,
