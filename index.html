@@ -1042,11 +1042,20 @@ function renderResults(){
   /* 每张卡都标明：全中 / 差哪一项 */
   R.shown.forEach(function(b){
     var card=topicCard(b);
+    /* 注意取值层级：RN.g 是「维度代码 -> 选项对象」的字典（{rec:{nm:'记叙文'}}），
+       所以要 RN.g[sel.g].nm 两级索引。写成 RN.g.nm 是在字典本身上取 .nm，
+       得到 undefined，界面就显示「你选了「undefined」」。
+       而且要显示她【选的】那一项（sel.x），不是题目那一项（b.x）——
+       她关心的是「我选了什么而这篇不同」。 */
     var miss=[];
-    if(sel.g&&b.g!==sel.g) miss.push(RN.g.nm);
-    if(sel.d&&b.d!==sel.d) miss.push(RN.d.nm);
-    if(sel.c&&b.c!==sel.c) miss.push(RN.c.nm);
-    if(sel.e&&b.e!==sel.e) miss.push(RN.e.nm);
+    var KD=['g','d','c','e'];
+    for(var mi=0;mi<4;mi++){
+      var k=KD[mi];
+      if(sel[k] && b[k]!==sel[k]){
+        var opt=RN[k][sel[k]];
+        miss.push(opt ? opt.nm : sel[k]);   // 兜底用代码本身，绝不出现 undefined
+      }
+    }
     var tag=el('div','sect');
     var line=el('div', miss.length?'trap':'hit');
     if(miss.length===0){
