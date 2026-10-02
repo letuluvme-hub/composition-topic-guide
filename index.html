@@ -229,6 +229,28 @@ textarea.ta{width:100%;min-height:150px;background:#0006;border:1px solid var(--
 /* 收藏/记录里指向已消失题目的墓碑行 */
 .mini.ghost{border-style:dashed;opacity:.72}
 .mini.ghost .mt{color:var(--mut);font-style:italic}
+/* ── 自带题目工作台 ──
+   单列大卡（首页三条路 / 要不要结构），chip 行（体裁、素材线索），
+   文本输入（题目、搜索），素材行（可一键收进清单）。 */
+.grid.one{grid-template-columns:1fr}
+.opt.wide{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;text-align:left;padding:11px 13px}
+.opt.wide .nm{font-size:15px}
+.opt.wide .ds{font-size:12px;line-height:1.45}
+.chips{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:2px 0 10px}
+.chipb{border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;
+  background:var(--card);border:1px solid var(--line);color:var(--mut);cursor:pointer;
+  font-family:inherit;transition:.16s}
+.chipb:hover{border-color:var(--line2);color:var(--fg)}
+.chipb.on{background:#a78bfa2e;border-color:var(--violet);color:#ddd0ff}
+.tin{width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r1);color:var(--fg);font-size:15px;padding:11px 13px;
+  font-family:inherit;margin-bottom:10px;transition:.16s}
+.tin::placeholder{color:var(--dim)}
+.tin:focus{border-color:var(--violet);background:var(--card2);outline:none}
+.tin:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+.mini.matpick{border-left:2px solid var(--violet)}
+.mini.matpick .mt{line-height:1.5}
+.ms.line{display:block;font-size:12.5px;line-height:1.55;color:var(--mut);margin:6px 0 8px}
 /* 只有键盘可达的元素才在鼠标下不显示焦点圈 */
 .sdot[tabindex]:not(:focus-visible),.mat li[tabindex]:not(:focus-visible),.mini[tabindex]:not(:focus-visible){outline:none}
 /* 跳到主内容：键盘用户第一个 Tab 就能跳过顶栏 */
@@ -983,6 +1005,10 @@ function badge(t){ var m=(t.emo||'·')+' '+t.nm; return m; }
    样式上区分三种态：cur（当前）/ done（已走过）/ open（走过但不在当前）。 */
 function renderSteps(){
   var box=document.getElementById('steps'); box.innerHTML='';
+  /* 首页和「我的题目」不在四步漏斗里，步骤条没有意义 —— 收起来，
+     免得她以为还得走一遍四道题。 */
+  if(MODE!=='funnel'){ box.style.display='none'; return; }
+  box.style.display='';
   var labels=['体裁','领域','切口','情感','定题'];
   for(var i=0;i<5;i++){
     var reachable = i<=maxStep;
@@ -1063,6 +1089,13 @@ function renderChoice(){
   v.appendChild(g);
   if(!keys.length){
     v.appendChild(el('div','empty','这一步没有可写的组合了。选「不限」，或者点下面的「回去改一步」。'));
+  }
+  /* 从「我的题目」进来时，留一条回去的路 */
+  if(step===0 && MY.topic){
+    var backHome=el('button','abtn sm','← 回到我的题目');
+    backHome.type='button';
+    backHome.addEventListener('click',function(){ MODE='mine'; render(); window.scrollTo(0,0); });
+    v.appendChild(backHome);
   }
 }
 
@@ -1331,7 +1364,10 @@ function renderDesk(){
   var h=el('div','qhead fade');
   h.appendChild(el('div','k','写作台 · 已定题'));
   h.appendChild(el('h2',null,finalTitle(b)));
-  var sub=el('p',null,G[b.g].nm+' · '+D[b.d].nm+' · '+C[b.c].nm+' · '+E[b.e].nm);
+  /* 自带题目从没选过领域/切口/情感（那三个只服务于四维漏斗），
+     把占位值当结论显示出来是在骗人 —— 只报体裁。 */
+  var sub=el('p',null, b.own ? G[b.g].nm+(MY.topic?' · 题目是自己的':'')
+                              : G[b.g].nm+' · '+D[b.d].nm+' · '+C[b.c].nm+' · '+E[b.e].nm);
   h.appendChild(sub);
   if(b.who&&b.who.length) h.appendChild(el('p','subwho','主角：'+slotDefault(b)));
   v.appendChild(h);
@@ -1386,24 +1422,33 @@ function renderDesk(){
   s2.appendChild(cnt); s2.appendChild(ul);
   v.appendChild(s2);
 
-  /* 骨架 */
-  var s3=el('div','sect');
-  s3.appendChild(el('h4',null,'骨架'));
-  var ol=el('ol','how');
-  b.how.forEach(function(h){ ol.appendChild(el('li',null,h)); });
-  s3.appendChild(ol);
-  v.appendChild(s3);
+  /* 骨架 —— 自带题目可能刻意不要结构（how 为空），
+     那就不渲染这一块，而不是给一个空的有序列表。 */
+  if(b.how && b.how.length){
+    var s3=el('div','sect');
+    s3.appendChild(el('h4',null,'骨架'));
+    var ol=el('ol','how');
+    b.how.forEach(function(h){ ol.appendChild(el('li',null,h)); });
+    s3.appendChild(ol);
+    v.appendChild(s3);
+  } else {
+    v.appendChild(el('div','note','这篇没给骨架 —— 结构你自己定。卡住了就回上一步借一个。'));
+  }
 
-  /* 避坑 + 拓展 */
-  var s4=el('div','sect');
-  s4.appendChild(el('h4',null,'翻车点'));
-  var tr=el('div','trap');
-  tr.appendChild(el('b',null,'注意　'));
-  tr.appendChild(document.createTextNode(b.trap));
-  s4.appendChild(tr);
-  v.appendChild(s4);
+  /* 避坑 */
+  if(b.trap){
+    var s4=el('div','sect');
+    s4.appendChild(el('h4',null,'翻车点'));
+    var tr=el('div','trap');
+    tr.appendChild(el('b',null,'注意　'));
+    tr.appendChild(document.createTextNode(b.trap));
+    s4.appendChild(tr);
+    v.appendChild(s4);
+  }
 
-  var same=pool(sel).filter(function(x){ return x.id!==b.id && x.g===b.g; }).slice(0,3);
+  /* 自带题目没有"同组合备选"这回事 —— pool(sel) 拿的是漏斗的选择，
+     和这篇自己的题目无关，别误导。 */
+  var same=b.own?[]:pool(sel).filter(function(x){ return x.id!==b.id && x.g===b.g; }).slice(0,3);
   if(same.length){
     var s5=el('div','sect');
     s5.appendChild(el('h4',null,'同一体裁，别的备选（万一写到一半卡住）'));
@@ -1424,6 +1469,24 @@ function renderDesk(){
   var row=el('div','acts'); row.style.padding='0';
   var cp=el('button','abtn pri','复制整份写作单');
   cp.addEventListener('click',function(){ copyPlan(b); });
+  /* 收藏原来只在出题页的卡片上有，写作台上没有 ——
+     而「就写这篇」之后她多半不会再回去翻卡片，于是这篇就收藏不了。
+     自带题目更是完全没法存（它连卡片都不经过）。 */
+  var fav2=el('button','abtn sm');
+  fav2.type='button';
+  function paintFav2(){
+    var on=store.fav.indexOf(b.id)>=0;
+    fav2.textContent=on?'★ 已收藏':'☆ 收藏';
+    fav2.style.color=on?'var(--gold)':'';
+    fav2.setAttribute('aria-pressed', on?'true':'false');
+  }
+  paintFav2();
+  fav2.addEventListener('click',function(){
+    var i=store.fav.indexOf(b.id);
+    if(i>=0) store.fav.splice(i,1); else store.fav.push(b.id);
+    save(); paintFav2(); toast(i>=0?'已取消收藏':'已收进题材库');
+  });
+  row.appendChild(fav2);
   var back=el('button','abtn','换一篇');
   /* 「换一篇」必须真的回到选题列表。旧实现只写 step=4，chosen 还留着，
      render() 于是又走 renderDesk() —— 按钮点了跟没点一样。
@@ -1444,7 +1507,9 @@ function fmt(s){ var m=Math.floor(s/60), x=s%60; return (m<10?'0':'')+m+':'+(x<1
 function planText(b){
   var w=slotDefault(b), q=QUOTA[b.g]||QUOTA.rec, L=[];
   L.push('【题目】'+finalTitle(b));
-  L.push('【体裁】'+G[b.g].nm+'　【领域】'+D[b.d].nm+'　【切口】'+C[b.c].nm+'　【情感】'+E[b.e].nm);
+  /* 自带题目从没选过领域/切口/情感，别把占位值印进写作单 */
+  L.push('【体裁】'+G[b.g].nm+
+    (b.own? '' : '　【领域】'+D[b.d].nm+'　【切口】'+C[b.c].nm+'　【情感】'+E[b.e].nm));
   /* 主角写进写作单：选题时定的人，得跟着她抄到纸上才算数 */
   if(w) L.push('【主角】'+w);
   L.push('');
@@ -1453,11 +1518,12 @@ function planText(b){
   L.push('【素材清单】');
   b.mat.forEach(function(m,i){ L.push('  '+(i+1)+'. '+m); });
   L.push('');
-  L.push('【骨架】');
-  b.how.forEach(function(h,i){ L.push('  '+(i+1)+'. '+h); });
-  L.push('');
-  L.push('【翻车点】'+b.trap);
-  L.push('');
+  if(b.how && b.how.length){
+    L.push('【骨架】');
+    b.how.forEach(function(h,i){ L.push('  '+(i+1)+'. '+h); });
+    L.push('');
+  }
+  if(b.trap){ L.push('【翻车点】'+b.trap); L.push(''); }
   L.push('【字数】开头'+q[0]+' · 主体'+q[1]+' · 结尾'+q[2]+'　合计 '+(q[0]+q[1]+q[2])+' 字');
   return L.join('\n');
 }
@@ -1744,23 +1810,427 @@ function parseImport(txt){
   return res;
 }
 
+/* ══════════════════════════════════════════════════════════
+   自带题目工作台 —— 给「题目已经定了」的情况
+   ──────────────────────────────────────────────────────────
+   题库里 462 篇全是【可选题】，不含任何考场给定的题目。
+   写《不拘一格的美》这类题的时候，工具原本只有一条出路：
+   「加题」塞一行进去，换来四段通用套话，跟题目本身毫无关系。
+   这一节补的就是这条路：题目自己带，把工具的原料（1879 条具体素材）
+   解锁出来给她用，而不是再给她一个题目。
+
+   为什么素材比题目重要：素材是「台下几十个家长里没有一个人举手机，
+   只有我一个人举了」这种能直接抄进作文的东西，而且 1879 条零重复。
+   问题是它们锁在 462 个固定组合里，没有任何检索入口。 */
+var MODE='home';                      // home | funnel | mine
+var MY={topic:'', g:null, mats:[], idea:'', how:null, trap:''};
+
+/* 素材索引：题库一改就重建（导入后也会调） */
+var MAT_INDEX=[];
+function buildMatIndex(){
+  MAT_INDEX=[];
+  for(var i=0;i<BANK.length;i++){
+    var b=BANK[i];
+    for(var j=0;j<b.mat.length;j++) MAT_INDEX.push({m:b.mat[j], id:b.id, t:b.t, g:b.g, imp:b.imp});
+  }
+}
+buildMatIndex();
+var MAT_TOTAL=MAT_INDEX.length;
+
+/* 素材切片：给定题目常常一个字都搜不到（比如题目叫「不拘一格的美」，
+   题库里 0 篇含「不拘」）。这时候给她一条能翻的线索，比一个空搜索框有用。
+   每条切片都是一组「不合常规 / 例外 / 只有一次」的措辞。 */
+/* 切片命中量实测校准过：每条都要能翻出十几条以上，
+   否则「换一条」是句空话。「只有一个人」原来只命中 3 条、「敢/不敢」8 条，
+   都收窄了 —— 措辞比人想的更分散。 */
+var MAT_SLICES=[
+  {k:'只有一个人', re:/只有[^，。]{0,6}(我|他|她|一)|就我一个|只有我一个|全场|全班|整个班/},
+  {k:'第一次',     re:/第一次/},
+  {k:'没人…',      re:/没人|没有人|谁也没|一个也没有|没有一个人|只剩|空无/},
+  {k:'被说 / 被笑', re:/被说|被笑|笑我|说我|夸我|挨骂|被老师点/},
+  {k:'敢 / 不敢',   re:/不敢|敢[^\s]{0,4}(问|说|开口|举手|站|回头|承认)|终于|开口|举手|主动|第一次站/},
+  {k:'特别',       re:/特别|格外|比[^，。]{0,3}还|最[^\s]{0,3}的/},
+  {k:'停下来',      re:/停[了住]|愣[住]|顿[了住]|没有动|没接话|没出声/},
+  {k:'一个人的时候', re:/一个人[^\s]{0,4}(时|了|在)|没人[^\s]{0,4}时候|自己[^\s]{0,4}(时|在)|独处/}
+];
+function norm(s){ return String(s==null?'':s).toLowerCase(); }
+/* 搜题目：标题 6 分、立意 3 分、素材 2 分、骨架 1 分 */
+function searchTopics(q){
+  q=norm(q).trim(); if(!q) return [];
+  var out=[],i,j,k;
+  for(i=0;i<BANK.length;i++){
+    var b=BANK[i], sc=0;
+    if(norm(b.t).indexOf(q)>=0) sc+=6;
+    if(norm(b.idea).indexOf(q)>=0) sc+=3;
+    for(j=0;j<b.mat.length;j++) if(norm(b.mat[j]).indexOf(q)>=0){ sc+=2; break; }
+    for(k=0;k<b.how.length;k++) if(norm(b.how[k]).indexOf(q)>=0){ sc+=1; break; }
+    if(sc) out.push({b:b,sc:sc});
+  }
+  out.sort(function(a,b){ return b.sc-a.sc || (hash(a.b.id)-hash(b.b.id)); });
+  return out;
+}
+/* 搜素材：给定题目时真正有用的是这个，不是题目 */
+function searchMats(q, sliceRe){
+  q=norm(q).trim();
+  var re=sliceRe||null, out=[],i;
+  for(i=0;i<MAT_INDEX.length;i++){
+    var x=MAT_INDEX[i];
+    if(re && !re.test(x.m)) continue;
+    if(q && norm(x.m).indexOf(q)<0) continue;
+    out.push(x);
+  }
+  return out;
+}
+/* 从题目里抠出可以拿去搜素材的词，并且【只保留真的搜得到东西的词】。
+   原来是无脑切 2-gram，于是「不拘一格的美」给出「拘一 · 格的」——
+   这种词摆出来比不给更糟，她会以为是自己没看懂。 */
+function topicKeywords(topic){
+  var t=norm(topic).replace(/[《》「」""'']/g,'');
+  var out=[],seen={},i;
+  for(i=0;i<t.length-1;i++){
+    var c=t.slice(i,i+2);
+    if(seen[c]) continue;
+    seen[c]=1;
+    if(searchMats(c).length>0) out.push(c);
+  }
+  return out;
+}
+
+/* 合成一个「我的题目」对象，喂给现成的写作台。
+   这样计时、字数配额、复制写作单、收藏全都直接可用，不用重写一遍。 */
+function buildMineTopic(){
+  var g=MY.g||'rec';
+  var t={
+    id:'MY', imp:true, own:true,
+    t: MY.topic? ('《'+MY.topic+'》') : '（还没写题目）',
+    g:g, d:'society', c:'moment', e:'insight', who:null,
+    idea: MY.idea || '还没写立意 —— 先回答一件事：这篇想让读者读完，记住哪一个判断？',
+    mat: MY.mats.length? MY.mats.slice() : [],
+    how: MY.how || [],
+    trap: MY.trap || ''
+  };
+  BY_ID.MY=t;   /* 收藏/记录要能按 id 找回它 */
+  return t;
+}
+
+/* ── 视图：首页 ── */
+/* 输入框 + 中文输入法。
+   两个坑：
+   1) 拼音输入过程中 compositionstart/compositionend 之间也会触发 input，
+      这时候重渲染会把正在组合的字拆掉 —— 中文界面最经典的输入法 bug。
+      所以组合期间一律不重渲染，等 compositionend 再说。
+   2) 重渲染后焦点和光标会丢，得还回去，否则打一半就没法继续打。 */
+function bindLive(node, sel, onCommit, rerender){
+  var composing=false;
+  function refocus(){
+    var again=document.querySelector(sel);
+    if(again){ again.focus(); var L=again.value.length; try{ again.setSelectionRange(L,L); }catch(e){} }
+  }
+  node.addEventListener('compositionstart',function(){ composing=true; });
+  node.addEventListener('compositionend',function(){ composing=false; onCommit(node.value); rerender(); refocus(); });
+  node.addEventListener('input',function(ev){
+    if(composing || ev.isComposing) return;   // 拼音还没拼完，别动 DOM
+    onCommit(node.value); rerender(); refocus();
+  });
+}
+function renderHome(){
+  var v=document.getElementById('view'); v.innerHTML='';
+  var h=el('div','qhead fade');
+  h.appendChild(el('div','k','作文题材向导'));
+  h.appendChild(el('h2',null,'你现在是要写一篇作文'));
+  h.appendChild(el('p',null,'从下面三条路里选一条 —— 题目已经有了就直接进第一，别绕四道题。'));
+  v.appendChild(h);
+
+  var g=el('div','grid one');
+  g.appendChild(homeOpt('✍️','我已经有作文题了',
+    '考试卷子上印好的题、老师给的题、自己想写的题。题库里没有也没关系 —— 把题带进来，从 '+MAT_TOTAL+' 条具体素材里找论据。',
+    function(){ MODE='mine'; render(); window.scrollTo(0,0); }));
+  g.appendChild(homeOpt('🔍','我想不出题目',
+    '按体裁 / 领域 / 切口 / 情感四步挑。题目库内置 '+BANK.length+' 篇固定组合。',
+    function(){ MODE='funnel'; sel={g:null,d:null,c:null,e:null}; step=0; maxStep=0; chosen=null; render(); window.scrollTo(0,0); }));
+  g.appendChild(homeOpt('⏱','什么都不想，直接写',
+    '空白写作台：40 分钟倒计时 + 分段字数配额，不给题目也不给结构。卡住的时候用。',
+    function(){
+      MY={topic:'',g:null,mats:[],idea:'',how:null,trap:''};
+      chosen=buildMineTopic(); step=4; MODE='funnel'; render(); window.scrollTo(0,0);
+    }));
+  v.appendChild(g);
+
+  v.appendChild(el('div','cnt',
+    '题目库 '+BANK.length+' 篇 · 素材 '+MAT_TOTAL+' 条（全部唯一）· 零依赖、离线可用。'));
+}
+function homeOpt(emo,nm,ds,onGo){
+  var b=el('button','opt');
+  b.type='button';
+  b.appendChild(el('span','emo',emo));
+  b.appendChild(el('span','nm',nm));
+  b.appendChild(el('span','ds',ds));
+  b.addEventListener('click',onGo);
+  return b;
+}
+
+/* ── 视图：我的题目工作台 ── */
+function renderMine(){
+  var v=document.getElementById('view'); v.innerHTML='';
+  var h=el('div','qhead fade');
+  h.appendChild(el('div','k','我的题目 · 题目是我自己的'));
+  h.appendChild(el('h2',null,'把题目带进来，从素材里找论据'));
+  h.appendChild(el('p',null,'题库给不了你答案（题目是给定的）。但 '+MAT_TOTAL+
+    ' 条素材是从 '+BANK.length+' 篇文章里拆出来的具体时刻，它们比任何题目都更能直接抄进作文。'));
+  v.appendChild(h);
+
+  /* 1) 题目 */
+  var s1=el('div','sect');
+  s1.appendChild(el('h4',null,'① 我的作文题'));
+  var ti=el('input','tin'); ti.type='text'; ti.value=MY.topic;
+  ti.placeholder='把卷子上的题抄进来，比如：不拘一格的美';
+  ti.setAttribute('aria-label','我的作文题目');
+  bindLive(ti,'input[aria-label="我的作文题目"]',function(v){ MY.topic=v.trim(); }, renderMine);
+  s1.appendChild(ti);
+  var kwline=el('div','note');
+  s1.appendChild(kwline);
+  function paintKw(){
+    if(!MY.topic){ kwline.textContent='抄进题目后，这里会检查哪些词能搜到素材。'; return; }
+    var kws=topicKeywords(MY.topic);
+    kwline.textContent = kws.length
+      ? '你题目里的这几个词在素材里搜得到：'+kws.slice(0,8).join(' · ')+'（已自动筛在下面）'
+      : '你题目里的词在 '+MAT_TOTAL+' 条素材里一个都搜不到 —— 这是正常的，作文题给的是抽象判断，素材给的是具体时刻。点下面的线索翻。';
+  }
+  paintKw();
+  v.appendChild(s1);
+
+  /* 2) 体裁 */
+  var s2=el('div','sect');
+  s2.appendChild(el('h4',null,'② 这篇打算写成什么（只是字数配额和计时提示，写岔了也不影响）'));
+  var gg=el('div','chips');
+  ['rec','argue','scene','imagine','apply'].forEach(function(k){
+    var c=el('button','chipb'+(MY.g===k?' on':''), G[k].emo+' '+G[k].nm);
+    c.type='button';
+    c.addEventListener('click',function(){
+      MY.g=(MY.g===k)?null:k;
+      renderMine();
+    });
+    gg.appendChild(c);
+  });
+  s2.appendChild(gg);
+  v.appendChild(s2);
+
+  /* 3) 找素材 */
+  var s3=el('div','sect');
+  s3.appendChild(el('h4',null,'③ 找论据 —— '+MAT_TOTAL+' 条素材，随便翻、随便搜'));
+  var qi=el('input','tin'); qi.type='search';
+  qi.placeholder='搜素材里出现的那个具体东西，比如：饭票 / 闹钟 / 黑板 / 糖罐';
+  qi.setAttribute('aria-label','搜索素材');
+  qi.value=MY.q||'';
+  bindLive(qi,'input[aria-label="搜索素材"]',function(v){ MY.q=v; }, renderMine);
+  s3.appendChild(qi);
+
+  var sl=el('div','chips');
+  sl.appendChild(el('span','note','按线索翻：'));
+  MAT_SLICES.forEach(function(x){
+    var c=el('button','chipb'+(MY.slice===x.k?' on':''), x.k);
+    c.type='button';
+    c.addEventListener('click',function(){
+      MY.slice=(MY.slice===x.k)?null:x.k;
+      renderMine();
+    });
+    sl.appendChild(c);
+  });
+  s3.appendChild(sl);
+
+  var sliceRe=null, i;
+  for(i=0;i<MAT_SLICES.length;i++) if(MAT_SLICES[i].k===MY.slice) sliceRe=MAT_SLICES[i].re;
+
+  /* 自动用题目里的词搜一遍，省得她自己想关键词 */
+  var auto=null;
+  if(!MY.q && MY.topic){
+    var kws=topicKeywords(MY.topic), hits=[];
+    for(i=0;i<kws.length && hits.length<8;i++){
+      var h2=searchMats(kws[i]);
+      for(var z=0;z<h2.length && hits.length<8;z++){
+        var already=hits.some(function(x){ return x.m===h2[z].m; });
+        if(!already) hits.push(h2[z]);
+      }
+    }
+    if(hits.length) auto=hits;
+  }
+
+  var q=MY.q||'';
+  var list=q? searchMats(q,sliceRe) : (sliceRe? searchMats('',sliceRe) : (auto||[]));
+  var shown=list.slice(0,24);
+
+  if(q||MY.slice){
+    s3.appendChild(el('div','note','找到 '+list.length+' 条'+(q?('，含「'+q+'」'):'')+(MY.slice?('，切片「'+MY.slice+'」'):'')+'。'));
+  } else if(auto){
+    s3.appendChild(el('div','note','按你题目里的词自动筛的 '+auto.length+' 条 —— 不对就自己搜。'));
+  } else {
+    s3.appendChild(el('div','note','题库里的词一个都没命中你的题目。点上面的线索翻，或者自己搜 —— 素材不一定和题目用同样的词。'));
+  }
+
+  if(!shown.length){
+    s3.appendChild(el('div','empty','这条线索下没有素材。换一条，或者直接用自己的材料写。'));
+  }
+  shown.forEach(function(x){
+    var row=el('div','mini matpick');
+    var m=el('div','mt',x.m);
+    row.appendChild(m);
+    var ms=el('div','ms');
+    ms.appendChild(el('span',null,'出自 '+x.t));
+    ms.appendChild(el('span',null,G[x.g].nm));
+    var add=el('button','abtn sm', MY.mats.indexOf(x.m)>=0?'已收':'+ 收进我的清单');
+    add.type='button';
+    add.addEventListener('click',function(ev){
+      ev.stopPropagation();
+      var at=MY.mats.indexOf(x.m);
+      if(at>=0) MY.mats.splice(at,1); else MY.mats.push(x.m);
+      renderMine();
+    });
+    ms.appendChild(add);
+    row.appendChild(ms);
+    s3.appendChild(row);
+  });
+  if(list.length>shown.length){
+    s3.appendChild(el('div','note','还有 '+(list.length-shown.length)+' 条 —— 搜得更具体一点，或者换条线索。'));
+  }
+  v.appendChild(s3);
+
+  /* 4) 我的素材清单 */
+  var s4=el('div','sect');
+  s4.appendChild(el('h4',null,'④ 我的素材清单（'+MY.mats.length+' 条）'));
+  if(!MY.mats.length){
+    s4.appendChild(el('div','note','还没收。凑到 3 条就能开写 —— 3 个具体的时刻，足够撑起一篇 600 字。'));
+  } else {
+    var ul=el('ul','mat');
+    MY.mats.forEach(function(m){
+      var li=el('li','on',m);
+      li.setAttribute('role','button');
+      li.setAttribute('tabindex','0');
+      li.setAttribute('aria-label','移除：'+m);
+      var drop=function(){ var at=MY.mats.indexOf(m); if(at>=0) MY.mats.splice(at,1); renderMine(); };
+      li.addEventListener('click',drop);
+      li.addEventListener('keydown',function(ev){
+        if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ ev.preventDefault(); drop(); }
+      });
+      ul.appendChild(li);
+    });
+    s4.appendChild(ul);
+    s4.appendChild(el('div','note','点一条可以把它从清单里拿掉。'));
+  }
+  var clear=el('button','abtn sm','清空清单');
+  clear.type='button';
+  clear.addEventListener('click',function(){ MY.mats=[]; renderMine(); });
+  if(MY.mats.length){ s4.appendChild(clear); }
+  v.appendChild(s4);
+
+  /* 5) 立意 —— 之前只是提示"还没写立意"，却根本没地方写 */
+  var s5=el('div','sect');
+  s5.appendChild(el('h4',null,'⑤ 这篇想让读者读完，记住哪一个判断？'));
+  var ii=el('input','tin'); ii.type='text';
+  ii.value=MY.idea||'';
+  ii.placeholder='一句话就行，比如：怪不等于有个性，被多数人说过也不等于错';
+  ii.setAttribute('aria-label','这篇的立意（一句话）');
+  ii.addEventListener('input',function(){ MY.idea=ii.value.trim(); });
+  s5.appendChild(ii);
+  s5.appendChild(el('div','note','想不出立意通常不是词汇问题，是还没决定这篇到底要跟读者说什么。先空着也行，写作台上会提醒你。'));
+  v.appendChild(s5);
+
+  /* 6) 结构 */
+  var s6=el('div','sect');
+  s6.appendChild(el('h4',null,'⑥ 怎么搭'));
+  var noStruct=el('button','opt wide'+(MY.how===null?' pick':''));
+  noStruct.type='button';
+  noStruct.appendChild(el('span','emo','✳️'));
+  noStruct.appendChild(el('span','nm','不要结构'));
+  noStruct.appendChild(el('span','ds','只给你立意和素材，文章怎么搭你自己定。最不容易写成四平八稳。'));
+  noStruct.addEventListener('click',function(){ MY.how=null; renderMine(); });
+  s6.appendChild(noStruct);
+
+  var borrow=el('button','opt wide'+(MY.how?' pick':''));
+  borrow.type='button';
+  borrow.appendChild(el('span','emo','🦴'));
+  borrow.appendChild(el('span','nm','借题库同体裁的骨架'));
+  borrow.appendChild(el('span','ds','卡住了就借一个 4 拍骨架。写得不顺就换回来。'));
+  borrow.addEventListener('click',function(){
+    var g2=MY.g||'rec';
+    var same=BANK.filter(function(b){ return b.g===g2; });
+    var pick=same[hash(MY.topic||'x')%same.length];
+    MY.how=MY.how?null:pick.how.slice();
+    MY.trap=MY.how?('借的是《'+pick.t+'》的骨架。翻车点自己另想：'+pick.trap):'';
+    renderMine();
+  });
+  s6.appendChild(borrow);
+
+  if(MY.how){
+    var s6b=el('div','sect');
+    s6b.appendChild(el('h4',null,'借来的骨架'));
+    var ol=el('ol','how');
+    MY.how.forEach(function(x){ ol.appendChild(el('li',null,x)); });
+    s6b.appendChild(ol);
+    v.appendChild(s6b);
+  }
+  if(MY.trap) s6.appendChild(el('div','trap',MY.trap));
+  v.appendChild(s6);
+
+  /* 7) 参考：别人怎么切入同体裁的题（是手法参考，不是答案） */
+  var ref=BANK.filter(function(b){ return b.g===(MY.g||'rec'); });
+  var refSel=[0,1,2].map(function(k){ return ref[(hash(MY.topic||'y')+k*97)%ref.length]; });
+  var s7=el('div','sect');
+  s7.appendChild(el('h4',null,'参考 · 题库里同体裁是怎么切入的（看手法，不是抄立意）'));
+  refSel.forEach(function(b){
+    var row=el('div','mini');
+    row.appendChild(el('div','mt',b.t));
+    row.appendChild(el('div','ms line',b.idea));
+    var take=el('button','abtn sm','+ 借它的骨架');
+    take.type='button';
+    take.addEventListener('click',function(ev){
+      ev.stopPropagation();
+      MY.how=b.how.slice(); MY.trap='借的是《'+b.t+'》的骨架。翻车点自己另想：'+b.trap;
+      renderMine();
+    });
+    row.appendChild(take);
+    s7.appendChild(row);
+  });
+  v.appendChild(s7);
+
+  var row=el('div','acts'); row.style.padding='0';
+  var go=el('button','abtn pri','就写这篇 →');
+  go.type='button';
+  go.addEventListener('click',function(){
+    if(!MY.topic){ toast('先把作文题抄进来'); ti.focus(); return; }
+    chosen=buildMineTopic(); step=4; MODE='funnel'; render(); window.scrollTo(0,0);
+  });
+  row.appendChild(go);
+  var back=el('button','abtn','回到开头');
+  back.type='button';
+  back.addEventListener('click',function(){ MODE='home'; render(); window.scrollTo(0,0); });
+  row.appendChild(back);
+  v.appendChild(row);
+}
+
 /* ── 路由 ── */
 function goStep(n){ step=n; if(n<4) salt=0; if(n!==4) chosen=null; render(); window.scrollTo(0,0); }
 function render(){
-  /* 三个页面状态：step<4 选维度，step===4 且还没定题 = 出题列表，
-     step===4 且 chosen = 写作台。step 单独一个数分不开后两个，必须看 chosen。 */
   /* 切页前先停表并丢掉旧视图的回调 ——
      计时器住在模块级，不在这里掐掉的话，它会继续对着已被 innerHTML=''
      摘掉的节点写 textContent（而且再次进写作台会叠加第二个 interval）。 */
   timerStop(); timerOnPaint=timerOnReset=timerOnEnd=null;
-  if(step<4) renderChoice();
-  else if(chosen) renderDesk();
-  else renderResults();
+  /* 四种页面：首页(选路) / 我的题目 / 四步漏斗+出题+写作台(共用 step 状态机) */
+  if(MODE==='home')      renderHome();
+  else if(MODE==='mine') renderMine();
+  else if(step<4)        renderChoice();
+  else if(chosen)        renderDesk();
+  else                   renderResults();
   renderSteps(); renderNav();
 }
 function renderNav(){
   var nav=document.getElementById('nav'), hint=document.getElementById('navhint'), back=document.getElementById('btnBack');
   nav.classList.remove('hide');
+  /* 首页 / 我的题目：底栏的「上一步 + 下一步 + 按这几步出题」全都不适用 */
+  if(MODE==='home'||MODE==='mine'){
+    if(back.parentNode) back.parentNode.removeChild(back);
+    hint.textContent = MODE==='home' ? '题目已经有了就用第一条路' : '题目是你的，工具只出论据不给答案';
+    return;
+  }
   /* 「上一步」只在真的有上一步时【存在】，而不是用 visibility:hidden 藏起来 ——
      visibility:hidden 的元素照样占布局（实测第1步它占 56px，把 navGo 的右边缘
      顶到 393px，超出 390px 视口 3px）。没有上一步时就把它从 DOM 里摘掉。 */
@@ -1835,8 +2305,9 @@ function toast(msg){
 document.getElementById('btnLib').addEventListener('click',function(){ openSheet('fav'); });
 document.getElementById('btnReset').addEventListener('click',function(){
   sel={g:null,d:null,c:null,e:null}; chosen=null; slots={}; step=0; salt=0; maxStep=0;
+  MODE='home';
   render(); window.scrollTo(0,0);
-  toast('回到第 1 步');
+  toast('回到开头');
 });
 document.getElementById('shClose').addEventListener('click',closeSheet);
 // Esc 关闭抽屉已并入上面的抽屉焦点陷阱处理器（那里同时管 Tab 循环）
@@ -1891,6 +2362,16 @@ if(DEBUG) window.__T={
   parseImport:parseImport,
   normCode:normCode,
   hasSlot:hasSlot,
+  mode:function(){ return MODE; },
+  setMode:function(m){ MODE=m; render(); },
+  my:function(){ return MY; },
+  setMy:function(k,v){ MY[k]=v; },
+  matTotal:function(){ return MAT_TOTAL; },
+  matIndex:function(){ return MAT_INDEX; },
+  searchMats:searchMats,
+  searchTopics:searchTopics,
+  topicKeywords:topicKeywords,
+  buildMineTopic:buildMineTopic,
   planText:function(id){ var b=byId(id); return b?planText(b):null; },
   byId:byId,
   finalTitle:finalTitle,

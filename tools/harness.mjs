@@ -92,6 +92,16 @@ class El {
     for (const fn of this._listeners.click || []) fn({ stopPropagation() {}, preventDefault() {}, target: this });
   }
   select() {}
+  focus() {
+    doc.activeElement = this;
+  }
+  blur() {
+    if (doc.activeElement === this) doc.activeElement = null;
+  }
+  setSelectionRange(a, b) {
+    this._selStart = a;
+    this._selEnd = b;
+  }
   set innerHTML(v) {
     if (v === '') this.children.forEach((c) => (c.parentNode = null)), (this.children = []);
     else this._html = v;
@@ -108,14 +118,26 @@ class El {
     if (this.children.length) return this.children.map((c) => c.textContent).join('');
     return this._text;
   }
-  // compound selector: '#id' | '.cls' | 'tag' | 'tag.cls#id'
+  // compound selector: '#id' | '.cls' | 'tag' | 'tag.cls#id' | '[attr="v"]'
   _match(sel) {
-    const parts = sel.match(/^([a-zA-Z]*)((?:[.#][\w-]+)*)$/);
+    const parts = sel.match(/^([a-zA-Z]*)((?:[.#][\w-]+|\[[^\]]+\])*)$/);
     if (!parts) return false;
     const [, tag, rest] = parts;
     if (tag && this.tagName !== tag.toUpperCase()) return false;
-    for (const tok of rest.match(/[.#][\w-]+/g) || []) {
-      if (tok[0] === '#' ? this.id !== tok.slice(1) : !this._classes.has(tok.slice(1))) return false;
+    for (const tok of rest.match(/[.#][\w-]+|\[[^\]]+\]/g) || []) {
+      if (tok[0] === '[') {
+        const inner = tok.slice(1, -1);
+        const eq = inner.indexOf('=');
+        if (eq < 0) {
+          if (!(inner in this.attributes)) return false;
+        } else {
+          const k = inner.slice(0, eq).trim();
+          const want = inner.slice(eq + 1).trim().replace(/^["']|["']$/g, '');
+          if (this.attributes[k] !== want) return false;
+        }
+      } else if (tok[0] === '#') {
+        if (this.id !== tok.slice(1)) return false;
+      } else if (!this._classes.has(tok.slice(1))) return false;
     }
     return true;
   }
@@ -176,6 +198,7 @@ const doc = {
   body,
   documentElement: new El('html'),
   _listeners: {},
+  activeElement: null,
   createElement: (t) => new El(t),
   createTextNode: (t) => new TextNode(t),
   createDocumentFragment: () => new El('#fragment'),

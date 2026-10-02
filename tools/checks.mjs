@@ -12,6 +12,24 @@ let pass = 0;
 let fail = 0;
 const failures = [];
 
+/* 应用现在从首页进入。测试要走真实用户路径，而不是直接改内部状态。 */
+function enterFunnel() {
+  T.setMode('home');
+  const opt = el
+    .get('view')
+    .querySelectorAll('.opt')
+    .find((b) => b.textContent.includes('我想不出题目'));
+  opt.click();
+}
+function enterMine() {
+  T.setMode('home');
+  const opt = el
+    .get('view')
+    .querySelectorAll('.opt')
+    .find((b) => b.textContent.includes('我已经有作文题了'));
+  opt.click();
+}
+
 function check(name, cond, extra = '') {
   if (cond) {
     pass++;
@@ -75,6 +93,7 @@ section('四维组合覆盖度');
 section('计时器生命周期');
 {
   clock.intervals.clear();
+  enterFunnel();
   T.set('g', 'rec');
   T.set('d', 'friend');
   T.set('c', 'moment');
@@ -129,6 +148,7 @@ section('导入去重');
 
 section('人物槽位：选择必须可见');
 {
+  enterFunnel();
   const bank = T.bank();
   const withWho = bank.filter((b) => b.who && b.who.length);
   const sub = withWho.filter((b) => /\{[^}]+\}/.test(b.t));
@@ -197,7 +217,7 @@ section('results() 不得返回 undefined 项');
 
 section('无障碍：自绘控件必须键盘可达、状态可读');
 {
-  T.go(0);
+  enterFunnel();
   const steps = el.get('steps').querySelectorAll('.sdot');
   check('步骤条有 5 格', steps.length === 5, String(steps.length));
   check('步骤条每格都有 role=button', steps.every((s) => s.getAttribute('role') === 'button'));
@@ -210,10 +230,6 @@ section('无障碍：自绘控件必须键盘可达、状态可读');
   const sdot = el.get('steps').querySelectorAll('.sdot').filter((n) => n.getAttribute('tabindex') === '0');
   const target = sdot[sdot.length - 1];
   const before = T.getStep();
-  target.dispatchEvent
-    ? null
-    : null;
-  // shim: 直接触发 keydown 监听
   const keyHandlers = target._listeners.keydown || [];
   keyHandlers.forEach((h) => h({ key: 'Enter', preventDefault() {} }));
   check('步骤条可用键盘 Enter 跳步', T.getStep() !== before || target.getAttribute('aria-current') === 'step', `${before} -> ${T.getStep()}`);
