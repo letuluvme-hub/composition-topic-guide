@@ -31,10 +31,12 @@ for (const t of TOPICS) {
     continue;
   }
   const names = p.c.map((c) => T.concept(c).nm).join(' + ');
+  const coreNames = (p.core || []).map((c) => T.concept(c).nm).join(' 或 ');
   const note = T.profileNote(t);
   console.log(`  档命中 ${p.profiles} 组 → 概念: ${names}`);
+  console.log(`  门槛(必须命中其一): ${coreNames}`);
   if (note) console.log(`  档的提示: ${note}`);
-  const res = T.searchByConcepts(p.c);
+  const res = T.searchByConcepts(p.c, p.core);
   console.log(`  检索到 ${res.length} 条，前 8：`);
   res.slice(0, 8).forEach((r, i) => {
     const hit = r.x.tags.filter((c) => p.c.includes(c)).map((c) => T.concept(c).nm);

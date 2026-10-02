@@ -250,6 +250,13 @@ textarea.ta{width:100%;min-height:150px;background:#0006;border:1px solid var(--
 .tin:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
 .mini.matpick{border-left:2px solid var(--violet)}
 .mini.matpick .mt{line-height:1.5}
+/* 概念命中徽章：把「为什么这条被检索出来」摊开给人看 */
+.ms .tg{font-size:11.5px;line-height:1.5;color:var(--cyan);
+  border:1px dashed var(--line2);border-radius:8px;padding:1px 7px}
+.ms .tg:hover{border-style:solid;border-color:var(--cyan)}
+/* 概念芯片上的数字（该概念在素材库里的条数）用等宽，避免芯片宽度乱跳 */
+.chipb .n{font-family:var(--mono);opacity:.72;margin-left:5px;font-weight:500}
+.chipb .core{color:var(--gold);margin-left:4px}
 .ms.line{display:block;font-size:12.5px;line-height:1.55;color:var(--mut);margin:6px 0 8px}
 /* 只有键盘可达的元素才在鼠标下不显示焦点圈 */
 .sdot[tabindex]:not(:focus-visible),.mat li[tabindex]:not(:focus-visible),.mini[tabindex]:not(:focus-visible){outline:none}
@@ -1821,89 +1828,119 @@ function parseImport(txt){
    「美」这个字本身推不出「破旧」，所以档必须手写。
    —— 这也是 docs/TAXONOMY.md 里「答案在组合里，不在单个概念里」的实证。
 
-   格式：'<题目关键词>' -> [概念, 概念, ...]
-   匹配：题目里含 key 就取它的概念（取并集）。 */
+   格式：
+     k    = 命中哪些词（题目里含其一即算命中）
+     c    = 该调哪些概念（全部并入查询）
+     core = 其中哪几个是「必须命中至少一个」的门槛
+     weak = 太泛的词，只在没有别的档命中时才用
+
+   core 为什么要单列：c 里混着两类东西 ——
+     · 判别性概念（v 以此为业 4.8%、u 第一次 2.7%、h 具体时间点 2.3%），
+       出现就说明这条素材真的切题；
+     · 通用描述词（o 具体物 24.7%、g 重复 19.6%、k 破旧 16.5%、j 没停 9.5%），
+       凑齐三四个太容易。
+   实测《传统手艺》前 5 条里混着「阳台上还晾着两块抹布」——
+   抹布确实同时命中 破旧+重复+还在继续+具体物，但这些全是通用描述词，
+   加权覆盖率还是 100%，降权救不回来，只能设硬门槛。
+   门槛取值原则：这一档里「不命中就说明根本不切题」的那一个概念。 */
 var TOPIC_PROFILES=[
   /* —— 不拘一格 / 独特 / 审美 —— */
-  {k:['不拘一格','独特','特别','别致','千姿百态','各有千秋','独一无二'], c:'abcek',
+  {k:['不拘一格','独特','特别','别致','千姿百态','各有千秋','独一无二'], c:'abcek', core:'ab',
    note:'这类题要的是「不美的东西美」——必须有被忽略/被否定作陪衬，否则只剩赞美'},
-  {k:['美'], c:'abcek', weak:true, note:'「美」太泛：先看题目里有没有别的词，否则按这组试'},
+  {k:['美'], c:'abcek', core:'ab', weak:true,
+   note:'「美」太泛：先看题目里有没有别的词，否则按这组试'},
 
   /* —— 规则 / 打破 ——
      注意「传统」不在这里：它同时是下面「传统手艺」档的主词，
      一个词出现在两档里会让两档并集命中（实测《传统手艺》8 个概念混在一起，
      概念被稀释，值日表这种无关素材排到第一）。一个词只能属于一档。 */
-  {k:['规则','规矩','该不该','打破','遵守','秩序','公平','按部就班'], c:'atdkn',
+  {k:['规则','规矩','该不该','打破','遵守','秩序','公平','按部就班'], c:'atdkn', core:'t',
    note:'规则题的核心是「谁被排除在外」，所以一定要带上 d 被否定 和 n 很小'},
 
   /* —— 记忆 / 怀念 / 那个人 ——
-     只用 p 声音 / q 身体 / r 字迹 / n 很小。
-     早期版本还带了 g 重复 和 i 后来变了，结果把「第二天早读我重写了开头那句」
-     这类写作过程素材顶了上来 —— 那不是"记得一张脸"，是"记得一次改稿"。 */
-  {k:['记忆','怀念','想起','忘不掉','那张脸','那张照片','旧照片','忘不了'], c:'pqrno',
-   note:'记忆题靠可感细节撑：声音 p + 身体 q + 字迹 r。不要加「重复/变化」，会把改稿过程引进来'},
+     p 声音 + q 身体动作 + n 很小 + o 具体物。
+     两处踩过的坑:
+     1) 早先带了 g 重复 和 i 后来变了 → 把「第二天早读我重写了开头那句」
+        这类改稿过程顶上来。那是"记得一次改稿"，不是"记得一张脸"。
+     2) 早先还带了 r 字迹 → 结果全是「数学五十九分，红笔的批注挤占了半个页脚」
+        「鞋柜门内侧那行字已经褪成浅灰」。r 出现在 9% 的素材上，配上 n/o
+        之后基本等于"找所有写在纸上的小东西"，跟记忆题没关系。
+     core = p 或 q：记得起一个人，靠的必须是他的声音或动作，
+     只剩「墙上翘起一小片墙纸贴着冷风」那种纯环境细节是没用的。
+     老实说这一档仍然偏弱：22 个概念里没有「一个人的样子/外貌」，
+     「记得一张脸」只能靠可感细节凑，命中的是"记得某个细节"不是"记得脸"。 */
+  {k:['记忆','怀念','想起','忘不掉','那张脸','那张照片','旧照片','忘不了'], c:'pqno', core:'pq',
+   note:'记忆题靠可感细节撑：声音 p + 身体 q。不要加 r 字迹和 g/i——会把书面文字和改稿过程引进来'},
 
   /* —— 时间 / 成长 / 以前以后 —— */
-  {k:['时间','长大','小时候','以前','日子','一年','岁月'], c:'higkn',
-   note:'时间题用具体时间点 h（"第六十一天"）比讲道理有用得多'},
+  {k:['时间','长大','小时候','以前','日子','一年','岁月'], c:'higkn', core:'h',
+   note:'时间题用具体时间点 h（"第六十一天"）比讲道理有用得多，所以 h 是门槛'},
 
   /* —— 坚持 / 毅力 / 平凡 —— */
-  {k:['坚持','毅力','长年','日复一日','年复一年','不起眼','平凡','默默'], c:'gjnli',
-   note:'注意 j「没停/还在继续」和 g「重复很多次」是两回事，B4 单独很有力'},
+  {k:['坚持','毅力','长年','日复一日','年复一年','不起眼','平凡','默默'], c:'gjnli', core:'j',
+   note:'注意 j「没停/还在继续」和 g「重复很多次」是两回事，B4 单独很有力，所以拿 j 当门槛'},
 
   /* —— 勇敢 / 怕 / 面对 —— */
   /* 「第一次」不在这档里 —— 它是下面独立的一档，两档并集会把所有
      带 u「第一次」的素材都拉进来，实测《真正的勇敢》返回的全是
      「第一次月考」「第一次看青铜觥」，没有一条真的关于勇敢。 */
-  {k:['勇敢','害怕','面对','不敢','跨出','怯'], c:'jcdak',
-   note:'勇敢往往长得不像勇敢——被忽略 c 和 与常规不同 a 比 d 更准'},
+  {k:['勇敢','害怕','面对','不敢','跨出','怯'], c:'jcdak', core:'a',
+   note:'勇敢往往长得不像勇敢——被忽略 c 和 与常规不同 a 比 d 更准，所以拿 a 当门槛'},
 
   /* —— 理解 / 误解 / 沟通 —— */
-  {k:['理解','误解','沟通','偏见','误会','包容','接纳'], c:'cednm',
+  {k:['理解','误解','沟通','偏见','误会','包容','接纳'], c:'cednm', core:'cd',
    note:'误解题的两头都要：d 被否定 和 e 被看见，缺一头就变成单方面说理'},
 
   /* —— 亲情 / 家 —— */
-  {k:['亲情','家人','父母','妈妈','爸爸','外婆','奶奶','家'], c:'pqnge',
-   note:'亲情题靠重复出现的小动作 g，而不是靠抒情'},
+  {k:['亲情','家人','父母','妈妈','爸爸','外婆','奶奶','家'], c:'pqnge', core:'g',
+   note:'亲情题靠重复出现的小动作 g，而不是靠抒情，所以拿 g 当门槛'},
 
-  /* —— 坚持以外的变化 / 转折 —— */
-  {k:['改变','变化','转折','长大以后','从……到','学会'], c:'ihgkd',
-   note:'变化题要前后对照 i，再加 g（重复很多次才构成"变"）'},
+  /* —— 变化 / 转折 —— */
+  {k:['改变','变化','转折','长大以后','学会'], c:'ihgkd', core:'i',
+   note:'变化题要前后对照 i，所以 i 是门槛；没有 i 的素材根本不是"变化"'},
 
   /* —— 那些情绪 / 心事 —— */
-  {k:['情绪','生气','难过','委屈','心情','别扭','不开心','心事'], c:'cdmnp',
-   note:'情绪题的重心在 c 被忽略 和 m 静 —— 没说出口的部分才是内容'},
+  {k:['情绪','生气','难过','委屈','心情','别扭','不开心','心事'], c:'cdmnp', core:'m',
+   note:'情绪题的重心在 c 被忽略 和 m 静 —— 没说出口的部分才是内容，所以拿 m 当门槛'},
 
-  /* —— 传统手艺 / 老东西 —— */
-  {k:['传统','手艺','老手艺','老物件','非遗','匠'], c:'kgjno',
-   note:'手艺题的落点是"还在继续" j，不是"怀念"'},
+  /* —— 传统手艺 / 老东西 ——
+     v「以此为业」是这一档的命门。早期版本只有 kgjno
+     （破旧+重复+还在继续+很小+具体物），实测前 5 条是
+     「阳台上还晾着两块抹布」「换下来的旧灯泡」「抽屉最里层的旧手机」——
+     凡是旧的小的都命中，因为没有任何一个概念能区分
+     「手艺人在干活」和「一块抹布在滴水」。
+     加 v 之后第 1 条变成「工具箱里有三百来把伞骨」，但抹布仍卡在第 2，
+     因为它的加权覆盖率也是 100%。所以 v 既是概念也是门槛。 */
+  {k:['传统','手艺','老手艺','老物件','非遗','匠','谋生','营生'], c:'vgjko', core:'v',
+   note:'手艺题的落点是「还在继续」，不是「怀念」。v 用来把行当和旧东西分开'},
 
   /* —— 好奇 / 为什么 —— */
-  {k:['好奇','为什么','疑问','探索','发现'], c:'cuhep',
-   note:'好奇题靠悬念推进：u 第一次 + n 很小 + e 被看见'},
+  {k:['好奇','为什么','疑问','探索','发现'], c:'cuhep', core:'u',
+   note:'好奇题靠悬念推进：u 第一次 是门槛'},
 
   /* —— 守住 / 保护 —— */
-  {k:['守护','保护','守住','坚持原则','不让'], c:'jtde',
+  {k:['守护','保护','守住','坚持原则','不让'], c:'jtde', core:'jt',
    note:'守护题里 d（有人要破坏）通常比 e（被看见）更重要'},
 
   /* —— 第一次 —— */
-  {k:['第一次','初次','开始'], c:'ujak',
+  {k:['第一次','初次','开始'], c:'ujak', core:'u',
    note:'第一次题用 u 加 j（后面还在不在继续）才有后劲'},
 
   /* —— 声音 / 安静 —— */
-  {k:['声音','安静','沉默','听','说话','喊'], c:'pmoj',
+  {k:['声音','安静','沉默','听','说话','喊'], c:'pmoj', core:'p',
    note:'声音题不要物（D1 判别力太低），用 p 声音 m 静 o 物 三个就够'},
 
   /* —— 数字 / 时间刻度 —— */
-  {k:['数字','几','第几','一半','三分钟','四十天'], c:'shg',
+  {k:['数字','第几','一半','三分钟','四十天','几次'], c:'shg', core:'s',
    note:'数字题靠 s 具体数字 + h 具体时间点 + g 重复'},
 ];
 
-/* 从题目推概念：命中多个档就取并集。全都不命中就返回 null ——
-   宁可说"我没把握这道题该调哪些概念"，也不要瞎猜一通然后装作很准。 */
+/* 从题目推概念：命中多个档就取并集（core 也取并集，命中任意一个核心即可）。
+   全都不命中就返回 null —— 宁可说"我没把握这道题该调哪些概念"，
+   也不要瞎猜一通然后装作很准。 */
 function conceptsForTopic(topic){
   var t=norm(topic).replace(/[《》「」""'']/g,''), i, k;
-  var got={}, hitProfiles=0, list=[];
+  var got={}, coreGot={}, list=[], coreList=[], hitProfiles=0;
   for(i=0;i<TOPIC_PROFILES.length;i++){
     var p=TOPIC_PROFILES[i], matched=false;
     for(k=0;k<p.k.length;k++) if(t.indexOf(p.k[k])>=0){ matched=true; break; }
@@ -1912,9 +1949,11 @@ function conceptsForTopic(topic){
     if(p.weak && hitProfiles) continue;
     hitProfiles++;
     for(k=0;k<p.c.length;k++) if(!got[p.c.charAt(k)]){ got[p.c.charAt(k)]=1; list.push(p.c.charAt(k)); }
+    var cs=p.core||'';
+    for(k=0;k<cs.length;k++) if(!coreGot[cs.charAt(k)]){ coreGot[cs.charAt(k)]=1; coreList.push(cs.charAt(k)); }
   }
   if(!list.length) return null;
-  return {c:list, profiles:hitProfiles};
+  return {c:list, core:coreList, profiles:hitProfiles};
 }
 function profileNote(topic){
   var t=norm(topic).replace(/[《》「」""'']/g,''), i, k;
@@ -1939,7 +1978,9 @@ function profileNote(topic){
    只有我一个人举了」这种能直接抄进作文的东西，而且 1879 条零重复。
    问题是它们锁在 462 个固定组合里，没有任何检索入口。 */
 var MODE='home';                      // home | funnel | mine
-var MY={topic:'', g:null, mats:[], idea:'', how:null, trap:''};
+/* cc = 用户手动选的概念（null = 跟着题目档走）
+   gate = undefined 表示「要求命中门槛」开着；只有显式 false 才关掉 */
+var MY={topic:'', g:null, mats:[], idea:'', how:null, trap:'', cc:null, gate:undefined};
 
 /* 素材索引：题库一改就重建（导入后也会调） */
 var MAT_INDEX=[];
@@ -1997,16 +2038,17 @@ var CONCEPTS=[
   {c:'r',g:'D',nm:'字迹',          ds:'手写、签名、改过、笔迹轻重'},
   {c:'s',g:'D',nm:'数字',          ds:'任何计数、分数、个数'},
   {c:'t',g:'E',nm:'规矩/要求',     ds:'有明确的规则、规定在起作用'},
-  {c:'u',g:'E',nm:'第一次',        ds:'明确的第一回'}
+  {c:'u',g:'E',nm:'第一次',        ds:'明确的第一回'},
+  {c:'v',g:'E',nm:'以此为业',      ds:'有人靠这件事拿到收入，有专门的工具和行话'}
 ];
 var CONCEPT_BY={};
 (function(){ for(var i=0;i<CONCEPTS.length;i++) CONCEPT_BY[CONCEPTS[i].c]=CONCEPTS[i]; })();
 
-/* 素材标签数据。每条记录变长：下标(3位定长) + 标签个数(1位十六进制) + 标签字母。
+/* 素材标签数据。每条记录变长：下标(4位定长) + 标签个数(1位十六进制) + 标签字母。
    由 tools/build-tags.mjs 从 data/mat-tags*.txt 生成。
    没被标注的素材不会进入语义检索 —— 这是数据覆盖度问题，不是 bug，
    界面上会写明「已标注 N / 1879」。 */
-var MAT_TAG_DATA='0003gos0012ao0022op0033koq0042ko0052aj0061a0072ko0083kor0093koq0103koq0112ko0122ko0132oq0143aoq0152oq0162no0173aoq0182oq0192no0204nors0212oq0223mpr0232ps0242gp0254gors0263hmp0274egoq0281p0294ehip0303koq0313cip0323goq0332ko0344mopq0353koq0363opq0371q0382dp0394akoq0402oq0412ko0424hkno0433moq0443knq0453ips0462lq0472io0483oqs0492op0501s0514mopq0522ko0532hr0544agrs0553hir0562ap0573cmq0581p0593eoq0603oqr0613nrs0622mr0633opq0643gko0653gos0663oqs0673bno0683gor0693emp0702mp0712eq0722im0733nqr0743dim0754inrs0761p0774depq0783bdp0794kopq0803dnt0814abpq0821q0832pq0844boqs0853imp0862oq0874cjlq0884ceip0894aior0904gors0913dgr0923loq0932oq0943ams0953eoq0963aio0973pqs0983oqs0993opq1003oqs1013eoq1023kno1032oq1044kors1052oq1062ep1074gjos1083knr1093noq1104mnps1113gqs1124eors1133opq1142op1154eikr1164ipqs1173iqs1183imp1194eoqr1205cjnor1214gkoq1224mopq1233eio1243ops1253eoq1264amps1274coqr1284kops1295aioqs1303asu1313apq1323kno1335chopq1342ko1355ikopq1364eoqs1372ej1385ekopr1392eo1404ginq1414cios1423dpq1434inos1445egors1452dp1463epq1473ejr1484jkno1492os1503ior1514cior1524aoqs1534dgop1546cmopqs1553ano1563oqs1573koq1584mprs1592qs1603oqs1614aioq1624cimr1634gioq1643glo1654goqs1664bios1673goq1684koqs1692go1703dps1712co1724agos1733opq1744akos1753goq1762os1772co1783cos1792do1804akos1812gq1821p1834orst1843gnr1854dkor1863gno1876aipqrs1883ops1894eopq1904opqt1912qs1924acrs1935abcos1942ao1953cor1964coqr1972os1984cgot1993iko2003epr2014koqs2025doprs2033dps2044bmps2054gios2062ps2073osu2084ijno2094gioq2104knor2114ajko2123ako2134iops2145emoqs2155egkos2164inoq2174bnos2185aeops2193aos2204iopq2215emoqs2223ano2234koqs2243gio2253ino2265jkosu2272os2282ps2292oq2304cgio2314cmoq2324gnop2333aoq2343ops2353noq2361q2374ekoq2386deopqs2395eilop2403eos2412io2423ikq2435aegop2444agop2455egoqr2462di2471s2484egop2494eiot2503eoq2513epq2523gko2534ckor2544jors2553cps2563air2573ios2584cjko2595gnopu2603afp2613ios2623koq2633noq2642os2654cfmo2664gops2674oqsu2683joq2692op2703aeq2713cnp2722ko2732ar2743gqs2753ioq2763alp2774opst2784akop2792do2803dgp2814aijo2822jo2834gkos2844egos2854cios2864acor2874fops2881o2893ops2903lop2914egnp2923ilo2933aos2943ipq2954acgq2962ap2973koq2983afo2995acgio3004cgio3013nqs3024knor3033ako3043jlo3054dhop3064cino3073ioq3084gios3093moq3103eoq3113ijo3123iko3133hoq3146ehijop3155eikmo3164ciko3174anoq3185aefho3193aos3204jkoq3212io3222ko3233kno3243iko3255eikop3265ijlps3273iop3284aeop3293ago3303aco3314knos3323nos3333ago3345gknor3353alo3365bknoq3373gko3384anos3393not3403aop3414gkoq3424goqs3433jko3443aop3453aop3464gops3473kos3483koq3494ikos3504ijno3513aos3523gop3533aio3545bcmop3554ceio3564ijop3574emrs3585agios3595inors3604egop3613aos3624cior3635aijos3644ioqs3653dip3664agps3675agopq3684bkor3694aeop3705bcgos3716cjlmno3724eipt3735aoprs3746aikopq3753koq3764hoqr3774koqs3784anos3795ijors3804gkos3815afims3826aopqsu3836bcmoqs3845aiops3855ckoru3865gjors3876dhikoq3886ahjmnr3895adgps3904eopq3915adgor3923ajp3934aioq3944knoq3955aopst3964bops3974acgq3983ano3992aj4006gikopq4014akno4024aoqs4035aijor4044giot4054ahio4064hkoq4073aos4084aeor4095ajnoq4104koqu4116agikos4125aiops4135ikoqr4146ceioqr4155ajors4166acdgpr4175agoqr4182os4194hkoq4203jos4215agios4224aghs4235acghi4245aghjs4255agjor4266acghoq4273ado4287acghmoq4295aghos4305dghos4313aos4323aco4333gst4344acsu4355aghjs4364adht4375dgost4385acfos4393ios4404arst4417agopqst4425adgho4435aioqu4443jop4454agos4465agioq4477ghkmors4485aghsu4497agnopst4505aghis4513dpt4526eghors4536adghor4544dopq4553dgp4566egikop4576adgosu4585adgps4595acgms4604agos4615agnor4626ajnors4633aot4647acinors4655ghkos4665aimop4675agops4683ajp4695dkoqs4706bgloqs4715abopu4726agioqs4735abgjo4746acioqs4753ajq4761a4776cgioqs4786adorsu4796aiopsu4804abrt4815acrst4824gost4835adqsu4843apt4856ghoqsu4866admops4876abgkoq4884cjoq4895acrst4906aloqst4916acgost4926aglqst4933art4945egosu4958aceghoru4967aghoqru4973grt4986acdoqs4995agors5005acpqt5016ijlost5025adopu5038agkloqru5046acinou5053art5063amp5074egop5085aimop5095ahrst5105aoqst5116cjorst5125agstu5136cghnrt5145aiqsu5155aehou5167aghmoqu5176jknors5183opq5196ehikor5205cjkoq5215aekoq5224ekoq5234inoq5248ceijknoq5254gnoq5263jop5274apqu5284giko5296aegoqs5304aopq5314acno5325acgos5334knoq5344aloq5354knop5367cghjkno5374acno5387gijoprt5395egjos';
+var MAT_TAG_DATA='00003gos00012ao00022op00033koq00042ko00052aj00061a00072ko00083kor00093koq00103koq00112ko00122ko00132oq00143aoq00152oq00162no00173aoq00182oq00192no00204nors00212oq00223mpr00232ps00242gp00254gors00263hmp00274egoq00281p00294ehip00303koq00313cip00323goq00332ko00344mopq00353koq00363opq00371q00382dp00394akoq00402oq00412ko00424hkno00433moq00443knq00453ips00462lq00472io00483oqs00492op00501s00514mopq00522ko00532hr00544agrs00553hir00562ap00573cmq00581p00593eoq00603oqr00613nrs00622mr00633opq00643gko00653gos00663oqs00673bno00683gor00693emp00702mp00712eq00722im00733nqr00743dim00754inrs00761p00774depq00783bdp00794kopq00803dnt00814abpq00821q00832pq00844boqs00853imp00862oq00874cjlq00884ceip00894aior00904gors00913dgr00923loq00932oq00943ams00953eoq00963aio00973pqs00983oqs00993opq01003oqs01013eoq01023kno01032oq01044kors01052oq01062ep01074gjos01083knr01093noq01104mnps01113gqs01124eors01133opq01142op01154eikr01164ipqs01173iqs01183imp01194eoqr01205cjnor01214gkoq01224mopq01233eio01243ops01253eoq01264amps01274coqr01284kops01295aioqs01303asu01313apq01323kno01335chopq01342ko01355ikopq01364eoqs01372ej01385ekopr01392eo01404ginq01414cios01423dpq01434inos01445egors01452dp01463epq01473ejr01484jkno01492os01503ior01514cior01524aoqs01534dgop01546cmopqs01553ano01563oqs01573koq01584mprs01592qs01603oqs01614aioq01624cimr01634gioq01643glo01654goqs01664bios01673goq01684koqs01692go01703dps01712co01724agos01733opq01744akos01753goq01762os01772co01783cos01792do01804akos01812gq01821p01834orst01843gnr01854dkor01863gno01876aipqrs01883ops01894eopq01904opqt01912qs01924acrs01935abcos01942ao01953cor01964coqr01972os01984cgot01993iko02003epr02014koqs02025doprs02033dps02044bmps02054gios02062ps02073osu02084ijno02094gioq02104knor02114ajko02123ako02134iops02145emoqs02155egkos02164inoq02174bnos02185aeops02193aos02204iopq02215emoqs02223ano02234koqs02243gio02253ino02265jkosu02272os02282ps02292oq02304cgio02314cmoq02324gnop02333aoq02343ops02353noq02361q02374ekoq02386deopqs02395eilop02403eos02412io02424ikqv02436aegopv02445agopv02456egoqrv02463div02471s02484egop02494eiot02503eoq02513epq02523gko02534ckor02544jors02553cps02563air02573ios02584cjko02595gnopu02603afp02613ios02624koqv02634noqv02643osv02655cfmov02665gopsv02674oqsu02683joq02692op02703aeq02713cnp02722ko02732ar02743gqs02753ioq02763alp02774opst02784akop02792do02803dgp02814aijo02823jov02835gkosv02845egosv02855ciosv02865acorv02874fops02881o02893ops02903lop02914egnp02923ilo02933aos02943ipq02954acgq02962ap02973koq02983afo02995acgio03004cgio03013nqs03024knor03033ako03043jlo03054dhop03064cino03073ioq03084gios03093moq03103eoq03113ijo03123iko03133hoq03146ehijop03155eikmo03164ciko03174anoq03185aefho03193aos03204jkoq03212io03222ko03233kno03243iko03255eikop03265ijlps03273iop03284aeop03293ago03303aco03314knos03323nos03333ago03345gknor03353alo03365bknoq03373gko03384anos03393not03403aop03414gkoq03424goqs03433jko03443aop03453aop03464gops03473kos03483koq03494ikos03504ijno03513aos03523gop03533aio03545bcmop03554ceio03564ijop03574emrs03585agios03595inors03604egop03613aos03624cior03635aijos03644ioqs03653dip03664agps03675agopq03684bkor03694aeop03705bcgos03716cjlmno03724eipt03735aoprs03746aikopq03753koq03764hoqr03774koqs03784anos03795ijors03804gkos03815afims03826aopqsu03836bcmoqs03845aiops03855ckoru03865gjors03876dhikoq03886ahjmnr03895adgps03904eopq03915adgor03923ajp03934aioq03944knoq03955aopst03964bops03974acgq03983ano03992aj04006gikopq04014akno04024aoqs04035aijor04044giot04054ahio04064hkoq04073aos04084aeor04095ajnoq04104koqu04116agikos04125aiops04135ikoqr04146ceioqr04155ajors04166acdgpr04175agoqr04182os04194hkoq04203jos04215agios04224aghs04235acghi04245aghjs04255agjor04266acghoq04273ado04287acghmoq04295aghos04305dghos04313aos04323aco04333gst04344acsu04355aghjs04364adht04375dgost04385acfos04393ios04404arst04417agopqst04425adgho04435aioqu04443jop04454agos04465agioq04477ghkmors04485aghsu04497agnopst04505aghis04513dpt04526eghors04536adghor04544dopq04553dgp04566egikop04576adgosu04585adgps04595acgms04604agos04615agnor04626ajnors04633aot04647acinors04655ghkos04665aimop04675agops04683ajp04695dkoqs04706bgloqs04715abopu04726agioqs04735abgjo04746acioqs04753ajq04761a04776cgioqs04786adorsu04796aiopsu04804abrt04815acrst04824gost04835adqsu04843apt04856ghoqsu04866admops04876abgkoq04884cjoq04895acrst04906aloqst04916acgost04926aglqst04933art04945egosu04958aceghoru04967aghoqru04973grt04986acdoqs04995agors05005acpqt05016ijlost05025adopu05038agkloqru05046acinou05053art05063amp05074egop05085aimop05095ahrst05105aoqst05116cjorst05125agstu05136cghnrt05145aiqsu05155aehou05167aghmoqu05176jknors05183opq05196ehikor05205cjkoq05215aekoq05224ekoq05234inoq05248ceijknoq05254gnoq05263jop05274apqu05284giko05296aegoqs05304aopq05314acno05325acgos05334knoq05344aloq05354knop05367cghjkno05374acno05387gijoprt05395egjos05401a05413aiq05424aikq05432gq05443eop05452cm05462im05473afg05483aei05493kop05503gkq05513kop05522qu05533gkq05541k05552qu05563gkq05571i05583kop05592gq05602hl05614aopq05622an05633aop05642jo05651k05663iop05672aq05683ops05693kor05703inq05713opq05723aop05733glp05744eopq05751d05762al05773aef05782af05793afg05802ck05811g05824aeoq05832gl05842gj05853agq05861q05872an05881q05893klp05903anq05912il05923agq05932aj05942ai05953imq05962aj05972ko05983knr05992ak06002kr06012ko06022gl06032kq06042ij06051k06062bc06073kop06081k06092kn06102ak06112ku06123akm06132am06142mq06152im06162im06171k06181g06192af06202ko06212bc06221m06232am06241m06252kn06262gk06272au06282ak06291g06302aj06312kn06322qu06332ai06342ai06352ai06362am06371d06381g06391g06402am06412dp06422or06432am06442jr06452or06462or06472kn06482ae06491f06501a06512am06522gj06532kn06542gq06552kq06562gr06572kr06581q06591k06601s06612eq06622eq06633aeq06641p06652jm06662gq06673imq06682jl06692kn06701m06711m06721m06732dr06742gs06752ab06762am06772nu06782ad06792am06802mp06813anr06822qr06832ao06843aiq06853kop06861q06871m06882km06891a06902ao06911r06922ad06932ko06942gq06952ko06961m06972kr06982km06991m07001m07012aj07021q07032gs07042eo07052an07061a07071m07082am07092at07102aj07112ad07122am07131s07141g07152aj07161p07172an07182eq07192lq07201q07212ko07222gl07231m07241p07251g07261g07271a07283gkr07292kr07302kr07312am07322jr07331g07341g07352gm07361r07371f07382an07392an07402an07412ao07422gq07432aj07442ap07452mp07462mp07471m07482bd07492ak07501a07512ae07522ar07532aj07542gq07552am07562mp07572gk07582km07592km07602an07611j07622af07631g07641m07651s07661d07672ao07681m07691s07702an07711g07722ao07732ar07741d07751d07762ij07772ak07782ai07792ag07802ij07812ag07822mp07832ac07842mp07852lm07861g07871m07881a07892kr07902af07912ko07922af07932kn07941a07952af07962ae07971m07982ak07992mo08001m08012ao08022kl08032ae08042km08052ef08061s08072am08081m08092an08101k08111g08122am08132gk08142mp08151m08162ae08172kr08182mq08191g08201m08212ac08222lm08231k08242km08253koq08262pq08271m08282ao08291s08302kn08311g08322ae08331s08342op08351g08362ai08371a08382mp08392gq08402ae08413kor08422an08432ao08441g08452ai08462fi08472al08481m08491g08502af08512gs08521f08532af08541m08552ai08561u08572fg08582am08591j08602lm08612ac08621g08632af08641m08652ak08662dr08672as08682ag08692ak08702ko08712an08721a08732kl08742kq08751p08762ag08772mp08781g08791m08802am08812an08822lm08832aj08842an08852kn08861g08871g08882am08892ai08902ai08911m08922ai08932df08941a08951d08961d08971g08981g08991m09002aj09012ij09022ae09031g09041m09051t09062ag09072at09081g09091g09102gu09112ag09122ag09132dt09141t09151t09162ad09172kr09181g09191d09202kr09212kn09221k09231m09242ak09251m09261m09272mp09282mp09292gr09302mo09312mp09322em09331g09342ai09352gi09362fg09371p09381g09391h09402gm09411a09422ap09431g09442aj09451s09461g09471g09481g09492mp09501m09512ap09521f09531d09542dr09552ad09562ae09572ak09582gu09591m09602ak09612ad09621a09631m09641q09651a09662af09671g09681g09691a09702ag09712gj09722ai09731a09742ak09752an09762ai09772ag09782ag09792aj09802ar09811g09822gr09832ai09842aj09851g09862af09872af09883afj09891g09902aj09912aj09922ai09931u09942im09952am09962ij09972an09981k09991m10002ak10012ae10021m10031m10041m10052ks10062kn10072ai10082af10091k10101k10112am10121m10132aj10141a10152am10161a10171g10182kr10191m10201m10211t10221f10232ad10242af10251g10261d10272ai10281a10292as10301m10312ai10322ai10332or10341g10352ap10362ak10371g10381d10392ar10402ai10411a10422aj10432ak10441g10452ad10461k10472ae10482aj10492ak10501m10511k10522mp10532dr10542am10552aj10562ai10572kr10581g10592am10601q10612kr10622ao10632ai10642ai10651g10662gi10672gj10681e10691s10702ag10712ai10721g10732ac10742ai10752af10762am10771m10782ar10792af10802am10812pq10821k10832ai10841m10851g10861g10872kr10882kr10891k10902kr10912mp10922mp10931s10941m10951q10961a10972aj10981g10992aj11002ak11011a11022ai11031s11041m11051a11061a11072ak11081k11091m11101m11112ai11122aj11131k11142ko11152ar11161j11172af11181l11191p11201q11211k11221k11232ak11241a11251g11261d11271d11282ad11292ak11301g11312aq11322mp11331g11342ao11352ak11361a11372ao11381l11392ak11402ag11412ak11422ai11432ac11441m11451q11462ai11472mp11482em11491g11501m11512ai11522ij11531k11542ai11552aj11561i11571f11581m11592ag11602ai11611d11622ar11631g11642am11651t11661t11671t11681g11691g11701g11712ai11722aj11732ko11742an11752kq11761g11771g11781p11791k11801p11812af11822kl11831a11842ai11852ai11861n11872ai11882ak11891a11901a11912gs11921a11932jk11942aj11952aj11962ai11971u11981m11992lq12001l12011g12021g12032gr12041g12051f12061g12072aj12081g12092ai12102ak12112aj12122ij12132ai12141i12152an12161g12172ai12181i12191i12201i12212af12221g12231s12241i12252ao12262ai12272ai12281g12292ko12302gs12311k12322jk12332ag12342op12351a12362lp12372an12382ai12391k12402am12412an12422ap12431a12441k12451a12462an12472aj12482al12492an12501a12512op12521i12532ko12541g12551g12561g12571a12581a12591i12601q12612ai12621k12631p12642ij12652ak12662gs12671a12681a12692aj12701a12712kl12721g12732ak12741g12751a12761a12771s12781a12791a12801k12811g12821g12832aj12841g12851s12862af12872an12881k12891a12902ai12911g12922an12931k12942aj12952ij12961g12972or12981t12991t13002aj13012gs13021g13032ak13041s13052an13062ae13072ao13082am13091m13102am13112af13121a13132ap13141g13152af13161m13171a13181g13191m13202af13212kv13222kv13232mv13242av13251a13261f13271m13281g13291l13302mp13312aj13321m13332kr13341i13352gj13362ai13371g13382kr13391d13402ag13411a13422am13432ae13442am13451a13462ad13472ak13482ai13493krv13502rv13512fv13523ajv13532kn13542aj13552gj13562aj13572kr13581a13592aj13602aj13612jt13621g13632ac13642aj13651u13661i13672lp13682am13692af13701g13712ae13722af13731u13741s13752ae13762aj13771s13782ai13791i13802ak13812kr13822ad13833afv13842ai13852ad13862ak13872kr13882ak13892ag13901f13911a13922ai13933kov13943anv13953akv13963apv13973ajv13982iv13993ajv14003adv14011k14021g14032am14042ai14051r14061a14071m14082ar14091g14101k14111m14121m14131g14141m14152ae14161h14171a14181g14191g14201i14213adv14223adv14233asv14243aiv14252av14262mv14273afv14283agv14292gv14302gv14313gsv14322gv14332gk14341k14352gv14363krv14371a14382ao14392ap14401i14412gv14423aiv14433ajv14443ajv14451g14461i14471i14482ai14491g14502kr14512af14522an14532ko14542gi14552ag14561g14571g14581p14592aj14602ag14611g14622ai14632aj14642ap14652ak14661u14671i14681i14693afv14703apv14713afv14723amv14732kn14741a14752ad14761g14772aj14781i14792aj14802af14813akv14823adv14833arv14842gv14852ak14862ak14871q14881m14892ak14902kr14911r14921m14932ak14941a14952gv14962mv14971g14982ai14991i15002ai15012kr15021k15031k15041s15052gk15062ag15073afv15082gv15091a15102ak15111p15121a15131u15142ai15152ao15161m15171g15181i15191g15202ai15213kov15223kov15232mv15243aev15251g15261g15271i15282ag15291g15302af15312ai15321g15331g15341t15351t15361a15371i15381g15391g15401m15412ak15421g15431g15441s15452ad15462ad15472as15482ai15492ad15502ad15512as15522ai15532as15541a15552ar15562af15572gv15583apv15592gv15602mv15611p15621a15631m15641i15651g15662ap15671m15682ai15693knv15703akv15712mv15723akv15731g15741t15751p15762ag15772ak15781g15792ae15801m15811t15821a15832ao15842am15852af15862op15872af15882af15892an15901j15911m15921a15931k15941g15951g15962ak15973adv15982mv15992av16003akv16011f16022af16031d16042am16052aj16062ak16072aj16081i16091l16101m16112as16122am16132kr16142kr16152ac16162kr16171g16182af16192ai16202af16212gs16222kr16231m16242aj16252ak16262ad16271g16282ak16292aj16301a16311m16322ae16331g16342ac16352ad16362am16372ai16382ad16392aj16402ak16412ko16422aj16431g16441r16452ak16462ai16472aj16482kr16492av16503akv16513adv16523ajv16532at16542mp16552ak16562kr16571g16582gs16592gj16602ag16612ad16622aj16632ae16642aj16652am16661g16672aj16683atv16692gv16703amv16713aev16721g16732ad16742aj16752aj16761g16771q16782af16792af16802aj16811a16822aj16832af16841u16851a16861a16871a16881a16891r16901g16912kr16922ag16932ad16941g16951g16962ak16971m16982af16991g17001a17012as17022am17032aj17042as17052am17061a17071m17082aj17092aj17102am17112aj17122aj17132ag17142aj17151m17162am17172ak17182ak17192aj17202ar17211a17222ar17232aj17241a17252am17262aj17272aj17282ae17292ak17301s17312aj17321a17332am17341m17351a17361u17372af17381u17392aj17402am17411a17422aj17432aj17441u17452aj17462aj17471c17481u17491g17502ag17511g17522aj17531t17541s17551g17561t17572ad17582ae17592ae17601t17611u17621u17631a17642aj17651m17661f17672aj17681g17691g17701m17712aj17721a17731m17742aj17751a17762af17772af17781m17792af17802ad17812ad17822ae17831a17842ai17852ai17862af17871a17882as17892am17902am17912am17921g17932an17942ak17951m17961a17972aj17982an17992aj18001g18011k18022kr18031m18041s18051g18061a18071m18082at18091m18101g18112aj18122aj18132ar18142am18152aj18161u18172ad18181m18192aj18201a18211f18221f18232aj18241g18252mp18261g18272aj18281a18292as18301s18311a18321d18332as18342af18351m18362ai18371g18382am18391g18401m18411t18421d18431d18442ai18451g18461g18472aj18482aj18491s18502ak18512kr18522kr18531a18543adv18552av18563ajv18573amv18581t18592ag18601g18611i18622ag18631t18641t18652aj18661a18671m18682kr18691a18701a18712ag18721g18731c18741a18752ak18762ak18771c18782kr';
 var MAT_TAGGED=0;
 
 /* 展开标签并统计每个概念多稀有。稀有度必须参与排序权重 ——
@@ -2015,9 +2057,9 @@ function applyTags(){
   var s=MAT_TAG_DATA, usage={}, i, j, c, n=0;
   for(i=0;i<CONCEPTS.length;i++) usage[CONCEPTS[i].c]=0;
   for(i=0;i<s.length;){
-    var id=parseInt(s.substr(i,3),10);
-    var cnt=parseInt(s.charAt(i+3),16);
-    i+=4;
+    var id=parseInt(s.substr(i,4),10);
+    var cnt=parseInt(s.charAt(i+4),16);
+    i+=5;
     var item=MAT_INDEX[id];
     var tags=s.substr(i,cnt); i+=cnt;
     if(!item) continue;
@@ -2048,27 +2090,39 @@ function applyTags(){
 }
 
 /* 按概念检索。
-   「与常规不同 + 唯一 + 破旧」会把「领奖时第三名的奖状纸比一等奖的浅一个
+   concepts = 该题该调的概念；core = 其中必须命中的那几个。
+   「必须命中核心」这一条不是装饰。实测《传统手艺》前几名里混着
+   「阳台上还晾着两块抹布」—— 抹布确实同时命中了 破旧+重复+还在继续+具体物，
+   但这五个概念全是通用描述词，凑齐 4 面很容易；真正能区分
+   「手艺人在干活」和「一块抹布在滴水」的 v「以此为业」只占 4.8%。
+   光靠加权排序救不回来（抹布的加权覆盖率是 100%），只能设硬门槛。
+
+   「与常规不同 + 唯一 + 破旧」这类查询会把「领奖时第三名的奖状纸比一等奖的浅一个
    色号」顶到前面，而不是平铺一堆只是「有具体物」的素材。 */
-function searchByConcepts(concepts){
+function searchByConcepts(concepts, core){
   if(!concepts||!concepts.length) return [];
-  var want={}, i, j;
+  var want={}, coreWant={}, i, j;
   for(i=0;i<concepts.length;i++) if(CONCEPT_BY[concepts[i]]) want[concepts[i]]=true;
+  if(core) for(i=0;i<core.length;i++) if(CONCEPT_BY[core[i]]) coreWant[core[i]]=true;
+  var nCore=0;
+  for(var c2 in coreWant) nCore++;
   var out=[];
   for(i=0;i<MAT_INDEX.length;i++){
     var x=MAT_INDEX[i];
     if(!x.tags||!x.tags.length) continue;
-    var sc=0, hit=0;
+    var sc=0, hit=0, gotCore=0;
     for(j=0;j<x.tags.length;j++){
       var c=x.tags[j];
       if(want[c]){ sc+=CONCEPT_BY[c].w; hit++; }
+      if(coreWant[c]) gotCore++;
     }
-    if(hit) out.push({x:x, sc:sc, hit:hit});
+    if(!hit) continue;
+    /* 有核心要求时，没命中任何一个核心的直接不返回。
+       不是降权，是排除 —— 降权的话通用描述词仍然会把结果占满。 */
+    if(nCore && !gotCore) continue;
+    out.push({x:x, sc:sc, hit:hit, core:gotCore});
   }
-  /* 排序：先看命中几个概念，再看稀有度加权分，最后看素材长短。
-     顺序很重要。稀有度只该做「同样命中数时谁更切题」的微调，
-     不能当主键 —— 实测 B2「唯一」只占 3.5% 但稀有权重拿满 1.0，
-     拿它当主键会让任何带「唯一」的素材压过其余全部结果。 */
+  /* 排序：先命中面数，再稀有度加权，最后素材长短。 */
   out.sort(function(a,b){
     return b.hit-a.hit || b.sc-a.sc || a.x.m.length-b.x.m.length;
   });
@@ -2175,7 +2229,7 @@ function renderHome(){
   g.appendChild(homeOpt('⏱','什么都不想，直接写',
     '空白写作台：40 分钟倒计时 + 分段字数配额，不给题目也不给结构。卡住的时候用。',
     function(){
-      MY={topic:'',g:null,mats:[],idea:'',how:null,trap:''};
+      MY={topic:'',g:null,mats:[],idea:'',how:null,trap:'',cc:null,gate:undefined};
       chosen=buildMineTopic(); step=4; MODE='funnel'; render(); window.scrollTo(0,0);
     }));
   v.appendChild(g);
@@ -2214,11 +2268,16 @@ function renderMine(){
   var kwline=el('div','note');
   s1.appendChild(kwline);
   function paintKw(){
-    if(!MY.topic){ kwline.textContent='抄进题目后，这里会检查哪些词能搜到素材。'; return; }
-    var kws=topicKeywords(MY.topic);
-    kwline.textContent = kws.length
-      ? '你题目里的这几个词在素材里搜得到：'+kws.slice(0,8).join(' · ')+'（已自动筛在下面）'
-      : '你题目里的词在 '+MAT_TOTAL+' 条素材里一个都搜不到 —— 这是正常的，作文题给的是抽象判断，素材给的是具体时刻。点下面的线索翻。';
+    if(!MY.topic){ kwline.textContent='抄进题目后，这里会算出这道题该调哪些概念。'; return; }
+    var pf=conceptsForTopic(MY.topic);
+    if(!pf){
+      var kws=topicKeywords(MY.topic);
+      kwline.textContent = kws.length
+        ? '没有这道题的概念档，但题目里的「'+kws.slice(0,4).join('、')+'」在素材里搜得到 —— 可以直接用关键词搜。'
+        : '没有这道题的概念档，题目里的词也搜不到素材。作文题给的是抽象判断，素材给的是具体时刻，两边用词本来就不一样 —— 直接翻「按线索」，或者用你自己的材料写。';
+      return;
+    }
+    kwline.textContent='认出来了：这道题要 '+pf.c.length+' 个概念（'+pf.core.length+' 个是门槛）。下面可以逐个调。';
   }
   paintKw();
   v.appendChild(s1);
@@ -2265,44 +2324,119 @@ function renderMine(){
   var sliceRe=null, i;
   for(i=0;i<MAT_SLICES.length;i++) if(MAT_SLICES[i].k===MY.slice) sliceRe=MAT_SLICES[i].re;
 
-  /* 自动用题目里的词搜一遍，省得她自己想关键词 */
-  var auto=null;
-  if(!MY.q && MY.topic){
-    var kws=topicKeywords(MY.topic), hits=[];
-    for(i=0;i<kws.length && hits.length<8;i++){
-      var h2=searchMats(kws[i]);
-      for(var z=0;z<h2.length && hits.length<8;z++){
-        var already=hits.some(function(x){ return x.m===h2[z].m; });
-        if(!already) hits.push(h2[z]);
-      }
+  /* ── 语义检索：题目 → 概念 → 素材 ──────────────────────────────
+     这是这一版的重点。关键词搜不动《不拘一格的美》这种题 ——
+     实测 7 个抽象题里 7 个整句命中 0 条素材。所以按「这个瞬间在作文里
+     起什么作用」检索，而不是按「素材里有哪些词」。
+
+     概念芯片全部可点，因为题目档是手写的、一定有不准的时候。
+     「门槛」那一行标出来的是「不命中就说明根本不切题」的概念：
+     实测《传统手艺》前 5 条混着「阳台上还晾着两块抹布」，
+     因为破旧/重复/还在继续/具体物这四个通用描述词凑齐太容易，
+     抹布的加权覆盖率还是 100%，只能靠硬门槛挡掉。 */
+  var prof = MY.topic ? conceptsForTopic(MY.topic) : null;
+  var cc = MY.cc || (prof ? prof.c : null);
+  var core = prof ? prof.core : null;
+
+  if(prof){
+    var pn=profileNote(MY.topic);
+    if(pn) s3.appendChild(el('div','note','这类题的取法：'+pn));
+    var back=null;
+    if(MY.cc){
+      back=el('button','abtn sm','↩ 回到题目推荐');
+      back.type='button';
+      back.addEventListener('click',function(){ MY.cc=null; renderMine(); });
+      s3.appendChild(back);
     }
-    if(hits.length) auto=hits;
+    s3.appendChild(el('div','note','点概念调整。数字是「素材库里有这个概念的有几条」，括号里是门槛。'));
+
+    var groups={};
+    for(i=0;i<CONCEPTS.length;i++){
+      var cc2=CONCEPTS[i];
+      if(cc.indexOf(cc2.c)<0) continue;
+      (groups[cc2.g]=groups[cc2.g]||[]).push(cc2);
+    }
+    for(var gk in groups){
+      var row=el('div','chips');
+      groups[gk].forEach(function(cc2){
+        var isCore = core && core.indexOf(cc2.c)>=0;
+        var btn=el('button','chipb'+(cc.indexOf(cc2.c)>=0?' on':''), null);
+        btn.type='button';
+        btn.appendChild(document.createTextNode(cc2.nm));
+        btn.appendChild(el('span','n',String(cc2.n||0)));
+        if(isCore) btn.appendChild(el('span','core','门槛'));
+        btn.title=cc2.ds;
+        btn.setAttribute('aria-pressed', cc.indexOf(cc2.c)>=0?'true':'false');
+        btn.addEventListener('click',function(){
+          var cur=MY.cc||prof.c, next=cur.slice();
+          var at=next.indexOf(cc2.c);
+          if(at>=0) next.splice(at,1); else next.push(cc2.c);
+          MY.cc=next; renderMine();
+        });
+        row.appendChild(btn);
+      });
+      s3.appendChild(row);
+    }
+    var gate=el('button','chipb'+(MY.gate===false?'':' on'), '只显示命中门槛的（'+cc.length+' 个概念里至少 1 个门槛）');
+    gate.type='button';
+    gate.setAttribute('aria-pressed', MY.gate===false?'false':'true');
+    gate.addEventListener('click',function(){
+      MY.gate=(MY.gate===false);   /* undefined = 开着 */
+      renderMine();
+    });
+    s3.appendChild(el('div','chips','')).appendChild(gate);
   }
 
+  /* 用户自己打了词或点了线索 → 走关键词。两者不混：素材不能既按概念筛过
+     又按词筛过，那样「没命中」到底是哪一环造成的就说不清了。 */
   var q=MY.q||'';
-  var list=q? searchMats(q,sliceRe) : (sliceRe? searchMats('',sliceRe) : (auto||[]));
-  var shown=list.slice(0,24);
+  var kwMode = !!(q||MY.slice);
+  var list, shown, noteTxt;
 
-  if(q||MY.slice){
-    s3.appendChild(el('div','note','找到 '+list.length+' 条'+(q?('，含「'+q+'」'):'')+(MY.slice?('，切片「'+MY.slice+'」'):'')+'。'));
-  } else if(auto){
-    s3.appendChild(el('div','note','按你题目里的词自动筛的 '+auto.length+' 条 —— 不对就自己搜。'));
+  if(kwMode){
+    list=q? searchMats(q,sliceRe) : searchMats('',sliceRe);
+    shown=list.slice(0,24);
+    noteTxt='关键词检索：找到 '+list.length+' 条'+(q?('，含「'+q+'」'):'')+(MY.slice?('，切片「'+MY.slice+'」'):'')+'。';
+  } else if(cc && cc.length){
+    var res=searchByConcepts(cc, (MY.gate===false||!core)?null:core);
+    shown=res.slice(0,24);
+    list=res;
+    noteTxt='概念检索：'+cc.length+' 个概念'+(core&&MY.gate!==false?('，至少命中 1 个门槛（'+core.length+' 个）'):'')+
+            '，命中 '+res.length+' 条'+(MAT_TAGGED<MAT_TOTAL?('（只在这 '+MAT_TAGGED+' 条已标注素材里跑）'):'')+'。';
   } else {
-    s3.appendChild(el('div','note','题库里的词一个都没命中你的题目。点上面的线索翻，或者自己搜 —— 素材不一定和题目用同样的词。'));
+    list=[]; shown=[];
+    noteTxt = MY.topic
+      ? '这道题没有对应的概念档，我不知道该调哪些概念。直接用下面的搜索框搜具体东西，或者点「按线索翻」—— 素材不一定和题目用同样的词。'
+      : '抄进题目之后，这里会按概念给出适合这道题的素材。也可以直接搜具体东西，比如：饭票 / 闹钟 / 黑板。';
   }
+  s3.appendChild(el('div','note',noteTxt));
 
-  if(!shown.length){
+  if(!shown.length && kwMode){
     s3.appendChild(el('div','empty','这条线索下没有素材。换一条，或者直接用自己的材料写。'));
   }
-  shown.forEach(function(x){
+  shown.forEach(function(row0){
+    var x = kwMode ? row0 : row0.x;
     var row=el('div','mini matpick');
-    var m=el('div','mt',x.m);
-    row.appendChild(m);
+    row.appendChild(el('div','mt',x.m));
     var ms=el('div','ms');
     ms.appendChild(el('span',null,'出自 '+x.t));
     ms.appendChild(el('span',null,G[x.g].nm));
+    /* 把命中的概念摆出来：让人能一眼看出「为什么这条被选出来」 */
+    if(!kwMode && x.tags && x.tags.length){
+      var hitTags=[];
+      for(var ti=0;ti<x.tags.length;ti++){
+        var tgc=x.tags[ti];
+        if(cc.indexOf(tgc)>=0) hitTags.push(CONCEPT_BY[tgc].nm);
+      }
+      if(hitTags.length){
+        var tg=el('span','tg','命中 '+hitTags.join('·'));
+        tg.title='这些是这个瞬间在作文里起的作用，也就是为什么它被检索出来';
+        ms.appendChild(tg);
+      }
+    }
     var add=el('button','abtn sm', MY.mats.indexOf(x.m)>=0?'已收':'+ 收进我的清单');
     add.type='button';
+    add.setAttribute('aria-label',(MY.mats.indexOf(x.m)>=0?'已收，取消：':'收进我的清单：')+x.m);
     add.addEventListener('click',function(ev){
       ev.stopPropagation();
       var at=MY.mats.indexOf(x.m);
@@ -2314,7 +2448,7 @@ function renderMine(){
     s3.appendChild(row);
   });
   if(list.length>shown.length){
-    s3.appendChild(el('div','note','还有 '+(list.length-shown.length)+' 条 —— 搜得更具体一点，或者换条线索。'));
+    s3.appendChild(el('div','note','还有 '+(list.length-shown.length)+' 条 —— 收窄概念，或者换成关键词搜。'));
   }
   v.appendChild(s3);
 

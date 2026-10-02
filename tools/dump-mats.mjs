@@ -6,8 +6,10 @@ const MATS = T.matIndex();
 const from = Number(process.argv[2] || 0);
 const count = Number(process.argv[3] || 200);
 
-console.log(`共 ${MATS.length} 条，本次导出 ${from} – ${Math.min(from + count, MATS.length) - 1}`);
+console.log(`# 共 ${MATS.length} 条，本次 ${from}–${Math.min(from + count, MATS.length) - 1}`);
 for (let i = from; i < Math.min(from + count, MATS.length); i++) {
   const x = MATS[i];
-  console.log(`${i}\t${x.m}\t${x.t.replace(/[《》{]/g, '')}`);
+  // 题名压到 10 字：它只是标注时的上下文提示，不是主要信息
+  const t = x.t.replace(/[《》{}]/g, '').slice(0, 10);
+  console.log(`${i}\t${x.m}\t${t}`);
 }

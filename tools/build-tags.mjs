@@ -22,10 +22,22 @@ if (!files.length) {
   process.exit(1);
 }
 
-const rows = new Map();
-for (const f of files) {
+/* mat-tags-v.txt 这类以 -v 结尾的是 overlay：只往已有标签上加字母。
+   基础标注（mat-tags / mat-tags-b*.txt）是「这条素材是什么」，
+   overlay 是「后来发现还缺一个概念」，两者不能互相覆盖 ——
+   否则补标就会把原来认真标的 5 个概念清成 1 个。 */
+const isOverlay = (f) => /-v\.txt$/.test(f);
+const baseFiles = files.filter((f) => !isOverlay(f));
+const overlayFiles = files.filter(isOverlay);
+if (!baseFiles.length) {
+  console.error('没有基础标注文件（overlay 单独存在没有意义）');
+  process.exit(1);
+}
+
+function readTagFile(f, { requireRow }) {
   const p = join(dataDir, f);
   let lineNo = 0;
+  const out = [];
   for (const raw of readFileSync(p, 'utf8').split('\n')) {
     lineNo++;
     if (!raw.trim() || raw.trimStart().startsWith('#')) continue;
@@ -40,6 +52,18 @@ for (const f of files) {
       console.error(`${f}:${lineNo} 标签超过 15 个，压不进 1 位十六进制长度: ${tags}`);
       process.exit(1);
     }
+    if (requireRow && !rows.has(idx)) {
+      console.error(`${f}:${lineNo} overlay 给了一条没有基础标注的素材 ${idx}`);
+      process.exit(1);
+    }
+    out.push([idx, tags]);
+  }
+  return out;
+}
+
+const rows = new Map();
+for (const f of baseFiles) {
+  for (const [idx, tags] of readTagFile(f, { requireRow: false })) {
     if (rows.has(idx) && rows.get(idx) !== tags) {
       console.error(`序号 ${idx} 在两个文件里标签不一致: "${rows.get(idx)}" vs "${tags}"`);
       process.exit(1);
@@ -47,17 +71,32 @@ for (const f of files) {
     rows.set(idx, tags);
   }
 }
+let added = 0;
+for (const f of overlayFiles) {
+  for (const [idx, tags] of readTagFile(f, { requireRow: true })) {
+    const merged = [...new Set(rows.get(idx) + tags)].sort().join('');
+    if (merged.length > 15) {
+      console.error(`序号 ${idx} overlay 后超过 15 个标签: ${merged}`);
+      process.exit(1);
+    }
+    rows.set(idx, merged);
+    added++;
+  }
+}
+if (overlayFiles.length) {
+  console.log(`overlay ${overlayFiles.join(', ')}：追加 ${added} 条`);
+}
 
 const idxs = [...rows.keys()].sort((a, b) => a - b);
 let packed = '';
 for (const i of idxs) {
-  if (i > 999) {
-    console.error(`下标超过 999，压不进定长格式：${i}`);
+  // 下标定长 4 位（1879 条，3 位不够）；+ 标签个数 1 位十六进制；+ 标签字母
+  if (i > 9999) {
+    console.error(`下标超过 9999，压不进定长格式：${i}`);
     process.exit(1);
   }
   const t = rows.get(i);
-  // 下标(3位定长) + 标签个数(1位十六进制) + 标签字母
-  packed += String(i).padStart(3, '0') + t.length.toString(16) + t;
+  packed += String(i).padStart(4, '0') + t.length.toString(16) + t;
 }
 
 const html = readFileSync(indexPath, 'utf8');
@@ -68,7 +107,7 @@ if (next === html && !/var MAT_TAG_DATA='';/.test(html)) {
 }
 writeFileSync(indexPath, next, 'utf8');
 
-console.log(`合并 ${files.length} 个文件，标注 ${rows.size} / ${TOTAL} 条 (${((rows.size / TOTAL) * 100).toFixed(1)}%)`);
+console.log(`合并 ${baseFiles.length} 个基础文件 + ${overlayFiles.length} 个 overlay，标注 ${rows.size} / ${TOTAL} 条 (${((rows.size / TOTAL) * 100).toFixed(1)}%)`);
 console.log(`MAT_TAG_DATA: ${packed.length} 字符`);
 if (rows.size < TOTAL) {
   console.log(`未标注 ${TOTAL - rows.size} 条 —— 语义检索只在这 ${rows.size} 条里跑，界面会写明覆盖率。`);

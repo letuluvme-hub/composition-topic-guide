@@ -12,25 +12,28 @@ if (!files.length) {
   process.exit(2);
 }
 
-const ALLOWED = 'abcdefghijklmnopqrstu'.split('');
+const ALLOWED = 'abcdefghijklmnopqrstuv'.split('');
 const set = new Set(ALLOWED);
 
 const rows = new Map();
 let dupes = 0;
-for (const f of files) {
+// 与 build-tags.mjs 同一套约定：以 -v.txt 结尾的是 overlay，只往已有标签上加字母。
+// base 之间重复要报错（说明两份标注打架了），overlay 重复是正常的。
+const isOverlay = (f) => /-v\.txt$/.test(f);
+const ordered = [...files].sort((a, b) => Number(isOverlay(b)) - Number(isOverlay(a)));
+for (const f of ordered) {
   const p = resolve(f);
   if (!existsSync(p)) {
     console.log(`缺少文件: ${f}`);
     process.exit(1);
   }
-  const lines = readFileSync(p, 'utf8').split('\n');
   let lineNo = 0;
   let sawDataInFile = false;
-  for (const raw of lines) {
+  for (const raw of readFileSync(p, 'utf8').split('\\n')) {
     lineNo++;
     if (!raw.trim()) continue;
     // 以 # 开头的是文件头注释，只能出现在该文件自己的数据之前。
-    // （文件名排序后 b2 排在 txt 前面，所以不能拿全局 rows 判断。）
+    // （文件名排序后 b2 会排在 txt 前面，所以不能拿全局 rows 判断。）
     if (raw.trimStart().startsWith('#')) {
       if (sawDataInFile) {
         console.log(`${f}:${lineNo} 注释出现在本文件数据中间: ${JSON.stringify(raw)}`);
@@ -57,9 +60,21 @@ for (const f of files) {
     if ([...tags].length === 0) {
       console.log(`${f}:${lineNo} 空标签: ${idx}`);
     }
+    if (isOverlay(f)) {
+      if (!rows.has(idx)) {
+        console.log(`${f}:${lineNo} overlay 给了一条没有基础标注的素材 ${idx}`);
+        process.exit(1);
+      }
+      rows.set(idx, [...new Set(rows.get(idx) + tags)].sort().join(''));
+      continue;
+    }
     if (rows.has(idx)) {
       dupes++;
       console.log(`序号重复: ${idx} (${f}:${lineNo})`);
+      if (rows.get(idx) !== tags) {
+        console.log(`  两份基础标注不一致: "${rows.get(idx)}" vs "${tags}"`);
+        process.exit(1);
+      }
     }
     rows.set(idx, tags);
   }
@@ -95,7 +110,7 @@ const NAME = {
   a: 'A1 与常规不同', b: 'A2 唯一', c: 'A3 被忽略', d: 'A4 被否定', e: 'A5 被看见',
   f: 'A6 别人跟着变', g: 'B1 重复', h: 'B2 时间点', i: 'B3 后来变了', j: 'B4 没停',
   k: 'C1 破旧', l: 'C2 慢', m: 'C3 静', n: 'C4 很小', o: 'D1 具体物',
-  p: 'D2 声音', q: 'D3 身体', r: 'D4 字迹', s: 'D5 数字', t: 'E1 规矩', u: 'E2 第一次',
+  p: 'D2 声音', q: 'D3 身体', r: 'D4 字迹', s: 'D5 数字', t: 'E1 规矩', u: 'E2 第一次', v: 'E3 以此为业',
 };
 for (const c of ALLOWED) {
   const n = usage[c] || 0;

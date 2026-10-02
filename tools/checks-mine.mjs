@@ -67,11 +67,23 @@ section('进入「我的题目」并抄进《不拘一格的美》');
     JSON.stringify(kws),
   );
   const v1 = txt();
-  check(
-    '关键词提示二选一都成立',
-    v1.includes('搜得到') || v1.includes('一个都搜不到'),
-    v1.slice(0, 120),
-  );
+  // 概念层上线后，这里不再报「关键词搜得到几个词」，而是报这道题该调哪些概念。
+  // 契约：认出概念 → 说清概念数；认不出 → 必须如实说没有档，且给得出关键词/线索退路。
+  const prof = T.conceptsForTopic(TOPIC);
+  check('题目能推出概念档', !!prof, JSON.stringify(prof));
+  if (prof) {
+    check(
+      '概念提示写清了概念数和门槛数',
+      v1.includes(`${prof.c.length} 个概念`) && v1.includes(`${prof.core.length} 个是门槛`),
+      v1.slice(0, 140),
+    );
+  } else {
+    check(
+      '认不出概念时如实说明并给退路',
+      v1.includes('没有这道题的概念档') && (v1.includes('关键词搜') || v1.includes('按线索')),
+      v1.slice(0, 140),
+    );
+  }
   const hasIdea =
     !!el
       .get('view')
@@ -217,6 +229,144 @@ section('回归：四步漏斗没被改坏');
   check('漏斗仍能正常出题', r.shown.length > 0);
   T.setMode('home');
   check('回到首页', T.mode() === 'home');
+}
+
+/* ── 语义层：概念标注 + 加权检索 + 门槛 ──────────────────────────
+   这些是硬指标，不是"看起来能跑"。概念层的失败模式很隐蔽 ——
+   返回一堆字面沾边但语义无关的素材，肉眼扫一遍很容易放过，
+   所以每一条都钉死成可判定的断言。 */
+section('语义层：1879 条素材全部有概念标签');
+
+check('素材总数 1879', T.matTotal() === 1879, T.matTotal());
+check('全部素材都标了概念（覆盖率 100%）', T.matTagged() === T.matTotal(), `${T.matTagged()}/${T.matTotal()}`);
+
+const cs = T.concepts();
+check('概念表 22 条', cs.length === 22, cs.length);
+check('概念字母无重复', new Set(cs.map((c) => c.c)).size === cs.length);
+check('每个概念都有名字和解释', cs.every((c) => c.nm && c.ds));
+const unusedC = cs.filter((c) => !c.n);
+check('没有从头到尾没用上的概念（否则这一格就是废的）', unusedC.length === 0, unusedC.map((c) => c.c).join(''));
+
+// 稀有度权重必须真的区分得开。全部 1.0 等于没加权。
+const ws2 = cs.map((c) => c.w);
+check('稀有度权重不是全部相等', Math.max(...ws2) - Math.min(...ws2) > 0.05, `max=${Math.max(...ws2).toFixed(3)} min=${Math.min(...ws2).toFixed(3)}`);
+check('权重都归一在 0~1', ws2.every((w) => w >= 0 && w <= 1));
+// 「唯一」最稀（1.2%），「具体物」最常见（24.7%）—— 权重顺序必须反过来
+check('越稀的概念权重越高', cs.find((c) => c.c === 'b').w > cs.find((c) => c.c === 'o').w);
+
+section('语义层：加权检索 + 门槛确实在起作用');
+
+{
+  const r = T.searchByConcepts(['a', 'b', 'k']);
+  check('多概念检索有结果', r.length > 0, r.length);
+  check('命中面数非递增', r.every((x, i) => i === 0 || r[i - 1].hit >= x.hit));
+  check('每条至少命中 1 个查询概念', r.every((x) => x.hit >= 1));
+}
+
+// 门槛是硬排除，不是降权
+{
+  const withGate = T.searchByConcepts(['g', 'j', 'n', 'k', 'o'], ['v']);
+  check('门槛挡住了不含核心概念的素材', withGate.every((x) => x.x.tags.includes('v')));
+  const noGate = T.searchByConcepts(['g', 'j', 'n', 'k', 'o']);
+  check('关掉门槛结果变多（说明门槛确实在筛）', noGate.length > withGate.length, `${noGate.length} vs ${withGate.length}`);
+  check('门槛后仍有结果', withGate.length > 0, withGate.length);
+}
+
+// 抽象题的关键回归：早期版本里「阳台上还晾着两块抹布」会排进《传统手艺》前二
+{
+  const p = T.conceptsForTopic('传统手艺');
+  const top5 = T.searchByConcepts(p.c, p.core).slice(0, 5).map((x) => x.x.m);
+  check(
+    '《传统手艺》前 5 条不全是无主的旧物',
+    top5.filter((m) => /抹布|旧灯泡|抽屉最里层/.test(m)).length <= 1,
+    JSON.stringify(top5),
+  );
+}
+
+section('语义层：题目档');
+
+const PROBE = [
+  '不拘一格的美',
+  '规则该不该被打破',
+  '记忆里的那张脸',
+  '那些不起眼的坚持',
+  '真正的勇敢',
+  '时间都去哪了',
+  '理解与误解',
+  '传统手艺',
+  '第一次上台',
+  '那些说不出口的小情绪',
+];
+for (const t of PROBE) {
+  const p = T.conceptsForTopic(t);
+  check(`「${t}」有概念档`, !!p);
+  if (!p) continue;
+  check(`  「${t}」核心概念都合法`, (p.core || []).every((c) => !!T.concept(c)), JSON.stringify(p.core));
+  check(`  「${t}」核心概念包含在查询概念里`, (p.core || []).every((c) => p.c.includes(c)));
+  check(`  「${t}」检索有结果`, T.searchByConcepts(p.c, p.core).length > 0);
+}
+
+// 一个词不能属于两档：两档并集会稀释概念，被稀释的结果就是「值日表」这种无关素材
+{
+  const dup2 = {};
+  for (const t of PROBE.concat(['美', '传统', '第一次', '勇敢'])) {
+    const p = T.conceptsForTopic(t);
+    if (p && p.profiles > 1) dup2[t] = p.profiles;
+  }
+  check('常见题没有触发多档并集（一个词只能属于一档）', Object.keys(dup2).length === 0, JSON.stringify(dup2));
+}
+
+check('没档的题老实返回 null，不瞎猜', T.conceptsForTopic('zzz查无此题abc') === null);
+
+section('语义层：界面真的用上了');
+
+{
+  T.setMode('mine');
+  T.my().topic = '不拘一格的美';
+  T.my().cc = null;
+  T.my().gate = undefined;
+  T.my().q = '';
+  T.my().slice = null;
+  T.render();
+
+  const t2 = txt();
+  check('画出了概念芯片', t2.includes('与常规不同'), t2.slice(0, 200));
+  check('门槛概念有标记', t2.includes('门槛'));
+  check('显示概念检索结果条数', /概念检索：\d+ 个概念/.test(t2), t2.match(/概念检索：[^\n]{0,60}/)?.[0]);
+  check('每条素材写明命中了哪些概念', el.get('view').querySelectorAll('.tg').length > 0, el.get('view').querySelectorAll('.tg').length);
+
+  // 芯片真的可点，而且点了会改状态
+  const chips = el.get('view').querySelectorAll('button.chipb').filter((b) => (b.textContent || '').includes('唯一'));
+  check('「唯一」芯片渲染出来了', chips.length === 1, chips.length);
+  if (chips.length) {
+    const prof2 = T.conceptsForTopic('不拘一格的美');
+    chips[0].click();
+    const after = T.my().cc;
+    check('点芯片会记录手动选择', Array.isArray(after), JSON.stringify(after));
+    check('点芯片取消了那个概念', after && !after.includes('b'), JSON.stringify(after));
+    check('只动了点的那一个，其他概念都还在', after && after.length === prof2.c.length - 1, `${after} vs ${prof2.c.length - 1}`);
+    // 复位按钮只在手动改过之后才出现 —— 没改过的时候给复位是废话
+    check('手动改过之后有「回到题目推荐」的复位入口', txt().includes('回到题目推荐'));
+    const backBtn = el.get('view').querySelectorAll('button.abtn').find((b) => (b.textContent || '').includes('回到题目推荐'));
+    check('点复位能回到题目档', !!backBtn);
+    if (backBtn) {
+      backBtn.click();
+      check('复位后 cc 变回 null', T.my().cc === null, JSON.stringify(T.my().cc));
+      check('复位后复位按钮自己消失了', !txt().includes('回到题目推荐'));
+    }
+  }
+
+  // 关键词模式不能和概念模式混起来，否则「没命中」说不清是哪一环造成的
+  T.my().q = '饭票';
+  T.render();
+  check('打了字就走关键词模式', txt().includes('关键词检索'), txt().match(/关键词检索[^\n]{0,40}/)?.[0]);
+  T.my().q = '';
+  T.my().slice = '第一次';
+  T.render();
+  check('点线索切片也走关键词模式', txt().includes('切片'));
+  T.my().slice = null;
+  T.render();
+  check('清掉后回到概念模式', txt().includes('概念检索'));
 }
 
 console.log(`\n════════ ${pass} passed, ${fail} failed ════════`);
