@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="初二语文作文题材向导：四步选定体裁、领域、切口、情感，给出固定题目组合、立意、素材清单、4 步骨架和翻车点，附 40 分钟写作台。单文件、离线可用。">
+<meta name="theme-color" content="#0e1420">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="作文题材向导 · 初二">
+<meta property="og:description" content="四步选定体裁/领域/切口/情感，给出固定题目组合与写作支架。单文件、离线可用。">
+<meta property="og:locale" content="zh_CN">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e1420'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='36' font-weight='bold' text-anchor='middle' fill='%23ffc76b'%3E%E6%96%87%3C/text%3E%3Cpath d='M14 52h36' stroke='%236ee7f0' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <title>作文题材向导 · 初二</title>
 <style>
@@ -170,7 +177,7 @@ main{max-width:720px;margin:0 auto;padding:14px}
 @media(min-width:900px){body.lb-open{padding-right:380px}}
 @media(max-width:899px){.drawer{width:100vw;border-left:0}}
 .sh-h{display:flex;align-items:center;gap:10px;padding:15px 16px 11px;border-bottom:1px solid var(--line);flex:none}
-.sh-h h3{font-size:17px;flex:1}
+.sh-h h2,.sh-h h3{font-size:17px;flex:1}
 .sh-b{overflow-y:auto;padding:14px 16px calc(20px + var(--sab));-webkit-overflow-scrolling:touch;flex:1}
 .xbtn{width:30px;height:30px;border-radius:9px;background:var(--card);border:1px solid var(--line);color:var(--mut);font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}
 .xbtn:hover{color:var(--bad);border-color:var(--bad)}
@@ -202,9 +209,37 @@ textarea.ta{width:100%;min-height:150px;background:#0006;border:1px solid var(--
 }
 @media(max-width:350px){.tbtn{padding:6px 7px;font-size:11px}}
 @media(max-width:360px){.grid{grid-template-columns:1fr 1fr}.opt .nm{font-size:14.5px}}
+
+/* ── 无障碍：焦点必须看得见 ──
+   原来整份 CSS 里没有任何 :focus / :focus-visible 规则，
+   而所有交互元素都是自绘的（步骤条 sdot、素材 li、槽位、mini 卡），
+   键盘用户只能盲按。这里给一个全局兜底焦点环，
+   自绘元素再各自补上可聚焦性（role / tabindex）。 */
+:focus{outline:2px solid var(--cyan);outline-offset:2px}
+:focus:not(:focus-visible){outline:none}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:8px}
+/* 自绘的可点区域：鼠标点击不该留焦点圈，键盘 Tab 才留 */
+.sdot:focus-visible,.mat li:focus-visible,.mini:focus-visible,.slot:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.fade{animation:none}}
+
+/* 主角行：标题不能换人时，让「选了谁」看得见 */
+.slotline{font-size:13px;color:var(--violet);font-weight:600;margin:0 0 8px}
+/* 写作台副标题上的主角 */
+.subwho{color:var(--violet)!important;font-weight:600}
+/* 收藏/记录里指向已消失题目的墓碑行 */
+.mini.ghost{border-style:dashed;opacity:.72}
+.mini.ghost .mt{color:var(--mut);font-style:italic}
+/* 只有键盘可达的元素才在鼠标下不显示焦点圈 */
+.sdot[tabindex]:not(:focus-visible),.mat li[tabindex]:not(:focus-visible),.mini[tabindex]:not(:focus-visible){outline:none}
+/* 跳到主内容：键盘用户第一个 Tab 就能跳过顶栏 */
+.skip{position:absolute;left:-9999px;top:0;z-index:99;background:var(--bg2);color:var(--gold);
+  padding:9px 14px;border:1px solid var(--gold);border-radius:0 0 10px 0;font-size:13px}
+.skip:focus{left:0}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 </style>
 </head>
 <body>
+<a class="skip" href="#view">跳到主要内容</a>
 
 <header class="top">
  <div class="toprow">
@@ -217,16 +252,19 @@ textarea.ta{width:100%;min-height:150px;background:#0006;border:1px solid var(--
  <div class="steps" id="steps"></div>
 </header>
 
-<main id="view"></main>
+<main id="view" tabindex="-1"></main>
 
 <div class="nav" id="nav">
  <button class="abtn sm" id="btnBack">上一步</button>
  <div class="navhint" id="navhint"></div>
 </div>
 
-<div class="drawer" id="sheet" role="complementary" aria-label="题材库">
+<!-- 抽屉盖住页面下半，是模态：role=dialog + aria-modal，
+     打开时焦点要进去、Esc 要能关、Tab 不能跑到背后的内容上去。
+     原来标的是 role="complementary"（地标，不是对话框），三件事都没做。 -->
+<div class="drawer" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle">
  <div class="sh-h">
-  <h3 id="shTitle">我的题材库</h3>
+  <h2 id="shTitle">我的题材库</h2>
   <button class="xbtn" id="shClose" aria-label="关闭">✕</button>
  </div>
  <div class="sh-b" id="shBody"></div>
@@ -770,12 +808,21 @@ var salt=0;              // 「换一个」
 var chosen=null;        // 确认的题目
 var slots={};            // 人物槽位当前取值
 var timerSec=2400, tInt=null, tickAt=0;
+/* 写作台视图把自己的绘制/复位回调挂在这里，模块级的 timerStop/timerStart 才能操作它们。
+   render() 每次切页会先清空，避免对着已被 innerHTML='' 摘掉的节点继续写。 */
+var timerOnPaint=null, timerOnReset=null, timerOnEnd=null;
 var store=LS.get('zxz.v1',{fav:[],hist:[],imported:0});
 if(!store.fav)store.fav=[]; if(!store.hist)store.hist=[];
 function save(){ store.imported=BANK.filter(function(b){return b.imp;}).length; LS.set('zxz.v1',store); }
 
 function all(){ return BANK; }
-function byId(id){ for(var i=0;i<BANK.length;i++) if(BANK[i].id===id) return BANK[i]; return null; }
+/* id -> 题目 的索引。
+   byId() 原来是线性扫描，收藏/记录列表要逐条查（最多 30 条 × 462 篇
+   ≈ 1.4 万次比较）。importIndex() 在导入后重建即可 —— 题库只增不改。 */
+var BY_ID={};
+function importIndex(){ BY_ID={}; for(var i=0;i<BANK.length;i++) BY_ID[BANK[i].id]=BANK[i]; }
+importIndex();
+function byId(id){ return BY_ID[id]||null; }
 function keyOf(s){ return [s.g,s.d,s.c,s.e].join('|'); }
 function match(b,s){ return (!s.g||b.g===s.g)&&(!s.d||b.d===s.d)&&(!s.c||b.c===s.c)&&(!s.e||b.e===s.e); }
 function pool(s){ var out=[],i; for(i=0;i<BANK.length;i++) if(match(BANK[i],s)) out.push(BANK[i]); return out; }
@@ -813,43 +860,42 @@ function countAll(dim){
 
 /* 排序：稳定散列 + 「换一个」加盐，保证换出来的是另一批 */
 function hash(str){ var h=2166136261,i; for(i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0); }
-function rank(list,saltN){
-  var k=keyOf(sel)+'#'+saltN;
-  return list.slice().sort(function(a,b){
-    var d=hash(k+a.id)-hash(k+b.id);
-    if(d) return d;
-    return hash(a.id)-hash(b.id);
-  });
-}
 /* 出一批题。
    设计决定（都是被实测数据逼出来的）：
-   1) 选项卡上的篇数与出题口径必须一致 —— 旧版选项只按体裁过滤、显示 12 篇，
-      而出题按四维过滤、实际命中 0.1 篇，虚高 105 倍，90.4% 的情况下
-      3 张卡全不符合选择。所以 STEP_SCOPE 与这里的排序口径统一。
+   1) 选项卡上的篇数与出题口径必须一致 —— 选项上标的就是严格命中篇数，不虚标。
    2) 不做「硬过滤 + 放宽」，改成「按符合度排序」：每篇题算它符合几个维度
       （4=全中，3=差一项…），先给符合度最高的。四维交叉 4400 格、462 篇
-      填不满，硬过滤必然大面积空；排序则总能给出结果，且最符合的排最前。
-   3) 「换一批」在同一路里轮换，靠 salt 改变排序起点。 */
+      填不满（实测 4400 组里 90.4% 严格命中 0 篇），硬过滤必然大面积空；
+      排序则总能给出结果，且最符合的排最前。
+   3) 「换一批」在同一路里轮换，靠 salt 改变排序起点。
+   4) 同一 (g,d,c,e) 组合只出 1 张卡 —— 3 张卡维度全一样，对她等于只给了 1 个选择。
+      代价要说清楚：pool() 里的题目组合全都相同，所以严格命中哪怕有 2 篇，
+      也只会出 1 张精确卡。这个折叠数会作为 collapsed 一起返回给文案用。 */
 function matchScore(b){
   var keys=['g','d','c','e'], n=0;
   for(var i=0;i<4;i++){ if(!sel[keys[i]] || b[keys[i]]===sel[keys[i]]) n++; }
   return n;   // 未选维度算「符合」，因为那不是她的要求
 }
+/* 按符合度分 5 个桶（4=全中 … 0=全不中）。
+   旧实现是把全库交给 Array.sort 再取前 3，cmp 里每比较一次就要跑
+   2 次 matchScore + 2 次 hash + 3 次字符串拼接 —— 462 篇约 4000 次比较、
+   1.6 万次函数调用，而结果只取 3 篇。分桶后是 O(n) 计数，
+   只有真正要取的那几个桶才排序。 */
+function scoreBuckets(list){
+  var buckets=[[],[],[],[],[]], i;
+  for(i=0;i<list.length;i++) buckets[matchScore(list[i])].push(list[i]);
+  return buckets;
+}
 function results(){
   var list=pool(sel);          // 严格命中（可能为空）
-  var wide=BANK;               // 放宽池：全部题目
-  var seen={}, out=[], i;
+  var seen={}, out=[], i, k;
 
   /* 排序键：符合度降序 → salt 决定的稳定散列。
      散列保证「同一选择 + 同一 salt」永远同一批（考前可练熟），
      salt 变了就换出另一批（同路轮换）。 */
-  function cmp(a,b){
-    var d=matchScore(b)-matchScore(a);
-    if(d) return d;
-    var ha=hash(salt+'|'+keyOf(sel)+'|'+a.id), hb=hash(salt+'|'+keyOf(sel)+'|'+b.id);
-    return ha-hb;
+  function cmpHash(a,b){
+    return hash(salt+'|'+keyOf(sel)+'|'+a.id)-hash(salt+'|'+keyOf(sel)+'|'+b.id);
   }
-
   /* 先放严格命中的（它们必然是符合度最高的），再按符合度补齐。
      同一 (g,d,c,e) 组合只出现一次 —— 3 张卡如果维度全一样，对她等于只给了 1 个选择。 */
   function push(b){
@@ -857,15 +903,18 @@ function results(){
     if(seen[tag]) return false;
     seen[tag]=1; out.push(b); return true;
   }
-  var strictSorted=list.slice().sort(cmp);
-  for(i=0;i<strictSorted.length && out.length<3;i++) push(strictSorted[i]);
-
-  /* 不够 3 篇才从全库里按符合度补。 */
-  var extra=0;
-  if(out.length<3){
-    var wideSorted=wide.slice().sort(cmp);
-    for(i=0;i<wideSorted.length && out.length<3;i++) if(push(wideSorted[i])) extra++;
+  function take(buckets){
+    for(k=4;k>=0 && out.length<3;k--){
+      var bk=buckets[k]; if(!bk.length) continue;
+      bk.sort(cmpHash);
+      for(i=0;i<bk.length && out.length<3;i++) push(bk[i]);
+    }
   }
+  var collapsedBefore=0;
+  take(scoreBuckets(list));
+  collapsedBefore=out.length;         // 严格命中实际贡献了几张卡（最多 1 张）
+  /* 不够 3 篇才从全库里按符合度补。 */
+  if(out.length<3) take(scoreBuckets(BANK));
 
   /* 符合度统计：用来如实告诉用户这批里几篇是真中选、几篇是相近的 */
   var full=0, near=0;
@@ -874,14 +923,49 @@ function results(){
   return {
     list:list,               // 严格命中数
     shown:out,
-    relaxed:(out.length&&full<out.length)?true:null,
-    extra:out.length-full-near,
+    /* 严格命中里有多少篇因为「组合重复」被折叠掉没出卡 —— 文案要如实说明 */
+    collapsed:(collapsedBefore===0)?0:Math.max(0,list.length-collapsedBefore),
+    extra:out.length-full-near,   // 差两项以上的张数
     full:full, near:near,
     picked:['g','d','c','e'].filter(function(k){return !!sel[k];}).length
   };
 }
 
 function el(tag,cls,txt){ var e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
+/* 把自绘的 div/li 变成键盘可操作、读屏可读的控件。
+   全站只有这三处自绘可点元素（步骤条、素材项、侧栏条目），
+   它们原来全是 el+click：键盘够不着，读屏也听不出状态。 */
+function activatable(node, label, onActivate, role){
+  node.setAttribute('role', role||'button');
+  node.setAttribute('tabindex','0');
+  if(label) node.setAttribute('aria-label', label);
+  node.addEventListener('click', onActivate);
+  node.addEventListener('keydown', function(ev){
+    if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ ev.preventDefault(); onActivate(ev); }
+  });
+  return node;
+}
+/* 素材清单：本质是「勾掉用过的」开关，给 checkbox 语义 */
+function matList(items, onToggle){
+  var ul=el('ul','mat');
+  items.forEach(function(m){
+    var li=el('li',null,m);
+    li.setAttribute('role','checkbox');
+    li.setAttribute('tabindex','0');
+    li.setAttribute('aria-checked','false');
+    function toggle(){
+      var on=li.classList.toggle('on');
+      li.setAttribute('aria-checked', on?'true':'false');
+      if(onToggle) onToggle(ul, on);
+    }
+    li.addEventListener('click',toggle);
+    li.addEventListener('keydown',function(ev){
+      if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ ev.preventDefault(); toggle(); }
+    });
+    ul.appendChild(li);
+  });
+  return ul;
+}
 function slotDefault(b){
   var w=(b.who&&b.who.length)?b.who[0]:null;
   return slots[b.id]!=null?slots[b.id]:w;
@@ -908,10 +992,23 @@ function renderSteps(){
               +(reachable?'':' sdim');
     var d=el('div',cls);
     d.setAttribute('data-i',i);
+    /* 步骤条是自绘的 div+click：键盘和读屏都够不着。
+       给它 button 语义 + tabindex + Enter/Space 激活，
+       并用 aria-current / aria-disabled 表达当前步与不可达步。 */
+    d.setAttribute('role','button');
+    d.setAttribute('tabindex', reachable?'0':'-1');
+    d.setAttribute('aria-label', labels[i]+(i===4?'（定题）':'')+(reachable?'':'（还没走到）'));
+    if(i===step) d.setAttribute('aria-current','step');
+    if(!reachable) d.setAttribute('aria-disabled','true');
     var bar=el('div','sbar'); bar.appendChild(el('i'));
     var lab=el('div','slab',labels[i]);
     d.appendChild(bar); d.appendChild(lab);
-    if(reachable && i!==step) d.addEventListener('click',(function(n){ return function(){ goStep(n); }; })(i));
+    if(reachable && i!==step){
+      d.addEventListener('click',(function(n){ return function(){ goStep(n); }; })(i));
+      d.addEventListener('keydown',(function(n){ return function(ev){
+        if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ ev.preventDefault(); goStep(n); }
+      }; })(i));
+    }
     box.appendChild(d);
   }
 }
@@ -967,7 +1064,6 @@ function renderChoice(){
   if(!keys.length){
     v.appendChild(el('div','empty','这一步没有可写的组合了。选「不限」，或者点下面的「回去改一步」。'));
   }
-  return {total:n};
 }
 
 /* 选一个维度值：上层改了，下层清空。
@@ -1012,25 +1108,38 @@ function renderResults(){
   var R=results(), RN={g:G,d:D,c:C,e:E};
 
   var h=el('div','qhead fade');
-  h.appendChild(el('div','k','STEP 5 / 4 · 按符合度给你最接近的'));
-  h.appendChild(el('h2',null,'这几篇最接近你刚才选的条件'));
+  h.appendChild(el('div','k','STEP 4 / 4 · 定题'));
+  h.appendChild(el('h2',null,R.list.length?'这几篇里，最接近你选的条件':'你选的这个组合题库里没有，下面是最接近的'));
   h.appendChild(el('p',null,'四步全中是一种要求，写出来是另一回事。下面每张卡都标了它符合你哪几步。'));
   v.appendChild(h);
   v.appendChild(trail());
 
+  /* 如实说明这批是怎么来的。
+     这里最容易骗人的地方有两个，都必须写出来：
+     1) 严格命中 0 篇时，别把补位的卡片说成「最接近」——差两项以上就不是接近。
+     2) 严格命中 >1 篇时也别只说 N 篇：pool() 里这些题目的四个维度完全一样，
+        按组合去重后只会出 1 张卡，剩下的被折叠了。折叠掉的数量要说。 */
   var c=el('div','cnt');
   if(!R.shown.length){
-    c.innerHTML='题库里没有可用的题目。';
+    c.textContent='题库里没有可用的题目。';
   } else if(!R.picked){
-    c.innerHTML='还没选任何条件 —— 从 '+BANK.length+' 篇里挑一个开始。';
+    c.textContent='还没选任何条件 —— 从 '+BANK.length+' 篇里挑一个开始。';
   } else if(R.full===R.shown.length){
-    c.innerHTML='这 '+R.shown.length+' 篇都完全符合你选的四项条件。';
+    c.textContent='这 '+R.shown.length+' 篇都完全符合你选的四项条件。';
   } else {
     var parts=[];
-    if(R.full) parts.push('<b style="color:var(--ok)">'+R.full+'</b> 篇完全符合');
+    if(R.full) parts.push('<b style="color:var(--ok)">'+R.full+'</b> 篇四项全中');
     if(R.near) parts.push('<b style="color:var(--gold)">'+R.near+'</b> 篇只差一项');
-    if(R.extra) parts.push('<b>'+R.extra+'</b> 篇差得较多');
-    c.innerHTML='严格四项全中的只有 <b>'+R.list.length+'</b> 篇，所以按符合度给了最接近的 '+R.shown.length+' 篇：'+parts.join('、')+'。';
+    if(R.extra) parts.push('<b style="color:var(--warn)">'+R.extra+'</b> 篇差两项以上');
+    var lead;
+    if(R.list.length===0){
+      lead='你选的这四项，题库里<b>一篇都没有</b>';
+    } else if(R.collapsed){
+      lead='严格四项全中的有 <b>'+R.list.length+'</b> 篇，但它们四个维度完全一样（对你等于 1 个选择），所以只放了 <b>1</b> 篇';
+    } else {
+      lead='严格四项全中的有 <b>'+R.list.length+'</b> 篇';
+    }
+    c.innerHTML=lead+'。剩下按符合度补齐，每张卡都标了它差哪一步：'+parts.join('、')+'。';
   }
   v.appendChild(c);
 
@@ -1074,7 +1183,7 @@ function renderResults(){
   });
 
   var row=el('div','acts'); row.style.padding='0';
-  var more=el('button','abtn','换一批（同一路换 3 篇）');
+  var more=el('button','abtn','换一批（同一条路换 '+R.shown.length+' 篇）');
   more.addEventListener('click',function(){ salt++; render(); window.scrollTo(0,0); });
   row.appendChild(more);
   var back=el('button','abtn','回去改一步');
@@ -1083,6 +1192,18 @@ function renderResults(){
   v.appendChild(row);
 }
 
+/* 人物槽位。
+   b.who 的真实语义是「这篇适合谁当主角」，不是「标题里要替换的词」——
+   462 篇里只有 22 篇标题写了 {外婆} 这类占位符，其余 439 篇的标题是
+   以物为中心的（《储藏室那只空奶粉罐》），换人换不进标题。
+   旧实现不管有没有占位符都渲染按钮、还提示「点一下换人物」，
+   结果 439 张卡上点了毫无反应（实测 who 有 461 篇、含占位符仅 22 篇）。
+   现在按标题是否支持替换分开处理：
+     - 支持：换人即换标题（占位符替换）
+     - 不支持：把选定的主角显式显示出来，并说清题目不变、用在素材里
+   两种情况下选择都可见、都会进写作单，不再是假交互。 */
+function hasSlot(b){ return /\{[^}]+\}/.test(b.t); }
+function slotLine(b){ return el('div','slotline','主角：'+slotDefault(b)); }
 function topicCard(b){
   var card=el('div','card fade');
   var tl=el('div','topline');
@@ -1096,23 +1217,35 @@ function topicCard(b){
   card.appendChild(s1);
 
   if(b.who&&b.who.length){
+    var substitutable=hasSlot(b);
     var s0=el('div','sect');
-    s0.appendChild(el('h4',null,'主角换成谁'));
+    s0.appendChild(el('h4',null,substitutable?'主角换成谁':'这篇的主角是谁'));
+    var pickedLine=slotLine(b);
+    s0.appendChild(pickedLine);
     var sl=el('div','slots');
     b.who.forEach(function(w){
       var btn=el('button','slot');
+      btn.type='button';
       btn.appendChild(document.createTextNode(w));
       var on=slotDefault(b)===w;
-      if(on){ btn.style.background='#a78bfa40'; btn.style.borderColor='#a78bfa'; }
+      if(on){ btn.style.background='#a78bfa40'; btn.style.borderColor='#a78bfa'; btn.setAttribute('aria-pressed','true'); }
+      else btn.setAttribute('aria-pressed','false');
       btn.addEventListener('click',function(e){
         e.stopPropagation(); slots[b.id]=w;
         var host=card.querySelector('.tt'); if(host) host.textContent=finalTitle(b);
-        var s=card.querySelectorAll('.slot'); for(var i=0;i<s.length;i++){ s[i].style.background=''; s[i].style.borderColor=''; }
+        var s=card.querySelectorAll('.slot');
+        for(var i=0;i<s.length;i++){
+          s[i].style.background=''; s[i].style.borderColor='';
+          s[i].setAttribute('aria-pressed','false');
+        }
         btn.style.background='#a78bfa40'; btn.style.borderColor='#a78bfa';
+        btn.setAttribute('aria-pressed','true');
+        pickedLine.textContent='主角：'+w;   // 标题不支持替换时，靠这一行让选择可见
       });
       sl.appendChild(btn);
     });
-    var tip=el('span','chip','点一下换人物');
+    /* 提示语跟着实际行为走，别再承诺一个做不到的事 */
+    var tip=el('span','chip', substitutable?'点一下换人物':'点一下定主角，题目不变');
     tip.style.borderStyle='dashed';
     sl.appendChild(tip);
     s0.appendChild(sl);
@@ -1121,13 +1254,7 @@ function topicCard(b){
 
   var s2=el('div','sect');
   s2.appendChild(el('h4',null,'能用上的真实素材（勾掉用过的）'));
-  var ul=el('ul','mat');
-  b.mat.forEach(function(m,i){
-    var li=el('li',null,m);
-    li.dataset.i=i;
-    li.addEventListener('click',function(){ li.classList.toggle('on'); });
-    ul.appendChild(li);
-  });
+  var ul=matList(b.mat);
   s2.appendChild(ul);
   card.appendChild(s2);
 
@@ -1173,6 +1300,29 @@ function topicCard(b){
 }
 
 /* ── 视图：写作台 ── */
+/* 计时器必须活在 renderDesk 之外。
+   旧实现把 stop() 定义在 renderDesk 内部，外部（render()、换一篇、重来）
+   根本够不着，于是：点「开始」后直接点「换一篇」→ 页面已经换掉，
+   interval 还在跑，对着被 innerHTML='' 摘掉的节点写 textContent；
+   再进写作台会叠加第二个 interval，两个一起改同一个 timerSec。
+   现在 timerStop/timerStart 在模块级，render() 每次切页统一先停。
+   另外间隔从 250ms 改成 1000ms —— 显示精度只到秒，而旧间隔每 tick 都
+   重建一次 info 的 DOM（innerHTML='' + 两个新 div），40 分钟约 9600 次。 */
+function timerStop(){
+  if(tInt){ clearInterval(tInt); tInt=null; }
+  if(timerOnReset) timerOnReset();
+}
+function timerStart(){
+  if(tInt) return;
+  tickAt=Date.now();
+  tInt=setInterval(function(){
+    var n=Math.floor((Date.now()-tickAt)/1000);
+    var was=timerSec;
+    timerSec=Math.max(0,2400-n);
+    if(timerSec!==was) timerOnPaint();      // 只在整秒变化时重画
+    if(timerSec<=0){ timerStop(); timerOnEnd(); }
+  },1000);
+}
 function renderDesk(){
   var v=document.getElementById('view'); v.innerHTML='';
   var b=chosen; if(!b){ step=4; render(); return; }
@@ -1181,7 +1331,9 @@ function renderDesk(){
   var h=el('div','qhead fade');
   h.appendChild(el('div','k','写作台 · 已定题'));
   h.appendChild(el('h2',null,finalTitle(b)));
-  h.appendChild(el('p',null,G[b.g].nm+' · '+D[b.d].nm+' · '+C[b.c].nm+' · '+E[b.e].nm));
+  var sub=el('p',null,G[b.g].nm+' · '+D[b.d].nm+' · '+C[b.c].nm+' · '+E[b.e].nm);
+  h.appendChild(sub);
+  if(b.who&&b.who.length) h.appendChild(el('p','subwho','主角：'+slotDefault(b)));
   v.appendChild(h);
 
   /* 计时 */
@@ -1193,20 +1345,19 @@ function renderDesk(){
     info.appendChild(el('div',null,timerSec>600?'离考试交卷还有 '+Math.ceil(timerSec/60)+' 分钟，先花 3 分钟列骨架':'只剩 '+Math.ceil(timerSec/60)+' 分钟：别再改开头，直接把主体写完。'));
     info.appendChild(el('div',null,'分段目标：'+QUOTA_LAB.map(function(l,i){return l+q[i]+'字';}).join(' · ')));
   }
-  paintInfo();
+  function paint(){ t.textContent=fmt(timerSec); tm.classList.toggle('hot',timerSec<=600); paintInfo(); }
+  paint();
   var start=el('button','tbtn2','开始');
   var reset=el('button','tbtn2','重置');
-  reset.addEventListener('click',function(){ stop(); timerSec=2400; t.textContent=fmt(timerSec); tm.classList.remove('hot'); paintInfo(); });
-  function stop(){ if(tInt){ clearInterval(tInt); tInt=null; start.textContent='开始'; } }
-  function paint(){ t.textContent=fmt(timerSec); tm.classList.toggle('hot',timerSec<=600); paintInfo(); }
+  start.type='button'; reset.type='button';
+  /* 把当前视图的绘制/复位回调挂到模块级，模块级的 timerStop/timerStart 才能用 */
+  timerOnPaint=paint;
+  timerOnReset=function(){ start.textContent='开始'; };
+  timerOnEnd=function(){ start.textContent='开始'; toast('时间到'); };
+  reset.addEventListener('click',function(){ timerStop(); timerSec=2400; paint(); });
   start.addEventListener('click',function(){
-    if(tInt){ stop(); return; }
-    tickAt=Date.now(); start.textContent='暂停';
-    tInt=setInterval(function(){
-      var n=Math.floor((Date.now()-tickAt)/1000);
-      timerSec=Math.max(0,2400-n); paint();
-      if(timerSec<=0){ stop(); start.textContent='开始'; toast('时间到'); }
-    },250);
+    if(tInt){ timerStop(); return; }
+    start.textContent='暂停'; timerStart();
   });
   tm.appendChild(t); tm.appendChild(info); tm.appendChild(start); tm.appendChild(reset);
   v.appendChild(tm);
@@ -1225,17 +1376,13 @@ function renderDesk(){
   /* 素材清单 */
   var s2=el('div','sect');
   s2.appendChild(el('h4',null,'素材清单（写到一个勾一个，够 3 个就能开写）'));
-  var ul=el('ul','mat');
-  var cnt=el('div','cnt','已用 0 / '+b.mat.length);
-  b.mat.forEach(function(m){
-    var li=el('li',null,m);
-    li.addEventListener('click',function(){
-      li.classList.toggle('on');
-      var on=ul.querySelectorAll('li.on').length;
-      cnt.innerHTML='已用 <b>'+on+'</b> / '+b.mat.length;
-    });
-    ul.appendChild(li);
-  });
+  var cnt=el('div','cnt');
+  var ul=matList(b.mat, function(list){ paintCnt(list); });
+  function paintCnt(list){
+    var on=list.querySelectorAll('li.on').length;
+    cnt.innerHTML='已用 <b>'+on+'</b> / '+b.mat.length+(on>=3?'　够开写了':'　够 3 个就能开写');
+  }
+  paintCnt(ul);
   s2.appendChild(cnt); s2.appendChild(ul);
   v.appendChild(s2);
 
@@ -1266,7 +1413,9 @@ function renderDesk(){
       var ms=el('div','ms');
       ms.appendChild(el('span',null,D[x.d].nm)); ms.appendChild(el('span',null,C[x.c].nm)); ms.appendChild(el('span',null,E[x.e].nm));
       m.appendChild(ms);
-      m.addEventListener('click',function(){ chosen=x; step=4; salt=0; render(); window.scrollTo(0,0); toast('已换成：'+finalTitle(x)); });
+      activatable(m, '换成：'+finalTitle(x), function(){
+        chosen=x; step=4; salt=0; render(); window.scrollTo(0,0); toast('已换成：'+finalTitle(x));
+      });
       s5.appendChild(m);
     });
     v.appendChild(s5);
@@ -1276,7 +1425,12 @@ function renderDesk(){
   var cp=el('button','abtn pri','复制整份写作单');
   cp.addEventListener('click',function(){ copyPlan(b); });
   var back=el('button','abtn','换一篇');
-  back.addEventListener('click',function(){ step=4; render(); });
+  /* 「换一篇」必须真的回到选题列表。旧实现只写 step=4，chosen 还留着，
+     render() 于是又走 renderDesk() —— 按钮点了跟没点一样。
+     要回列表就得把 chosen 清掉；顺手 salt++ 让下一批真的是另一批。 */
+  back.addEventListener('click',function(){
+    chosen=null; step=4; salt++; render(); window.scrollTo(0,0);
+  });
   var clear=el('button','abtn sm','清掉本篇');
   clear.addEventListener('click',function(){
     chosen=null; slots={}; step=4; salt++; render(); toast('已清空，重新挑一篇');
@@ -1291,6 +1445,8 @@ function planText(b){
   var w=slotDefault(b), q=QUOTA[b.g]||QUOTA.rec, L=[];
   L.push('【题目】'+finalTitle(b));
   L.push('【体裁】'+G[b.g].nm+'　【领域】'+D[b.d].nm+'　【切口】'+C[b.c].nm+'　【情感】'+E[b.e].nm);
+  /* 主角写进写作单：选题时定的人，得跟着她抄到纸上才算数 */
+  if(w) L.push('【主角】'+w);
   L.push('');
   L.push('【立意】'+b.idea);
   L.push('');
@@ -1322,19 +1478,44 @@ function copyPlan(b){
 }
 
 /* ── 抽屉 ── */
-var libTab='fav';
+/* 抽屉是模态：打开要把焦点送进去、Tab 不能跑到背后的内容、关闭要还回焦点。
+   原来只做了 class 切换和 Esc，焦点一直留在顶栏那个「题材库」按钮上，
+   键盘用户打开抽屉后完全不知道自己在哪、也 Tab 不进抽屉内容。 */
+var libTab='fav', sheetOpener=null;
+var FOCUSABLE='a[href],button:not([disabled]),input,textarea,select,[tabindex]:not([tabindex="-1"])';
+function sheetFocusables(){
+  return document.getElementById('sheet').querySelectorAll(FOCUSABLE);
+}
 function openSheet(tab){
   libTab=tab||libTab;
+  sheetOpener=document.activeElement;
   document.getElementById('sheet').classList.add('on');
   document.body.classList.add('lb-open');
   document.getElementById('btnLib').classList.add('on');
   renderSheet();
+  var f=sheetFocusables();
+  if(f.length) f[0].focus();
 }
 function closeSheet(){
   document.getElementById('sheet').classList.remove('on');
   document.body.classList.remove('lb-open');
   document.getElementById('btnLib').classList.remove('on');
+  /* 焦点还回打开它的那个按钮，键盘用户不会被丢回页面顶部 */
+  if(sheetOpener && sheetOpener.focus) sheetOpener.focus();
+  sheetOpener=null;
 }
+/* 焦点陷阱：Tab 在抽屉里循环，出不去（背景内容对读屏/键盘应当是不可见的） */
+document.addEventListener('keydown',function(e){
+  var sheet=document.getElementById('sheet');
+  if(!sheet.classList.contains('on')) return;
+  if(e.key==='Escape'){ closeSheet(); return; }
+  if(e.key!=='Tab') return;
+  var f=sheetFocusables();
+  if(!f.length) return;
+  var first=f[0], last=f[f.length-1], cur=document.activeElement;
+  if(e.shiftKey && (cur===first || !sheet.contains(cur))){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && (cur===last || !sheet.contains(cur))){ e.preventDefault(); first.focus(); }
+});
 function renderSheet(){
   var body=document.getElementById('shBody'); body.innerHTML='';
   var tabs=el('div','tabs');
@@ -1353,7 +1534,28 @@ function renderSheet(){
       body.appendChild(el('div','empty',libTab==='fav'?'还没收藏。定题时点「☆ 收藏」，考前把这几篇背下来。':'还没有记录。定一篇题就会自动记在这里。'));
     }
     ids.forEach(function(id){
-      var b=byId(id); if(!b) return;
+      var b=byId(id);
+      /* 自加题目只存在内存里（刷新就没了），所以收藏/记录里可能留着指向
+         已不存在题目的 id。旧实现 if(!b) return 直接跳过 —— 收藏数写着 3 篇，
+         列表里只有 1 篇，还不告诉她少了什么。改成摆一条墓碑并说明原因。 */
+      if(!b){
+        var ghost=el('div','mini ghost');
+        ghost.appendChild(el('div','mt','（这篇已经不在题库里了）'));
+        var gs=el('div','ms');
+        gs.appendChild(el('span',null,id.startsWith('U')?'自加题目，刷新后就没了':'题库已更新，这篇被移除了'));
+        var gd=el('button','del','✕');
+        gd.title='从列表里移除';
+        gd.addEventListener('click',function(e){
+          e.stopPropagation();
+          var gi=store[libTab==='fav'?'fav':'hist'].indexOf(id);
+          if(gi>=0) store[libTab==='fav'?'fav':'hist'].splice(gi,1);
+          save(); renderSheet();
+        });
+        gs.appendChild(gd);
+        ghost.appendChild(gs);
+        body.appendChild(ghost);
+        return;
+      }
       var m=el('div','mini');
       m.appendChild(el('div','mt',finalTitle(b)));
       var ms=el('div','ms');
@@ -1363,6 +1565,7 @@ function renderSheet(){
       m.appendChild(ms);
       var d=el('button','del','✕');
       d.title='删除';
+      d.setAttribute('aria-label','从'+libTab+'中删除：'+finalTitle(b));
       d.addEventListener('click',function(e){
         e.stopPropagation();
         var i=store[libTab==='fav'?'fav':'hist'].indexOf(id);
@@ -1371,9 +1574,9 @@ function renderSheet(){
       });
       ms.appendChild(d);
       // 点侧栏里的题目：只切题，不关侧栏 —— 她多半是开着侧栏对照着挑
-      m.addEventListener('click',function(){
+      activatable(m, '打开：'+finalTitle(b), function(){
         chosen=b; slots[b.id]=slotDefault(b); step=4; render(); window.scrollTo(0,0);
-        toast('已选：'+finalTitle(b).replace(/</g,'&lt;'));
+        toast('已选：'+finalTitle(b));
       });
       body.appendChild(m);
     });
@@ -1390,12 +1593,14 @@ function renderSheet(){
     ok.addEventListener('click',function(){
       var res=parseImport(ta.value);
       LS.set('zxz.imp.draft',ta.value);
-      msg.innerHTML='<div class="note">成功 '+res.ok+' 篇'+(res.err.length?'，跳过 '+res.err.length+' 行：<br>'+res.err.slice(0,8).map(function(e){return '· '+e;}).join('<br>'):'。')+'</div>';
+      msg.innerHTML='<div class="note">成功 '+res.ok+' 篇'
+        +(res.skip?'，跳过 '+res.skip+' 行（题库里已经有了）':'')
+        +(res.err.length?'，'+res.err.length+' 行认不出：<br>'+res.err.slice(0,8).map(function(e){return '· '+e;}).join('<br>'):'')
+        +'。</div>';
     });
     row.appendChild(ok);
     body.appendChild(row); body.appendChild(msg);
-    var saved=store.fav.concat(store.hist);
-    body.appendChild(el('div','note','当前题目库共 '+BANK.length+' 篇（内置 '+(BANK.length-BANK.filter(function(b){return b.imp;}).length)+' 篇 + 自加 '+BANK.filter(function(b){return b.imp;}).length+' 篇）。'));
+    body.appendChild(el('div','note','当前题目库共 '+BANK.length+' 篇（内置 '+(BANK.length-BANK.filter(function(b){return b.imp;}).length)+' 篇 + 自加 '+BANK.filter(function(b){return b.imp;}).length+' 篇）。自加的题目只存在这台设备上，关掉页面就没了。'));
   }
   else {
     var KV=[
@@ -1403,11 +1608,12 @@ function renderSheet(){
       ['第2步','定领域：这件事发生在谁的范围里。很多人卡住不是没素材，是领域太大。'],
       ['第3步','定切口：从哪里下笔。选"一件旧物"通常最容易写出细节。'],
       ['第4步','定情感：你想让读者读完什么心情。只选一个，贪多会写成四平八稳。'],
-      ['第5步','这一步给的是固定组合，不是随机的。同一组选择永远给出同一批 3 篇 —— 考前把喜欢的那几组练熟。'],
+      ['定题','给的是固定组合，不是随机的：同一组选择永远给出同一批题，考前可以把喜欢的那几组练熟。卡片上会如实写明有几篇是完全符合、几篇是差一步、几篇差得比较多。'],
+      ['为什么经常"一篇都没有"','四个维度交叉有 4400 种组合，题库只有 462 篇，所以 90.4% 的组合没有严格命中的题。这种时候给的是最接近的题，并且会标出来差哪一步 —— 不会假装它们符合你的选择。'],
       ['写作台','定题后有 40 分钟倒计时和分段字数。开头/主体/结尾的配额按体裁给，照着分就不会写飘。'],
-      ['人物槽位','题目里带「外婆」「同桌」这类词的，点一下就能换成奶奶、换成班长。真实素材比好题目重要。'],
+      ['人物槽位','每篇都会列出适合当主角的人。题目里带「{外婆}」这类词的，换人会连题目一起换；题目是以物为中心的，换人只改主角、不改题目。选定的主角会写进复制出来的写作单。'],
       ['避坑','每篇都有"翻车点"，写之前扫一眼，能省掉一类最低级的失分。'],
-      ['加题','自己碰到好题目，用"加题"页按格式贴进去，以后所有步骤都能选到它。']
+      ['加题','自己碰到好题目，用"加题"页按格式贴进去，以后所有步骤都能选到它。注意：自加题目只存在这台设备的这个页面里，刷新或关掉就没了。']
     ];
     KV.forEach(function(k){
       var r=el('div','kv'); r.appendChild(el('b',null,k[0])); r.appendChild(el('span',null,k[1]));
@@ -1488,10 +1694,28 @@ function normCode(dim,raw){
   }
   return null;
 }
-function mapName(dim,a){ return null; }  // 已并入 normCode 的别名表，仅保留占位
+/* 题目文本归一化，只用于查重。
+   去掉书名号/引号/空白后比较，这样
+   「《 储藏室那只空奶粉罐 》」和「储藏室那只空奶粉罐」算同一道题。 */
+function normTitle(t){
+  return String(t==null?'':t).replace(/[\s\u3000]+/g,'')
+    .replace(/[《》「」『』"'"''()（）【】\[\]]/g,'').toLowerCase();
+}
+/* 生成不与现有 id 冲突的 U 序号。
+   旧实现用 hash(行内容)+行号当 id：同一份文本重复导入会算出同一个 id，
+   于是走 if(used[id]) 分支再拼一次前缀变成 UU…，题目照样入库 ——
+   导入三次就有三份重复题。这里改成单调递增的 U+序号，冲突时继续加。 */
+function nextImpId(used){
+  var n=1, id;
+  do { id='U'+(n++); } while(used[id]);
+  return id;
+}
 function parseImport(txt){
-  var res={ok:0,err:[]}, lines=String(txt||'').split(/\r?\n/), i;
-  var used={}; BANK.forEach(function(b){ used[b.id]=1; });
+  var res={ok:0,skip:0,err:[]}, lines=String(txt||'').split(/\r?\n/), i;
+  var used={}, titles={};
+  /* 去重要比 id 和题目文本两道：
+     同一份草稿重复导入时 id 会完全撞上，但题目文本才是她真正看到的那个东西。 */
+  BANK.forEach(function(b){ used[b.id]=1; titles[normTitle(b.t)]=1; });
   for(i=0;i<lines.length;i++){
     var ln=lines[i]; if(!ln.trim()) continue;
     var parts=ln.split(/[|｜]/).map(function(s){return s.trim();});
@@ -1502,9 +1726,10 @@ function parseImport(txt){
     var c=parts[3]?normCode('c',parts[3]):null;
     var e=parts[4]?normCode('e',parts[4]):null;
     if(!g){ res.err.push('第'+(i+1)+'行：体裁「'+parts[1]+'」认不出'); continue; }
-    var id='U'+hash(ln).toString(36)+i;
-    if(used[id]){ id='U'+id+i; }
-    used[id]=1;
+    /* 已经加过同一道题：静默跳过并计数，不要让批量导入被自己的重复内容卡住 */
+    if(titles[normTitle(t)]){ res.skip++; continue; }
+    var id=nextImpId(used);
+    used[id]=1; titles[normTitle(t)]=1;
     BANK.push({
       id:id,t:t,g:g,d:d||'family',c:c||'object',e:e||'insight',imp:true,
       who:null, idea:'（自加题目）先补一句立意：这篇想让读者读完记住什么？',
@@ -1514,6 +1739,7 @@ function parseImport(txt){
     });
     res.ok++;
   }
+  importIndex();   // 自加题目进了 BANK，id 索引要跟着更新
   save();
   return res;
 }
@@ -1523,6 +1749,10 @@ function goStep(n){ step=n; if(n<4) salt=0; if(n!==4) chosen=null; render(); win
 function render(){
   /* 三个页面状态：step<4 选维度，step===4 且还没定题 = 出题列表，
      step===4 且 chosen = 写作台。step 单独一个数分不开后两个，必须看 chosen。 */
+  /* 切页前先停表并丢掉旧视图的回调 ——
+     计时器住在模块级，不在这里掐掉的话，它会继续对着已被 innerHTML=''
+     摘掉的节点写 textContent（而且再次进写作台会叠加第二个 interval）。 */
+  timerStop(); timerOnPaint=timerOnReset=timerOnEnd=null;
   if(step<4) renderChoice();
   else if(chosen) renderDesk();
   else renderResults();
@@ -1609,7 +1839,7 @@ document.getElementById('btnReset').addEventListener('click',function(){
   toast('回到第 1 步');
 });
 document.getElementById('shClose').addEventListener('click',closeSheet);
-document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeSheet(); });
+// Esc 关闭抽屉已并入上面的抽屉焦点陷阱处理器（那里同时管 Tab 循环）
 
 /* 自检 */
 (function selfTest(){
@@ -1632,8 +1862,12 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeSheet
 
 render();
 
-/* 测试钩子 */
-window.__T={
+/* 测试钩子。
+   只在 index.html?debug 或 localhost 下挂：这套钩子里有 parseImport、
+   set、chooseDim、save 这些能改题库和落盘的写接口，不该在正常页面上开着。 */
+var DEBUG=/[?&]debug\b/.test(location.search) ||
+          /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+if(DEBUG) window.__T={
   G:G,D:D,C:C,E:E, STEPS:STEPS,
   bank:function(){ return BANK; },
   sel:function(){ return sel; },
@@ -1650,13 +1884,13 @@ window.__T={
   counts:function(d){ return counts(d); },
   countAll:function(d){ return countAll(d); },
   stepScope:function(d){ return STEP_SCOPE[d]; },
-  rank:function(l,s){ return rank(l,s); },
   hash:hash,
   match:match,
   matchScore:matchScore,
   keyOf:keyOf,
   parseImport:parseImport,
   normCode:normCode,
+  hasSlot:hasSlot,
   planText:function(id){ var b=byId(id); return b?planText(b):null; },
   byId:byId,
   finalTitle:finalTitle,
