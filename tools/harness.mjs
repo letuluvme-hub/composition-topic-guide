@@ -7,7 +7,11 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const target = resolve(process.argv[2] || resolve(repoRoot, 'index.html'));
+// 第一个位置参数如果存在且不像路径（纯数字），就当批次参数用，
+// 否则会被误当成 index.html 的替代路径。
+// 目标文件只走环境变量指定 —— argv 在别的脚本里是批次号之类的参数，
+// 靠形状去猜「这是不是路径」迟早会猜错（data/mat-tags.txt 里也有斜杠）。
+const target = resolve(process.env.HARNESS_TARGET || resolve(repoRoot, 'index.html'));
 const html = readFileSync(target, 'utf8');
 
 const m = html.match(/<script[^>]*>([\s\S]*?)<\/script>/);

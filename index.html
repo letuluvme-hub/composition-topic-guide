@@ -1810,6 +1810,122 @@ function parseImport(txt){
   return res;
 }
 
+/* == TOPIC_PROFILES:BEGIN == */
+/* 题目档：常见作文题 → 该调哪些概念。
+   ────────────────────────────────────────────────────────────
+   为什么是「档」而不是「词表」：把题目逐字拆成关键词再映射到概念，会塌缩。
+   实测《不拘一格的美》7 个关键词最后只映射出 1 个概念（a），
+   单概念检索出来的是「她来那天没穿家长会上穿的那件深色外套」—— 跟这题无关。
+   而这个题真正需要的是 a+b+c+e+k 五面：
+     与常规不同 + 唯一 + 被忽略 + 被看见 + 破旧（不美的东西美）
+   「美」这个字本身推不出「破旧」，所以档必须手写。
+   —— 这也是 docs/TAXONOMY.md 里「答案在组合里，不在单个概念里」的实证。
+
+   格式：'<题目关键词>' -> [概念, 概念, ...]
+   匹配：题目里含 key 就取它的概念（取并集）。 */
+var TOPIC_PROFILES=[
+  /* —— 不拘一格 / 独特 / 审美 —— */
+  {k:['不拘一格','独特','特别','别致','千姿百态','各有千秋','独一无二'], c:'abcek',
+   note:'这类题要的是「不美的东西美」——必须有被忽略/被否定作陪衬，否则只剩赞美'},
+  {k:['美'], c:'abcek', weak:true, note:'「美」太泛：先看题目里有没有别的词，否则按这组试'},
+
+  /* —— 规则 / 打破 ——
+     注意「传统」不在这里：它同时是下面「传统手艺」档的主词，
+     一个词出现在两档里会让两档并集命中（实测《传统手艺》8 个概念混在一起，
+     概念被稀释，值日表这种无关素材排到第一）。一个词只能属于一档。 */
+  {k:['规则','规矩','该不该','打破','遵守','秩序','公平','按部就班'], c:'atdkn',
+   note:'规则题的核心是「谁被排除在外」，所以一定要带上 d 被否定 和 n 很小'},
+
+  /* —— 记忆 / 怀念 / 那个人 ——
+     只用 p 声音 / q 身体 / r 字迹 / n 很小。
+     早期版本还带了 g 重复 和 i 后来变了，结果把「第二天早读我重写了开头那句」
+     这类写作过程素材顶了上来 —— 那不是"记得一张脸"，是"记得一次改稿"。 */
+  {k:['记忆','怀念','想起','忘不掉','那张脸','那张照片','旧照片','忘不了'], c:'pqrno',
+   note:'记忆题靠可感细节撑：声音 p + 身体 q + 字迹 r。不要加「重复/变化」，会把改稿过程引进来'},
+
+  /* —— 时间 / 成长 / 以前以后 —— */
+  {k:['时间','长大','小时候','以前','日子','一年','岁月'], c:'higkn',
+   note:'时间题用具体时间点 h（"第六十一天"）比讲道理有用得多'},
+
+  /* —— 坚持 / 毅力 / 平凡 —— */
+  {k:['坚持','毅力','长年','日复一日','年复一年','不起眼','平凡','默默'], c:'gjnli',
+   note:'注意 j「没停/还在继续」和 g「重复很多次」是两回事，B4 单独很有力'},
+
+  /* —— 勇敢 / 怕 / 面对 —— */
+  /* 「第一次」不在这档里 —— 它是下面独立的一档，两档并集会把所有
+     带 u「第一次」的素材都拉进来，实测《真正的勇敢》返回的全是
+     「第一次月考」「第一次看青铜觥」，没有一条真的关于勇敢。 */
+  {k:['勇敢','害怕','面对','不敢','跨出','怯'], c:'jcdak',
+   note:'勇敢往往长得不像勇敢——被忽略 c 和 与常规不同 a 比 d 更准'},
+
+  /* —— 理解 / 误解 / 沟通 —— */
+  {k:['理解','误解','沟通','偏见','误会','包容','接纳'], c:'cednm',
+   note:'误解题的两头都要：d 被否定 和 e 被看见，缺一头就变成单方面说理'},
+
+  /* —— 亲情 / 家 —— */
+  {k:['亲情','家人','父母','妈妈','爸爸','外婆','奶奶','家'], c:'pqnge',
+   note:'亲情题靠重复出现的小动作 g，而不是靠抒情'},
+
+  /* —— 坚持以外的变化 / 转折 —— */
+  {k:['改变','变化','转折','长大以后','从……到','学会'], c:'ihgkd',
+   note:'变化题要前后对照 i，再加 g（重复很多次才构成"变"）'},
+
+  /* —— 那些情绪 / 心事 —— */
+  {k:['情绪','生气','难过','委屈','心情','别扭','不开心','心事'], c:'cdmnp',
+   note:'情绪题的重心在 c 被忽略 和 m 静 —— 没说出口的部分才是内容'},
+
+  /* —— 传统手艺 / 老东西 —— */
+  {k:['传统','手艺','老手艺','老物件','非遗','匠'], c:'kgjno',
+   note:'手艺题的落点是"还在继续" j，不是"怀念"'},
+
+  /* —— 好奇 / 为什么 —— */
+  {k:['好奇','为什么','疑问','探索','发现'], c:'cuhep',
+   note:'好奇题靠悬念推进：u 第一次 + n 很小 + e 被看见'},
+
+  /* —— 守住 / 保护 —— */
+  {k:['守护','保护','守住','坚持原则','不让'], c:'jtde',
+   note:'守护题里 d（有人要破坏）通常比 e（被看见）更重要'},
+
+  /* —— 第一次 —— */
+  {k:['第一次','初次','开始'], c:'ujak',
+   note:'第一次题用 u 加 j（后面还在不在继续）才有后劲'},
+
+  /* —— 声音 / 安静 —— */
+  {k:['声音','安静','沉默','听','说话','喊'], c:'pmoj',
+   note:'声音题不要物（D1 判别力太低），用 p 声音 m 静 o 物 三个就够'},
+
+  /* —— 数字 / 时间刻度 —— */
+  {k:['数字','几','第几','一半','三分钟','四十天'], c:'shg',
+   note:'数字题靠 s 具体数字 + h 具体时间点 + g 重复'},
+];
+
+/* 从题目推概念：命中多个档就取并集。全都不命中就返回 null ——
+   宁可说"我没把握这道题该调哪些概念"，也不要瞎猜一通然后装作很准。 */
+function conceptsForTopic(topic){
+  var t=norm(topic).replace(/[《》「」""'']/g,''), i, k;
+  var got={}, hitProfiles=0, list=[];
+  for(i=0;i<TOPIC_PROFILES.length;i++){
+    var p=TOPIC_PROFILES[i], matched=false;
+    for(k=0;k<p.k.length;k++) if(t.indexOf(p.k[k])>=0){ matched=true; break; }
+    if(!matched) continue;
+    /* 「美」太泛，只有在没有更具体的档命中时才用 */
+    if(p.weak && hitProfiles) continue;
+    hitProfiles++;
+    for(k=0;k<p.c.length;k++) if(!got[p.c.charAt(k)]){ got[p.c.charAt(k)]=1; list.push(p.c.charAt(k)); }
+  }
+  if(!list.length) return null;
+  return {c:list, profiles:hitProfiles};
+}
+function profileNote(topic){
+  var t=norm(topic).replace(/[《》「」""'']/g,''), i, k;
+  for(i=0;i<TOPIC_PROFILES.length;i++){
+    var p=TOPIC_PROFILES[i];
+    for(k=0;k<p.k.length;k++) if(t.indexOf(p.k[k])>=0 && !p.weak) return p.note;
+  }
+  return '';
+}
+/* == TOPIC_PROFILES:END == */
+
 /* ══════════════════════════════════════════════════════════
    自带题目工作台 —— 给「题目已经定了」的情况
    ──────────────────────────────────────────────────────────
@@ -1836,6 +1952,7 @@ function buildMatIndex(){
 }
 buildMatIndex();
 var MAT_TOTAL=MAT_INDEX.length;
+/* applyTags() 的调用在下面的概念块末尾 —— 它依赖 CONCEPTS，必须等定义完。 */
 
 /* 素材切片：给定题目常常一个字都搜不到（比如题目叫「不拘一格的美」，
    题库里 0 篇含「不拘」）。这时候给她一条能翻的线索，比一个空搜索框有用。
@@ -1853,6 +1970,113 @@ var MAT_SLICES=[
   {k:'停下来',      re:/停[了住]|愣[住]|顿[了住]|没有动|没接话|没出声/},
   {k:'一个人的时候', re:/一个人[^\s]{0,4}(时|了|在)|没人[^\s]{0,4}时候|自己[^\s]{0,4}(时|在)|独处/}
 ];
+/* ── 概念体系（docs/TAXONOMY.md）──
+   素材语义检索的最小单位。关键词对抽象作文题系统性失效
+   （实测 7/7 抽象题整句命中 0 条；n-gram 模糊匹配更糟，会自信地返回
+   语义无关的结果）。所以按「这个瞬间在作文里起什么作用」标注，
+   而不是「素材里有哪些词」——
+   标注数据在 data/mat-tags*.txt，由 tools/build-tags.mjs 压成下面这段。 */
+var CONCEPTS=[
+  {c:'a',g:'A',nm:'与常规不同',    ds:'周围人本来会怎么做，而这次不同'},
+  {c:'b',g:'A',nm:'唯一/只有一次',  ds:'明确出现「只有、就、唯一、一共」'},
+  {c:'c',g:'A',nm:'被忽略',        ds:'在场，但始终没被看见'},
+  {c:'d',g:'A',nm:'被否定',        ds:'有明确的反对、劝退、被踢出去'},
+  {c:'e',g:'A',nm:'被看见',        ds:'有明确的注视、发现、被留下'},
+  {c:'f',g:'A',nm:'别人跟着变',    ds:'一个行为在人群里扩散'},
+  {c:'g',g:'B',nm:'重复很多次',    ds:'同一件事发生很多遍，或持续很多天'},
+  {c:'h',g:'B',nm:'具体时间点',    ds:'出现确切数字、天数、第几天'},
+  {c:'i',g:'B',nm:'后来变了',      ds:'有明确的前后对照'},
+  {c:'j',g:'B',nm:'没停/还在继续', ds:'到素材结束时仍然在做，没有结果'},
+  {c:'k',g:'C',nm:'破旧/不整齐',   ds:'磨损、褪色、歪、破、锈'},
+  {c:'l',g:'C',nm:'慢',            ds:'明确写出慢'},
+  {c:'m',g:'C',nm:'静/没声音',     ds:'突然安静、没人接话、声音变轻'},
+  {c:'n',g:'C',nm:'很小/不起眼',   ds:'明确的小、少、只一点点'},
+  {c:'o',g:'D',nm:'具体物',        ds:'出现可拿可摸的物'},
+  {c:'p',g:'D',nm:'声音',          ds:'喊、说、念、笑、安静、响'},
+  {c:'q',g:'D',nm:'身体动作',      ds:'手、脚、牙、背、停顿、姿势'},
+  {c:'r',g:'D',nm:'字迹',          ds:'手写、签名、改过、笔迹轻重'},
+  {c:'s',g:'D',nm:'数字',          ds:'任何计数、分数、个数'},
+  {c:'t',g:'E',nm:'规矩/要求',     ds:'有明确的规则、规定在起作用'},
+  {c:'u',g:'E',nm:'第一次',        ds:'明确的第一回'}
+];
+var CONCEPT_BY={};
+(function(){ for(var i=0;i<CONCEPTS.length;i++) CONCEPT_BY[CONCEPTS[i].c]=CONCEPTS[i]; })();
+
+/* 素材标签数据。每条记录变长：下标(3位定长) + 标签个数(1位十六进制) + 标签字母。
+   由 tools/build-tags.mjs 从 data/mat-tags*.txt 生成。
+   没被标注的素材不会进入语义检索 —— 这是数据覆盖度问题，不是 bug，
+   界面上会写明「已标注 N / 1879」。 */
+var MAT_TAG_DATA='0003gos0012ao0022op0033koq0042ko0052aj0061a0072ko0083kor0093koq0103koq0112ko0122ko0132oq0143aoq0152oq0162no0173aoq0182oq0192no0204nors0212oq0223mpr0232ps0242gp0254gors0263hmp0274egoq0281p0294ehip0303koq0313cip0323goq0332ko0344mopq0353koq0363opq0371q0382dp0394akoq0402oq0412ko0424hkno0433moq0443knq0453ips0462lq0472io0483oqs0492op0501s0514mopq0522ko0532hr0544agrs0553hir0562ap0573cmq0581p0593eoq0603oqr0613nrs0622mr0633opq0643gko0653gos0663oqs0673bno0683gor0693emp0702mp0712eq0722im0733nqr0743dim0754inrs0761p0774depq0783bdp0794kopq0803dnt0814abpq0821q0832pq0844boqs0853imp0862oq0874cjlq0884ceip0894aior0904gors0913dgr0923loq0932oq0943ams0953eoq0963aio0973pqs0983oqs0993opq1003oqs1013eoq1023kno1032oq1044kors1052oq1062ep1074gjos1083knr1093noq1104mnps1113gqs1124eors1133opq1142op1154eikr1164ipqs1173iqs1183imp1194eoqr1205cjnor1214gkoq1224mopq1233eio1243ops1253eoq1264amps1274coqr1284kops1295aioqs1303asu1313apq1323kno1335chopq1342ko1355ikopq1364eoqs1372ej1385ekopr1392eo1404ginq1414cios1423dpq1434inos1445egors1452dp1463epq1473ejr1484jkno1492os1503ior1514cior1524aoqs1534dgop1546cmopqs1553ano1563oqs1573koq1584mprs1592qs1603oqs1614aioq1624cimr1634gioq1643glo1654goqs1664bios1673goq1684koqs1692go1703dps1712co1724agos1733opq1744akos1753goq1762os1772co1783cos1792do1804akos1812gq1821p1834orst1843gnr1854dkor1863gno1876aipqrs1883ops1894eopq1904opqt1912qs1924acrs1935abcos1942ao1953cor1964coqr1972os1984cgot1993iko2003epr2014koqs2025doprs2033dps2044bmps2054gios2062ps2073osu2084ijno2094gioq2104knor2114ajko2123ako2134iops2145emoqs2155egkos2164inoq2174bnos2185aeops2193aos2204iopq2215emoqs2223ano2234koqs2243gio2253ino2265jkosu2272os2282ps2292oq2304cgio2314cmoq2324gnop2333aoq2343ops2353noq2361q2374ekoq2386deopqs2395eilop2403eos2412io2423ikq2435aegop2444agop2455egoqr2462di2471s2484egop2494eiot2503eoq2513epq2523gko2534ckor2544jors2553cps2563air2573ios2584cjko2595gnopu2603afp2613ios2623koq2633noq2642os2654cfmo2664gops2674oqsu2683joq2692op2703aeq2713cnp2722ko2732ar2743gqs2753ioq2763alp2774opst2784akop2792do2803dgp2814aijo2822jo2834gkos2844egos2854cios2864acor2874fops2881o2893ops2903lop2914egnp2923ilo2933aos2943ipq2954acgq2962ap2973koq2983afo2995acgio3004cgio3013nqs3024knor3033ako3043jlo3054dhop3064cino3073ioq3084gios3093moq3103eoq3113ijo3123iko3133hoq3146ehijop3155eikmo3164ciko3174anoq3185aefho3193aos3204jkoq3212io3222ko3233kno3243iko3255eikop3265ijlps3273iop3284aeop3293ago3303aco3314knos3323nos3333ago3345gknor3353alo3365bknoq3373gko3384anos3393not3403aop3414gkoq3424goqs3433jko3443aop3453aop3464gops3473kos3483koq3494ikos3504ijno3513aos3523gop3533aio3545bcmop3554ceio3564ijop3574emrs3585agios3595inors3604egop3613aos3624cior3635aijos3644ioqs3653dip3664agps3675agopq3684bkor3694aeop3705bcgos3716cjlmno3724eipt3735aoprs3746aikopq3753koq3764hoqr3774koqs3784anos3795ijors3804gkos3815afims3826aopqsu3836bcmoqs3845aiops3855ckoru3865gjors3876dhikoq3886ahjmnr3895adgps3904eopq3915adgor3923ajp3934aioq3944knoq3955aopst3964bops3974acgq3983ano3992aj4006gikopq4014akno4024aoqs4035aijor4044giot4054ahio4064hkoq4073aos4084aeor4095ajnoq4104koqu4116agikos4125aiops4135ikoqr4146ceioqr4155ajors4166acdgpr4175agoqr4182os4194hkoq4203jos4215agios4224aghs4235acghi4245aghjs4255agjor4266acghoq4273ado4287acghmoq4295aghos4305dghos4313aos4323aco4333gst4344acsu4355aghjs4364adht4375dgost4385acfos4393ios4404arst4417agopqst4425adgho4435aioqu4443jop4454agos4465agioq4477ghkmors4485aghsu4497agnopst4505aghis4513dpt4526eghors4536adghor4544dopq4553dgp4566egikop4576adgosu4585adgps4595acgms4604agos4615agnor4626ajnors4633aot4647acinors4655ghkos4665aimop4675agops4683ajp4695dkoqs4706bgloqs4715abopu4726agioqs4735abgjo4746acioqs4753ajq4761a4776cgioqs4786adorsu4796aiopsu4804abrt4815acrst4824gost4835adqsu4843apt4856ghoqsu4866admops4876abgkoq4884cjoq4895acrst4906aloqst4916acgost4926aglqst4933art4945egosu4958aceghoru4967aghoqru4973grt4986acdoqs4995agors5005acpqt5016ijlost5025adopu5038agkloqru5046acinou5053art5063amp5074egop5085aimop5095ahrst5105aoqst5116cjorst5125agstu5136cghnrt5145aiqsu5155aehou5167aghmoqu5176jknors5183opq5196ehikor5205cjkoq5215aekoq5224ekoq5234inoq5248ceijknoq5254gnoq5263jop5274apqu5284giko5296aegoqs5304aopq5314acno5325acgos5334knoq5344aloq5354knop5367cghjkno5374acno5387gijoprt5395egjos';
+var MAT_TAGGED=0;
+
+/* 展开标签并统计每个概念多稀有。稀有度必须参与排序权重 ——
+   D1「具体物」七成素材都有，等权的话结果会被它淹掉。 */
+function applyTags(){
+  var s=MAT_TAG_DATA, usage={}, i, j, c, n=0;
+  for(i=0;i<CONCEPTS.length;i++) usage[CONCEPTS[i].c]=0;
+  for(i=0;i<s.length;){
+    var id=parseInt(s.substr(i,3),10);
+    var cnt=parseInt(s.charAt(i+3),16);
+    i+=4;
+    var item=MAT_INDEX[id];
+    var tags=s.substr(i,cnt); i+=cnt;
+    if(!item) continue;
+    item.tags=[];
+    for(j=0;j<cnt;j++){
+      c=tags.charAt(j);
+      if(!CONCEPT_BY[c]) continue;
+      item.tags.push(c); usage[c]++;
+    }
+    n++;
+  }
+  /* 权重 = 1/sqrt(频率)，再按最大值归一。
+     用 sqrt 而不是线性：不然「只出现在 5 条里的概念」会把结果完全带偏。 */
+  var maxw=0;
+  for(i=0;i<CONCEPTS.length;i++){
+    var key=CONCEPTS[i].c, f=usage[key]||0;
+    var w=f? Math.pow(f,-0.5) : 0;
+    CONCEPT_BY[key].n=f;
+    CONCEPT_BY[key].w=w;
+    if(w>maxw) maxw=w;
+  }
+  if(maxw) for(i=0;i<CONCEPTS.length;i++){
+    var k2=CONCEPTS[i].c;
+    CONCEPT_BY[k2].w=CONCEPT_BY[k2].w/maxw;
+  }
+  MAT_TAGGED=n;
+  return n;
+}
+
+/* 按概念检索。
+   「与常规不同 + 唯一 + 破旧」会把「领奖时第三名的奖状纸比一等奖的浅一个
+   色号」顶到前面，而不是平铺一堆只是「有具体物」的素材。 */
+function searchByConcepts(concepts){
+  if(!concepts||!concepts.length) return [];
+  var want={}, i, j;
+  for(i=0;i<concepts.length;i++) if(CONCEPT_BY[concepts[i]]) want[concepts[i]]=true;
+  var out=[];
+  for(i=0;i<MAT_INDEX.length;i++){
+    var x=MAT_INDEX[i];
+    if(!x.tags||!x.tags.length) continue;
+    var sc=0, hit=0;
+    for(j=0;j<x.tags.length;j++){
+      var c=x.tags[j];
+      if(want[c]){ sc+=CONCEPT_BY[c].w; hit++; }
+    }
+    if(hit) out.push({x:x, sc:sc, hit:hit});
+  }
+  /* 排序：先看命中几个概念，再看稀有度加权分，最后看素材长短。
+     顺序很重要。稀有度只该做「同样命中数时谁更切题」的微调，
+     不能当主键 —— 实测 B2「唯一」只占 3.5% 但稀有权重拿满 1.0，
+     拿它当主键会让任何带「唯一」的素材压过其余全部结果。 */
+  out.sort(function(a,b){
+    return b.hit-a.hit || b.sc-a.sc || a.x.m.length-b.x.m.length;
+  });
+  return out;
+}
+/* CONCEPTS 和 MAT_TAG_DATA 都定义完了，现在把标签挂到 MAT_INDEX 上。
+   顺序有讲究：先 buildMatIndex() 造出 MAT_INDEX，再 applyTags() 挂标签。 */
+applyTags();
 function norm(s){ return String(s==null?'':s).toLowerCase(); }
 /* 搜题目：标题 6 分、立意 3 分、素材 2 分、骨架 1 分 */
 function searchTopics(q){
@@ -2367,7 +2591,13 @@ if(DEBUG) window.__T={
   my:function(){ return MY; },
   setMy:function(k,v){ MY[k]=v; },
   matTotal:function(){ return MAT_TOTAL; },
+  matTagged:function(){ return MAT_TAGGED; },
   matIndex:function(){ return MAT_INDEX; },
+  concepts:function(){ return CONCEPTS; },
+  concept:function(c){ return CONCEPT_BY[c]||null; },
+  searchByConcepts:searchByConcepts,
+  conceptsForTopic:conceptsForTopic,
+  profileNote:profileNote,
   searchMats:searchMats,
   searchTopics:searchTopics,
   topicKeywords:topicKeywords,
